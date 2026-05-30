@@ -32,20 +32,41 @@ const BASE_URL =
   process.env.BETTER_AUTH_URL ?? "http://localhost:3210";
 
 /**
- * Trust localhost + the configured BASE_URL + any additional origins listed
- * in PUBLIC_TUNNEL_URL (Cloudflare quick tunnel for demos). Comma-separated
- * works — handy when sharing the same dev server through multiple tunnels.
+ * Trust localhost + the configured BASE_URL + Vercel preview/production URLs
+ * + any additional origins listed in PUBLIC_TUNNEL_URL (Cloudflare quick
+ * tunnel for demos).
+ *
+ * Vercel sets VERCEL_URL automatically on every deployment so previews
+ * (addvexon-abc123.vercel.app) and production (addvexon.vercel.app) can
+ * sign in without us hard-coding each one.
  */
+const VERCEL_URL = process.env.VERCEL_URL
+  ? `https://${process.env.VERCEL_URL}`
+  : null;
+const VERCEL_BRANCH_URL = process.env.VERCEL_BRANCH_URL
+  ? `https://${process.env.VERCEL_BRANCH_URL}`
+  : null;
+const VERCEL_PROJECT_URL = process.env.VERCEL_PROJECT_PRODUCTION_URL
+  ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+  : null;
+
 const TRUSTED_ORIGINS = Array.from(
   new Set(
     [
       "http://localhost:3210",
       BASE_URL,
+      VERCEL_URL,
+      VERCEL_BRANCH_URL,
+      VERCEL_PROJECT_URL,
+      // Custom domains alongside the vercel.app one
+      "https://addvexon.com",
+      "https://www.addvexon.com",
+      "https://addvexon.vercel.app",
       ...(process.env.PUBLIC_TUNNEL_URL ?? "")
         .split(",")
         .map((s) => s.trim())
         .filter(Boolean),
-    ].filter(Boolean),
+    ].filter((s): s is string => !!s),
   ),
 );
 
