@@ -45,6 +45,7 @@ export function EditorHeader({
   onExport,
   syncStatus,
   canSell,
+  userPlan,
 }: {
   title?: string;
   onTitleChange?: (next: string) => void;
@@ -55,9 +56,13 @@ export function EditorHeader({
   /** True when the doc has been saved to the cloud (has an id) and the user
    *  is signed in — required to put a listing on the marketplace. */
   canSell?: boolean;
+  /** The signed-in user's plan ("free", "pro", "team", "admin"). When
+   *  anything other than "free" the upgrade nudge stays hidden. */
+  userPlan?: string;
 }) {
   const pathname = usePathname();
-  const isPro = pathname?.startsWith("/editor/pro");
+  const isProRoute = pathname?.startsWith("/editor/pro");
+  const showUpgrade = (userPlan ?? "free") === "free";
   const editable = !!onTitleChange;
 
   // Local mirror so typing is smooth even while the cloud sync is in flight.
@@ -77,7 +82,7 @@ export function EditorHeader({
           Addvoxen
         </Link>
         <span className="px-2 py-0.5 bg-primary-container/20 text-primary-fixed-dim rounded-full text-[10px] font-bold uppercase tracking-wider shrink-0">
-          {isPro ? "Pro" : "Editor"}
+          {isProRoute ? "Pro" : "Editor"}
         </span>
         <span className="text-on-surface-variant hidden sm:inline shrink-0">
           /
@@ -105,9 +110,9 @@ export function EditorHeader({
       </div>
 
       <div className="flex items-center gap-2 shrink-0">
-        {!isPro && (
+        {showUpgrade && (
           <Link
-            href="/editor/pro"
+            href="/pricing"
             className="hidden sm:inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-label-sm font-label-sm text-tertiary-fixed-dim hover:bg-white/5 transition-colors"
           >
             <span className="material-symbols-outlined text-[16px]">bolt</span>

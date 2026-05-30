@@ -96,10 +96,16 @@ function EditorAppInner({ pro = false }: EditorAppProps) {
         clear();
         return;
       }
-      // Fetch the specific slug rather than the whole catalog — 40+ rows of
-      // document JSON was slow and contributed to the overlay sticking on
-      // slow networks.
-      fetch(`/api/templates/${encodeURIComponent(tid)}`)
+      // Fetch the specific slug. Slug goes in the POST body (not URL path)
+      // because many marketplace slugs contain words like "banner" or IAB
+      // ad dimensions ("728x90", "300x250") that uBlock / AdBlock filter
+      // lists treat as ad-tracker patterns and blanket-block. The body-
+      // based path keeps the URL itself neutral.
+      fetch("/api/lib/get", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slug: tid }),
+      })
         .then((r) => (r.ok ? r.json() : null))
         .then(
           (data: {
@@ -203,6 +209,7 @@ function EditorAppInner({ pro = false }: EditorAppProps) {
       <EditorHeader
         title={sync.title || templateName}
         onTitleChange={signedIn ? sync.setTitle : undefined}
+        userPlan={me?.user.plan}
         onSave={handleSave}
         onSell={
           signedIn

@@ -2,13 +2,17 @@
 
 import { useEffect, useRef } from "react";
 
-/** Fire-and-forget POST to the banner event API. Never blocks the UI. */
+/** Fire-and-forget POST to the analytics endpoint. Never blocks the UI.
+ *  Slug travels in the request body (not the URL path) so that ad blockers
+ *  don't blanket-block templates whose slugs contain "banner" or IAB ad
+ *  dimensions like "728x90" / "300x250". The old GET-style URL was
+ *  triggering uBlock's ad-tracker filter list. */
 export function trackBannerEvent(slug: string, kind: "view" | "click" | "export" | "cta") {
   if (typeof window === "undefined") return;
-  fetch(`/api/templates/${encodeURIComponent(slug)}/event`, {
+  fetch("/api/lib/log", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ kind }),
+    body: JSON.stringify({ slug, kind }),
     keepalive: true,
   }).catch(() => {});
 }

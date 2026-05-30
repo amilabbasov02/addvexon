@@ -50,8 +50,10 @@ export function BannerSocial({
     setLiked(next);
     setLikeCount((c) => c + (next ? 1 : -1));
     try {
-      const r = await fetch(`/api/templates/${slug}/like`, {
+      const r = await fetch("/api/lib/heart", {
         method: next ? "POST" : "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slug }),
       });
       if (!r.ok) {
         // Revert optimistic update
@@ -73,10 +75,10 @@ export function BannerSocial({
     if (!body || posting) return;
     setPosting(true);
     try {
-      const r = await fetch(`/api/templates/${slug}/comments`, {
+      const r = await fetch("/api/lib/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ body }),
+        body: JSON.stringify({ op: "add", slug, body }),
       });
       if (r.ok) {
         const created = (await r.json()) as Comment;
