@@ -4,67 +4,71 @@ import { useState } from "react";
 import Link from "next/link";
 import { WaitlistDialog } from "@/components/WaitlistDialog";
 import { PaymentNotice } from "@/components/site/PaymentNotice";
+import { useLocale } from "@/components/site/LocaleContext";
 
 type Cycle = "monthly" | "yearly";
 
+/** Tier metadata as translation-key references, not English strings.
+ *  The component resolves them via t() so the table reflects the user's
+ *  selected language. */
 const TIERS = [
   {
     id: "free" as const,
-    name: "Free",
-    tagline: "Try Addvoxen, forever free",
+    nameKey: "tier.free.name",
+    taglineKey: "tier.free.tagline",
     priceMonthly: 0,
     priceYearly: 0,
-    features: [
-      "5 designs at a time",
-      "Free templates only",
-      "Watermarked export",
-      "Magic Resize to 3 sizes",
-      "Image upload (50 MB)",
+    featureKeys: [
+      "tier.free.f1",
+      "tier.free.f2",
+      "tier.free.f3",
+      "tier.free.f4",
+      "tier.free.f5",
     ],
-    notIncluded: ["AI text & image", "Premium templates", "Marketplace selling"],
-    cta: "Continue free",
+    notIncludedKeys: ["tier.free.n1", "tier.free.n2", "tier.free.n3"],
+    ctaKey: "tier.free.cta",
     waitlistPlan: null,
     accent: false,
   },
   {
     id: "pro" as const,
-    name: "Pro",
-    tagline: "Everything you need to ship campaigns",
+    nameKey: "tier.pro.name",
+    taglineKey: "tier.pro.tagline",
     priceMonthly: 12,
     priceYearly: 115,
-    features: [
-      "Unlimited designs",
-      "Full template library (40+ today, growing weekly)",
-      "No watermark, HD export",
-      "Magic Resize to 30+ ad sizes",
-      "100 AI credits / month (text & image)",
-      "GIF / MP4 / HTML5 export",
-      "10 GB cloud storage",
-      "Priority support",
+    featureKeys: [
+      "tier.pro.f1",
+      "tier.pro.f2",
+      "tier.pro.f3",
+      "tier.pro.f4",
+      "tier.pro.f5",
+      "tier.pro.f6",
+      "tier.pro.f7",
+      "tier.pro.f8",
     ],
-    notIncluded: [],
-    cta: "Join Pro waitlist",
+    notIncludedKeys: [],
+    ctaKey: "tier.pro.cta",
     waitlistPlan: "pro" as const,
     accent: true,
   },
   {
     id: "team" as const,
-    name: "Team",
-    tagline: "For 3+ designers working together",
+    nameKey: "tier.team.name",
+    taglineKey: "tier.team.tagline",
     priceMonthly: 25,
     priceYearly: 240,
-    features: [
-      "Everything in Pro",
-      "Up to 3 team seats (more by request)",
-      "Real-time collaboration",
-      "Brand kit & locked tokens",
-      "Comments & version history",
-      "500 AI credits / month",
-      "100 GB cloud storage",
-      "Audit log",
+    featureKeys: [
+      "tier.team.f1",
+      "tier.team.f2",
+      "tier.team.f3",
+      "tier.team.f4",
+      "tier.team.f5",
+      "tier.team.f6",
+      "tier.team.f7",
+      "tier.team.f8",
     ],
-    notIncluded: [],
-    cta: "Join Team waitlist",
+    notIncludedKeys: [],
+    ctaKey: "tier.team.cta",
     waitlistPlan: "team" as const,
     accent: false,
   },
@@ -79,6 +83,7 @@ export function PricingClient({
   currentPlan: string;
   userEmail?: string;
 }) {
+  const { t } = useLocale();
   const [cycle, setCycle] = useState<Cycle>("monthly");
   const [waitlistFor, setWaitlistFor] = useState<
     "pro" | "team" | "enterprise" | null
@@ -90,14 +95,13 @@ export function PricingClient({
         <PaymentNotice />
         <div className="text-center mb-12">
           <p className="text-label-sm font-label-sm uppercase tracking-wider text-tertiary-fixed-dim mb-3">
-            Early access — limited spots
+            {t("pricing.eyebrow")}
           </p>
           <h1 className="font-display-lg text-display-lg font-bold text-on-surface mb-4 bg-linear-to-b from-on-surface to-on-surface/60 bg-clip-text">
-            Designed to grow with you.
+            {t("pricing.title")}
           </h1>
           <p className="text-on-surface-variant text-body-lg font-body-lg max-w-2xl mx-auto">
-            Free forever. Premium plans roll out gradually — join the
-            waitlist and we'll reach out personally as access opens.
+            {t("pricing.subtitle")}
           </p>
 
           <div className="inline-flex items-center gap-1 mt-8 p-1 glass-panel rounded-full">
@@ -111,7 +115,7 @@ export function PricingClient({
                   : "text-on-surface-variant hover:text-on-surface")
               }
             >
-              Monthly
+              {t("pricing.monthly")}
             </button>
             <button
               type="button"
@@ -123,9 +127,9 @@ export function PricingClient({
                   : "text-on-surface-variant hover:text-on-surface")
               }
             >
-              Yearly
+              {t("pricing.yearly")}
               <span className="ml-2 text-[10px] text-tertiary-fixed-dim font-bold">
-                -20%
+                {t("pricing.save_2_months")}
               </span>
             </button>
           </div>
@@ -162,7 +166,7 @@ export function PricingClient({
                     (tier.accent ? "text-on-primary" : "text-on-surface")
                   }
                 >
-                  {tier.name}
+                  {t(tier.nameKey)}
                 </h3>
                 <p
                   className={
@@ -172,7 +176,7 @@ export function PricingClient({
                       : "text-on-surface-variant")
                   }
                 >
-                  {tier.tagline}
+                  {t(tier.taglineKey)}
                 </p>
                 <div className="flex items-end gap-2 mb-1">
                   <span
@@ -213,7 +217,7 @@ export function PricingClient({
                 )}
 
                 <ul className="flex flex-col gap-2 mb-8">
-                  {tier.features.map((f) => (
+                  {tier.featureKeys.map((f) => (
                     <li
                       key={f}
                       className={
@@ -231,10 +235,10 @@ export function PricingClient({
                       >
                         check_circle
                       </span>
-                      {f}
+                      {t(f)}
                     </li>
                   ))}
-                  {tier.notIncluded.map((f) => (
+                  {tier.notIncludedKeys.map((f) => (
                     <li
                       key={f}
                       className={
@@ -247,7 +251,7 @@ export function PricingClient({
                       <span className="material-symbols-outlined text-[18px] mt-0.5 shrink-0">
                         block
                       </span>
-                      {f}
+                      {t(f)}
                     </li>
                   ))}
                 </ul>
@@ -261,7 +265,7 @@ export function PricingClient({
                         : "border border-white/15 text-on-surface-variant")
                     }
                   >
-                    Current plan
+                    {t("pricing.current_plan")}
                   </div>
                 ) : tier.waitlistPlan ? (
                   <Link
@@ -273,14 +277,14 @@ export function PricingClient({
                         : "bg-primary text-on-primary hover:opacity-90")
                     }
                   >
-                    Upgrade to {tier.name}
+                    {t(tier.ctaKey)}
                   </Link>
                 ) : (
                   <Link
                     href={signedIn ? "/dashboard" : "/signup"}
                     className="block text-center w-full py-3 rounded-full text-label-md font-label-md border border-white/15 text-on-surface hover:bg-white/5 transition-all"
                   >
-                    {tier.cta}
+                    {t(tier.ctaKey)}
                   </Link>
                 )}
               </div>

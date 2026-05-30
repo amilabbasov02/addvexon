@@ -36,8 +36,8 @@ export function LocaleSwitcher() {
         }
       >
         <span className="text-[18px] leading-none">{locale.flag}</span>
-        <span className="text-label-sm font-label-sm font-bold tracking-wider">
-          {locale.currency}
+        <span className="text-label-md font-label-md font-bold leading-none">
+          {locale.currencySymbol}
         </span>
         <span
           className={
@@ -127,8 +127,8 @@ export function LocaleSwitcher() {
                     <p className="text-[10px] uppercase tracking-wider text-on-surface-variant">
                       {l.language}
                     </p>
-                    <p className="text-on-surface text-label-sm font-label-sm">
-                      {l.currency}
+                    <p className="text-on-surface text-label-md font-label-md font-bold">
+                      {l.currencySymbol}
                     </p>
                   </div>
                   {active && (
