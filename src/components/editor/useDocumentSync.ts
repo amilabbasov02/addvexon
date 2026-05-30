@@ -4,8 +4,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { EditorStore } from "./useEditorStore";
 
-const SYNC_DEBOUNCE_MS = 1200;
-
 type CloudDoc = {
   id: string;
   title: string;
@@ -20,6 +18,7 @@ export type SyncStatus =
   | "idle"
   | "saving"
   | "saved"
+  | "unsaved"
   | "error"
   | "loading"
   | "anonymous";
@@ -29,11 +28,11 @@ export type SyncStatus =
  * documents.
  *
  *   - If signed in AND ?doc=ID is in the URL → fetch + hydrate
- *   - If signed in AND no ?doc → on first edit, POST to create + update URL
+ *   - Cloud writes are MANUAL: the editor's Save button invokes
+ *     `saveToCloud()`. No autosave — user edits never reach the API
+ *     without an explicit action. `dirty` exposes whether the in-memory
+ *     state has diverged from the last cloud snapshot.
  *   - If signed out → leave the store alone; localStorage save still works
- *   - Every doc mutation triggers a debounced PATCH while signed in
- *
- * Returns a status string and a title setter that the editor header can show.
  */
 export function useDocumentSync(
   store: EditorStore,
@@ -92,73 +91,107 @@ export function useDocumentSync(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [signedIn, docIdFromUrl, enabled]);
 
-  // --- Debounced save on every store change -------------------------------
-  const docSnapshotRef = useRef(JSON.stringify(store.doc));
-
+  // Track whether the local state has diverged from the last cloud snapshot.
+  // Drives the "unsaved changes" UI affordance + the beforeunload warning.
+  const cloudSnapshotRef = useRef(JSON.stringify(store.doc));
+  const [dirty, setDirty] = useState(false);
   useEffect(() => {
-    if (!enabled || !signedIn) return;
-    if (!initialHydrated.current) return;
     if (skipNextSave.current) {
       skipNextSave.current = false;
-      docSnapshotRef.current = JSON.stringify(store.doc);
+      cloudSnapshotRef.current = JSON.stringify(store.doc);
+      setDirty(false);
       return;
     }
+    const isDirty = JSON.stringify(store.doc) !== cloudSnapshotRef.current;
+    setDirty(isDirty);
+    // Surface dirty state via the sync badge so the user never thinks
+    // their edits are safely stored when they aren't. Don't override
+    // in-flight "saving" or terminal "error" — those carry their own
+    // meaning the user must see.
+    setStatus((s) => {
+      if (s === "saving" || s === "error" || s === "loading") return s;
+      if (s === "anonymous") return s;
+      return isDirty ? "unsaved" : s === "unsaved" ? "saved" : s;
+    });
+  }, [store.doc]);
 
-    const snapshot = JSON.stringify(store.doc);
-    if (snapshot === docSnapshotRef.current) return; // no real change
-    docSnapshotRef.current = snapshot;
-
-    const timer = window.setTimeout(async () => {
-      try {
-        setStatus("saving");
-
-        if (!docId) {
-          // First save → create document
-          const resp = await fetch("/api/documents", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              title,
-              canvasSize: store.doc.canvasSize,
-              background: store.doc.background,
-              layers: store.doc.layers,
-            }),
-          });
-          if (!resp.ok) throw new Error(`Create failed: ${resp.status}`);
-          const { id } = (await resp.json()) as { id: string };
-          setDocId(id);
-          const params = new URLSearchParams(window.location.search);
-          params.set("doc", id);
-          router.replace(`/editor?${params.toString()}`, { scroll: false });
-        } else {
-          // Subsequent saves → patch
-          const resp = await fetch(`/api/documents/${docId}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              title,
-              canvasSize: store.doc.canvasSize,
-              background: store.doc.background,
-              layers: store.doc.layers,
-            }),
-          });
-          if (!resp.ok) throw new Error(`Save failed: ${resp.status}`);
-        }
-        lastSavedAt.current = Date.now();
-        setStatus("saved");
-      } catch (err) {
-        console.error("Cloud sync failed:", err);
-        setStatus("error");
+  // --- Manual cloud save (autosave disabled). The editor's Save button is
+  //     now the single trigger so user edits never hit the wire without an
+  //     explicit action.
+  const saveToCloud = useCallback(async (): Promise<string | null> => {
+    if (!enabled || !signedIn) return null;
+    try {
+      setStatus("saving");
+      let resultId = docId;
+      if (!docId) {
+        const resp = await fetch("/api/documents", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title,
+            canvasSize: store.doc.canvasSize,
+            background: store.doc.background,
+            layers: store.doc.layers,
+          }),
+        });
+        if (!resp.ok) throw new Error(`Create failed: ${resp.status}`);
+        const { id } = (await resp.json()) as { id: string };
+        resultId = id;
+        setDocId(id);
+        const params = new URLSearchParams(window.location.search);
+        params.set("doc", id);
+        router.replace(`/editor?${params.toString()}`, { scroll: false });
+      } else {
+        const resp = await fetch(`/api/documents/${docId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title,
+            canvasSize: store.doc.canvasSize,
+            background: store.doc.background,
+            layers: store.doc.layers,
+          }),
+        });
+        if (!resp.ok) throw new Error(`Save failed: ${resp.status}`);
       }
-    }, SYNC_DEBOUNCE_MS);
-
-    return () => window.clearTimeout(timer);
+      cloudSnapshotRef.current = JSON.stringify(store.doc);
+      setDirty(false);
+      lastSavedAt.current = Date.now();
+      setStatus("saved");
+      return resultId;
+    } catch (err) {
+      console.error("Cloud save failed:", err);
+      setStatus("error");
+      return null;
+    }
+    // store.doc is read at call time; intentionally not a dep so the callback
+    // identity stays stable across edits.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [store.doc, title, docId, signedIn, enabled]);
+  }, [enabled, signedIn, docId, title, router]);
+
+  // Warn before tab close / navigation when there are unsaved changes — only
+  // when signed in (anonymous users can't cloud-save anyway).
+  useEffect(() => {
+    if (!enabled || !signedIn || !dirty) return;
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      // Chrome ignores the returnValue string but requires it set.
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [enabled, signedIn, dirty]);
 
   const updateTitle = useCallback((next: string) => {
     setTitle(next || "Untitled design");
   }, []);
 
-  return { status, title, setTitle: updateTitle, docId };
+  return {
+    status,
+    title,
+    setTitle: updateTitle,
+    docId,
+    dirty,
+    saveToCloud,
+  };
 }

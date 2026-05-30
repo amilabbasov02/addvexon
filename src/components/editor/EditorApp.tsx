@@ -143,6 +143,19 @@ function EditorAppInner({ pro = false }: EditorAppProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);
 
+  const handleSave = useCallback(async () => {
+    // Local snapshot first — survives a bad network connection or signed-
+    // out state and gives an instant confirmation while the cloud round-
+    // trip is in flight.
+    store.save();
+    if (signedIn) {
+      const id = await sync.saveToCloud();
+      showToast(id ? "Saved" : "Save failed");
+    } else {
+      showToast("Saved locally · sign in to back up");
+    }
+  }, [store, sync, signedIn, showToast]);
+
   // Keyboard shortcuts
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -170,7 +183,7 @@ function EditorAppInner({ pro = false }: EditorAppProps) {
         store.duplicateLayer(store.selectedId);
       } else if (meta && e.key.toLowerCase() === "s") {
         e.preventDefault();
-        if (store.save()) showToast("Saved");
+        handleSave();
       } else if (meta && e.key === "]" && store.selectedId) {
         // Ctrl/Cmd + ]   — bring forward
         // Ctrl/Cmd + Shift + ]  — bring to front
@@ -201,11 +214,7 @@ function EditorAppInner({ pro = false }: EditorAppProps) {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [store, showToast]);
-
-  const handleSave = useCallback(() => {
-    if (store.save()) showToast("Saved locally");
-  }, [store, showToast]);
+  }, [store, handleSave]);
 
   const handleExport = useCallback(() => {
     // Opens the ExportDialog — actual rendering happens off-screen via the
@@ -222,19 +231,20 @@ function EditorAppInner({ pro = false }: EditorAppProps) {
         onSave={handleSave}
         onSell={
           signedIn
-            ? () => {
-                // Make sure the latest state is in the cloud before we open
-                // the listing form — the SellDialog hands the documentId
-                // straight to /api/listings.
+            ? async () => {
+                // Push the latest state to the cloud first — the SellDialog
+                // hands the documentId straight to /api/listings, so the
+                // listing must reflect the design the user just clicked on.
                 store.save();
-                if (sync.docId) setSellOpen(true);
-                else showToast("Edit anything once so we can save your draft");
+                const id = await sync.saveToCloud();
+                if (id) setSellOpen(true);
+                else showToast("Save failed — try again");
               }
             : () => {
                 showToast("Sign in to publish on the marketplace");
               }
         }
-        canSell={signedIn && !!sync.docId}
+        canSell={signedIn}
         onExport={handleExport}
         syncStatus={signedIn ? sync.status : "anonymous"}
       />

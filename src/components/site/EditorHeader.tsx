@@ -8,6 +8,7 @@ export type SyncStatus =
   | "idle"
   | "saving"
   | "saved"
+  | "unsaved"
   | "error"
   | "loading"
   | "anonymous";
@@ -19,6 +20,7 @@ function SyncBadge({ status }: { status?: SyncStatus }) {
     loading: { label: "Loading…", color: "text-on-surface-variant", icon: "cloud_download" },
     saving: { label: "Saving…", color: "text-tertiary-fixed-dim", icon: "cloud_upload" },
     saved: { label: "Saved", color: "text-on-surface-variant", icon: "cloud_done" },
+    unsaved: { label: "Unsaved changes", color: "text-tertiary-fixed-dim", icon: "edit" },
     error: { label: "Save failed", color: "text-error", icon: "cloud_off" },
     anonymous: {
       label: "Sign in to save",
