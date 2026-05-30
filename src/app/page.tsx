@@ -1,9 +1,12 @@
+"use client";
 // Auto-generated from stitch-html/. Edit the source HTML and rerun
 // `node scripts/convert-stitch.mjs` if you need to regenerate.
 /* eslint-disable @next/next/no-img-element, react/no-unknown-property, @typescript-eslint/no-unused-vars */
 import * as React from "react";
+import { useLocale } from "@/components/site/LocaleContext";
 
 export default function LandingPage() {
+  const { t } = useLocale();
   return (
     <div data-stitch-theme="dark" className="addvoxen-stitch-screen">
       {/* Navigation Shell */}
@@ -13,21 +16,21 @@ export default function LandingPage() {
       <div className="max-w-[1440px] mx-auto flex flex-col items-center text-center">
       <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-primary-container/10 border border-primary/20 text-primary-fixed-dim font-label-sm text-label-sm mb-8 animate-pulse">
       <span className="material-symbols-outlined text-[16px]">auto_awesome</span>
-                          AI ENGINE V3.0 NOW LIVE
+                          {t("home.hero.eyebrow")}
                       </div>
       <h1 className="font-display-lg text-display-lg max-w-4xl mb-6 bg-gradient-to-b from-on-surface to-on-surface/50 bg-clip-text text-transparent">
-                          Generate High-Conversion Ad Banners in Seconds, Not Hours.
+                          {t("home.hero.title")}
                       </h1>
       <p className="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mb-12">
-                          Experience the synergy of high-performance utility and elite aesthetic refinement. Addvoxen leverages advanced AI to scale your creative output without compromising luxury.
+                          {t("home.hero.body")}
                       </p>
       <div className="flex flex-col sm:flex-row gap-4 mb-xl">
       <a className="ai-gradient text-on-primary font-label-md text-label-md px-10 py-4 rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-all flex items-center gap-2" href="/editor?new=1" role="button">
-                              Start Creating Free
+                              {t("home.hero.primary")}
                               <span className="material-symbols-outlined">arrow_forward</span>
       </a>
       <a className="glass-panel text-on-surface font-label-md text-label-md px-10 py-4 rounded-xl hover:bg-white/5 transition-all" href="#showcase" role="button">
-                              Watch Showcase
+                              {t("home.hero.secondary")}
                           </a>
       </div>
       {/* Floating Banner Preview */}

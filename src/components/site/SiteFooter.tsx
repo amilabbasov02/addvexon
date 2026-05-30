@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useLocale } from "./LocaleContext";
 
 /**
  * Site-wide footer with legal + support links. Hidden on /editor (which
@@ -11,6 +12,7 @@ import { usePathname } from "next/navigation";
  */
 export function SiteFooter() {
   const pathname = usePathname();
+  const { t } = useLocale();
   if (pathname?.startsWith("/editor")) return null;
   if (pathname?.startsWith("/admin")) return null;
 
@@ -26,8 +28,7 @@ export function SiteFooter() {
               Addvoxen
             </Link>
             <p className="mt-3 text-on-surface-variant text-label-sm font-label-sm max-w-sm leading-relaxed">
-              The AI Creative Suite for marketing teams. Design, resize,
-              launch and measure ad creatives from one workspace.
+              {t("footer.tagline")}
             </p>
             <p className="mt-4 text-on-surface-variant text-label-sm font-label-sm">
               <a
@@ -41,27 +42,27 @@ export function SiteFooter() {
 
           <div>
             <p className="text-on-surface font-label-md text-label-md mb-3">
-              Product
+              {t("footer.product")}
             </p>
             <ul className="space-y-2 text-label-sm font-label-sm text-on-surface-variant">
               <li>
                 <Link href="/marketplace" className="hover:text-on-surface">
-                  Templates
+                  {t("nav.templates")}
                 </Link>
               </li>
               <li>
                 <Link href="/pricing" className="hover:text-on-surface">
-                  Pricing
+                  {t("nav.pricing")}
                 </Link>
               </li>
               <li>
                 <Link href="/campaigns" className="hover:text-on-surface">
-                  Campaigns
+                  {t("nav.campaigns")}
                 </Link>
               </li>
               <li>
                 <Link href="/about" className="hover:text-on-surface">
-                  About
+                  {t("nav.about")}
                 </Link>
               </li>
             </ul>
@@ -69,27 +70,27 @@ export function SiteFooter() {
 
           <div>
             <p className="text-on-surface font-label-md text-label-md mb-3">
-              Legal
+              {t("footer.legal")}
             </p>
             <ul className="space-y-2 text-label-sm font-label-sm text-on-surface-variant">
               <li>
                 <Link href="/terms" className="hover:text-on-surface">
-                  Terms of Service
+                  {t("legal.terms")}
                 </Link>
               </li>
               <li>
                 <Link href="/privacy" className="hover:text-on-surface">
-                  Privacy Policy
+                  {t("legal.privacy")}
                 </Link>
               </li>
               <li>
                 <Link href="/refund" className="hover:text-on-surface">
-                  Refund Policy
+                  {t("legal.refund")}
                 </Link>
               </li>
               <li>
                 <Link href="/support" className="hover:text-on-surface">
-                  Support
+                  {t("nav.support")}
                 </Link>
               </li>
             </ul>
@@ -97,10 +98,8 @@ export function SiteFooter() {
         </div>
 
         <div className="mt-10 pt-6 border-t border-white/5 flex flex-col sm:flex-row gap-3 sm:items-center justify-between text-label-sm font-label-sm text-on-surface-variant">
-          <p>© {new Date().getFullYear()} Addvoxen. All rights reserved.</p>
-          <p className="text-xs">
-            Payments processed by Paddle (merchant of record) and PayPal.
-          </p>
+          <p>© {new Date().getFullYear()} Addvoxen. {t("footer.rights")}</p>
+          <p className="text-xs">{t("footer.payments_by")}</p>
         </div>
       </div>
     </footer>
