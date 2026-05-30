@@ -59,7 +59,7 @@ export default function LandingPage() {
       {/* Trusted By */}
       <section className="py-xl bg-surface-container-lowest/50">
       <div className="max-w-7xl mx-auto px-margin-desktop">
-      <p className="text-center font-label-sm text-label-sm text-outline mb-10 tracking-[0.2em] uppercase">Trusted by Global Innovators</p>
+      <p className="text-center font-label-sm text-label-sm text-outline mb-10 tracking-[0.2em] uppercase">{t("home.trusted_by")}</p>
       <div className="flex flex-wrap justify-center items-center gap-16 opacity-40 grayscale hover:grayscale-0 transition-all duration-700">
       <span className="font-display-sm text-display-sm font-bold tracking-tighter">NEXUS</span>
       <span className="font-display-sm text-display-sm font-bold tracking-tighter italic">VORTEX</span>
@@ -74,11 +74,11 @@ export default function LandingPage() {
       <div className="max-w-7xl mx-auto">
       <div className="flex justify-between items-end mb-12">
       <div>
-      <h2 className="font-headline-lg text-headline-lg text-on-surface mb-2">Trending Templates</h2>
-      <p className="font-body-md text-body-md text-on-surface-variant">Selected by our elite creative directors.</p>
+      <h2 className="font-headline-lg text-headline-lg text-on-surface mb-2">{t("home.templates.title")}</h2>
+      <p className="font-body-md text-body-md text-on-surface-variant">{t("home.templates.body")}</p>
       </div>
       <a className="text-primary font-label-md text-label-md flex items-center gap-2 hover:gap-3 transition-all" href="/marketplace" role="button">
-                              Browse Gallery <span className="material-symbols-outlined">chevron_right</span>
+                              {t("home.templates.cta")} <span className="material-symbols-outlined">chevron_right</span>
       </a>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-gutter">
@@ -92,7 +92,7 @@ export default function LandingPage() {
       <h3 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Neo-Minimal</h3>
       <span className="px-3 py-1 rounded-full bg-primary/10 text-primary font-label-sm text-label-sm">High CTR</span>
       </div>
-      <a className="w-full py-3 rounded-xl border border-white/10 hover:bg-primary hover:text-on-primary transition-all font-label-md text-label-md" href="/editor?new=1" role="button">Use Template</a>
+      <a className="w-full py-3 rounded-xl border border-white/10 hover:bg-primary hover:text-on-primary transition-all font-label-md text-label-md" href="/editor?new=1" role="button">{t("home.templates.use")}</a>
       </div>
       </div>
       {/* Template Card 2 */}
@@ -105,7 +105,7 @@ export default function LandingPage() {
       <h3 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Cyber Flow</h3>
       <span className="px-3 py-1 rounded-full bg-tertiary/10 text-tertiary font-label-sm text-label-sm">Trending</span>
       </div>
-      <a className="w-full py-3 rounded-xl border border-white/10 hover:bg-primary hover:text-on-primary transition-all font-label-md text-label-md" href="/editor?new=1" role="button">Use Template</a>
+      <a className="w-full py-3 rounded-xl border border-white/10 hover:bg-primary hover:text-on-primary transition-all font-label-md text-label-md" href="/editor?new=1" role="button">{t("home.templates.use")}</a>
       </div>
       </div>
       {/* Template Card 3 */}
@@ -118,7 +118,7 @@ export default function LandingPage() {
       <h3 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Luxe Matte</h3>
       <span className="px-3 py-1 rounded-full bg-primary/10 text-primary font-label-sm text-label-sm">Premium</span>
       </div>
-      <a className="w-full py-3 rounded-xl border border-white/10 hover:bg-primary hover:text-on-primary transition-all font-label-md text-label-md" href="/editor?new=1" role="button">Use Template</a>
+      <a className="w-full py-3 rounded-xl border border-white/10 hover:bg-primary hover:text-on-primary transition-all font-label-md text-label-md" href="/editor?new=1" role="button">{t("home.templates.use")}</a>
       </div>
       </div>
       </div>
@@ -128,15 +128,15 @@ export default function LandingPage() {
       <section className="py-xl px-margin-mobile md:px-margin-desktop bg-surface-container-lowest">
       <div className="max-w-7xl mx-auto">
       <div className="text-center mb-16">
-      <h2 className="font-display-sm text-display-sm text-on-surface mb-4">Precision Engineering</h2>
-      <p className="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto">Advanced tools for the modern marketer who refuses to settle for average.</p>
+      <h2 className="font-display-sm text-display-sm text-on-surface mb-4">{t("home.features.title")}</h2>
+      <p className="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto">{t("home.features.body")}</p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-12 gap-gutter h-auto md:h-[600px]">
       <div className="md:col-span-8 glass-panel rounded-[32px] p-10 flex flex-col justify-between group overflow-hidden relative">
       <div className="relative z-10">
       <span className="material-symbols-outlined text-primary text-5xl mb-6 group-hover:scale-110 transition-transform">aspect_ratio</span>
-      <h3 className="font-headline-lg text-headline-lg text-on-surface mb-4">AI-Powered Resizing</h3>
-      <p className="font-body-md text-body-md text-on-surface-variant max-w-md">Instantly adapt one creative for every social platform. Our AI intelligent-crops and repositions elements to maintain visual hierarchy across 30+ formats.</p>
+      <h3 className="font-headline-lg text-headline-lg text-on-surface mb-4">{t("home.features.resize.title")}</h3>
+      <p className="font-body-md text-body-md text-on-surface-variant max-w-md">{t("home.features.resize.body")}</p>
       </div>
       <div className="absolute bottom-0 right-0 w-1/2 h-full hidden md:block opacity-30 group-hover:opacity-50 transition-opacity">
       <img alt="Analytics Feature" className="w-full h-full object-cover rounded-tl-[64px]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBIHOzY5ca8EkRIRIMcRYi4vYyuoYwYrCGS92Mkhxmr5Xs1VSQBroQkiF_VidDCnNpMNVifBATTHZ2i1Flb3b719DguiRoxOEzTZyjy7-ghpTT-8oNLoq5N1JC0x9rAKq3M_0C1P5xISNkdMwfDMyvz4KYYI338xFRYXQxW4znpgSyPFVqZMV7GSgHFzOaf5eXqySfwcHra7JfzjSkyojSMHudXb04Tvs27Qg942GJiJ-GoFio1MAgX49APsjERvHDqG6HDcHMfEgHb" />
@@ -144,19 +144,19 @@ export default function LandingPage() {
       </div>
       <div className="md:col-span-4 glass-panel rounded-[32px] p-10 flex flex-col justify-center items-center text-center group border-tertiary/20">
       <span className="material-symbols-outlined text-tertiary text-5xl mb-6 group-hover:rotate-12 transition-transform">auto_fix_high</span>
-      <h3 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-4">One-Click Polish</h3>
-      <p className="font-body-md text-body-md text-on-surface-variant">Apply global brand styles, color matching, and professional retouching with a single click.</p>
+      <h3 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-4">{t("home.features.polish.title")}</h3>
+      <p className="font-body-md text-body-md text-on-surface-variant">{t("home.features.polish.body")}</p>
       </div>
       <div className="md:col-span-4 glass-panel rounded-[32px] p-10 group bg-primary-container/5 border-primary/20">
       <span className="material-symbols-outlined text-primary text-5xl mb-6">edit_square</span>
-      <h4 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-2">Drag-and-Drop Editor</h4>
-      <p className="font-body-md text-body-md text-on-surface-variant">Pro-grade capabilities in a frictionless interface designed for speed.</p>
+      <h4 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-2">{t("home.features.editor.title")}</h4>
+      <p className="font-body-md text-body-md text-on-surface-variant">{t("home.features.editor.body")}</p>
       </div>
       <div className="md:col-span-8 glass-panel rounded-[32px] p-10 flex items-center gap-8 group">
       <div className="flex-1">
       <span className="material-symbols-outlined text-secondary text-5xl mb-6">insights</span>
-      <h4 className="font-headline-lg text-headline-lg text-on-surface mb-2">Real-time Analytics</h4>
-      <p className="font-body-md text-body-md text-on-surface-variant">Predictive performance scoring before you even launch your campaign.</p>
+      <h4 className="font-headline-lg text-headline-lg text-on-surface mb-2">{t("home.features.analytics.title")}</h4>
+      <p className="font-body-md text-body-md text-on-surface-variant">{t("home.features.analytics.body")}</p>
       </div>
       <div className="hidden lg:flex gap-2">
       <div className="w-12 h-32 bg-primary/20 rounded-full flex items-end p-1">
@@ -178,10 +178,10 @@ export default function LandingPage() {
       <div className="max-w-7xl mx-auto glass-panel rounded-[40px] p-8 md:p-16 flex flex-col lg:flex-row items-center gap-16 relative">
       <div className="absolute top-0 right-0 w-full h-full bg-primary/5 blur-[120px] pointer-events-none"></div>
       <div className="flex-1 z-10">
-      <h2 className="font-display-sm text-display-sm text-on-surface mb-6">Performance by Design</h2>
-      <p className="font-body-lg text-body-lg text-on-surface-variant mb-10">Don't just create; optimize. Addvoxen's Live Analytics dashboard integrates directly with your ad managers to show CPM, CTR, and ROAS in a unified, beautiful view.</p>
+      <h2 className="font-display-sm text-display-sm text-on-surface mb-6">{t("home.perf.title")}</h2>
+      <p className="font-body-lg text-body-lg text-on-surface-variant mb-10">{t("home.perf.body")}</p>
       <button className="bg-on-surface text-surface font-label-md text-label-md px-10 py-4 rounded-xl hover:shadow-xl active:scale-95 transition-all">
-                              View Demo
+                              {t("home.perf.cta")}
                           </button>
       </div>
       <div className="flex-1 w-full z-10">
@@ -213,35 +213,51 @@ export default function LandingPage() {
       </div>
       </div>
       </section>
-      {/* Pricing Preview */}
+      {/* Pricing Preview — synced with the real /pricing page (Free $0,
+       *  Pro $12/mo, Team $25/mo). Editing prices? Update src/lib/billing.ts
+       *  and src/app/pricing/PricingClient.tsx to keep them in sync. */}
       <section className="py-xl px-margin-mobile md:px-margin-desktop bg-surface-container-lowest/30">
       <div className="max-w-7xl mx-auto text-center">
-      <h2 className="font-headline-lg text-headline-lg text-on-surface mb-12">Scalable Solutions</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-gutter max-w-4xl mx-auto">
-      {/* Starter */}
+      <h2 className="font-headline-lg text-headline-lg text-on-surface mb-12">{t("home.pricing.title")}</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-gutter max-w-6xl mx-auto">
+      {/* Free */}
       <div className="glass-panel p-10 rounded-[32px] text-left hover:border-primary/30 transition-all">
-      <p className="font-label-md text-label-md text-primary mb-2 uppercase tracking-wider">Starter</p>
-      <h3 className="font-display-sm text-display-sm text-on-surface mb-6">$49<span className="text-on-surface-variant font-body-md">/mo</span></h3>
+      <p className="font-label-md text-label-md text-primary mb-2 uppercase tracking-wider">{t("home.pricing.free.tag")}</p>
+      <h3 className="font-display-sm text-display-sm text-on-surface mb-6">{t("home.pricing.free.price")}<span className="text-on-surface-variant font-body-md">{t("home.pricing.month")}</span></h3>
       <ul className="space-y-4 mb-10 text-on-surface-variant font-body-md">
-      <li className="flex items-center gap-3"><span className="material-symbols-outlined text-primary">check_circle</span> 50 AI Generations</li>
-      <li className="flex items-center gap-3"><span className="material-symbols-outlined text-primary">check_circle</span> Standard Templates</li>
-      <li className="flex items-center gap-3"><span className="material-symbols-outlined text-primary">check_circle</span> Basic Analytics</li>
+      <li className="flex items-center gap-3"><span className="material-symbols-outlined text-primary">check_circle</span> {t("home.pricing.free.f1")}</li>
+      <li className="flex items-center gap-3"><span className="material-symbols-outlined text-primary">check_circle</span> {t("home.pricing.free.f2")}</li>
+      <li className="flex items-center gap-3"><span className="material-symbols-outlined text-primary">check_circle</span> {t("home.pricing.free.f3")}</li>
       </ul>
-      <button className="w-full py-4 rounded-xl border border-white/10 hover:bg-white/5 transition-all font-label-md text-label-md">Choose Starter</button>
+      <a href="/signup" className="block text-center w-full py-4 rounded-xl border border-white/10 hover:bg-white/5 transition-all font-label-md text-label-md">{t("home.pricing.free.cta")}</a>
       </div>
-      {/* Pro */}
+      {/* Pro — Most Popular */}
       <div className="glass-panel p-10 rounded-[32px] text-left border-primary/50 relative overflow-hidden group">
-      <div className="ai-gradient absolute top-0 right-0 px-6 py-1 rounded-bl-xl font-label-sm text-label-sm text-on-primary">Most Popular</div>
-      <p className="font-label-md text-label-md text-primary mb-2 uppercase tracking-wider">Pro</p>
-      <h3 className="font-display-sm text-display-sm text-on-surface mb-6">$199<span className="text-on-surface-variant font-body-md">/mo</span></h3>
+      <div className="ai-gradient absolute top-0 right-0 px-6 py-1 rounded-bl-xl font-label-sm text-label-sm text-on-primary">{t("home.pricing.most_popular")}</div>
+      <p className="font-label-md text-label-md text-primary mb-2 uppercase tracking-wider">{t("home.pricing.pro.tag")}</p>
+      <h3 className="font-display-sm text-display-sm text-on-surface mb-6">{t("home.pricing.pro.price")}<span className="text-on-surface-variant font-body-md">{t("home.pricing.month")}</span></h3>
       <ul className="space-y-4 mb-10 text-on-surface-variant font-body-md">
-      <li className="flex items-center gap-3"><span className="material-symbols-outlined text-primary">check_circle</span> Unlimited Generations</li>
-      <li className="flex items-center gap-3"><span className="material-symbols-outlined text-primary">check_circle</span> Premium Bento Templates</li>
-      <li className="flex items-center gap-3"><span className="material-symbols-outlined text-primary">check_circle</span> Advanced Predictive AI</li>
+      <li className="flex items-center gap-3"><span className="material-symbols-outlined text-primary">check_circle</span> {t("home.pricing.pro.f1")}</li>
+      <li className="flex items-center gap-3"><span className="material-symbols-outlined text-primary">check_circle</span> {t("home.pricing.pro.f2")}</li>
+      <li className="flex items-center gap-3"><span className="material-symbols-outlined text-primary">check_circle</span> {t("home.pricing.pro.f3")}</li>
       </ul>
-      <button className="w-full py-4 rounded-xl ai-gradient text-on-primary shadow-lg shadow-primary/20 hover:scale-[1.02] transition-all font-label-md text-label-md">Choose Pro</button>
+      <a href="/checkout?plan=pro&billing=monthly" className="block text-center w-full py-4 rounded-xl ai-gradient text-on-primary shadow-lg shadow-primary/20 hover:scale-[1.02] transition-all font-label-md text-label-md">{t("home.pricing.pro.cta")}</a>
+      </div>
+      {/* Team */}
+      <div className="glass-panel p-10 rounded-[32px] text-left hover:border-primary/30 transition-all">
+      <p className="font-label-md text-label-md text-primary mb-2 uppercase tracking-wider">{t("home.pricing.team.tag")}</p>
+      <h3 className="font-display-sm text-display-sm text-on-surface mb-6">{t("home.pricing.team.price")}<span className="text-on-surface-variant font-body-md">{t("home.pricing.month")}</span></h3>
+      <ul className="space-y-4 mb-10 text-on-surface-variant font-body-md">
+      <li className="flex items-center gap-3"><span className="material-symbols-outlined text-primary">check_circle</span> {t("home.pricing.team.f1")}</li>
+      <li className="flex items-center gap-3"><span className="material-symbols-outlined text-primary">check_circle</span> {t("home.pricing.team.f2")}</li>
+      <li className="flex items-center gap-3"><span className="material-symbols-outlined text-primary">check_circle</span> {t("home.pricing.team.f3")}</li>
+      </ul>
+      <a href="/checkout?plan=team&billing=monthly" className="block text-center w-full py-4 rounded-xl border border-white/10 hover:bg-white/5 transition-all font-label-md text-label-md">{t("home.pricing.team.cta")}</a>
       </div>
       </div>
+      <a href="/pricing" className="mt-10 inline-flex items-center gap-2 text-primary font-label-md text-label-md hover:gap-3 transition-all">
+                          {t("home.pricing.see_all")} <span className="material-symbols-outlined">arrow_forward</span>
+      </a>
       </div>
       </section>
       {/* Testimonial */}
@@ -249,14 +265,14 @@ export default function LandingPage() {
       <div className="max-w-4xl mx-auto text-center glass-panel p-16 rounded-[40px] relative">
       <span className="material-symbols-outlined text-primary text-6xl opacity-20 absolute top-10 left-10">format_quote</span>
       <p className="font-display-sm text-display-sm italic text-on-surface mb-10 leading-tight">
-                          "Addvoxen has transformed our creative workflow. We've seen a 40% increase in conversion rates while spending 80% less time on manual design tasks."
+                          &ldquo;{t("home.testimonial.quote")}&rdquo;
                       </p>
       <div className="flex flex-col items-center">
       <div className="w-20 h-20 rounded-full border-2 border-primary p-1 mb-4">
       <img alt="Founder" className="w-full h-full rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBKevRcG_KSz4h14yA-KCkRgJGf77zOncTYAU3lhHCuERrNqrFLw3YzrS2JswMIjF-OB01Xmzwkq-kwMLq_ww-J6pW3T5-FofPvcJz3fgQsoEYlnGPVHDUBp8V-MuVAOhTyJ89PwF6vB9oNZu0W1RySVvBQSylUD36_38x2UvpTJHLG5peMklwpY3O8orI_J__HzsOj-fxhAzTK9VWJ63V-vYKFQbjplVPVFFgF7eRrEe53fM3CftiEv1EOX4qruxoUAwmWvaPP43A3" />
       </div>
       <h4 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Julian Thorne</h4>
-      <p className="font-label-md text-label-md text-primary">Founder, Vortex Media</p>
+      <p className="font-label-md text-label-md text-primary">{t("home.testimonial.role")}</p>
       </div>
       </div>
       </section>
