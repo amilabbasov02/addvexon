@@ -53,6 +53,12 @@ export function useDocumentSync(
   const initialHydrated = useRef(false);
   const skipNextSave = useRef(false);
   const lastSavedAt = useRef(0);
+  // Set right before we trigger a router.replace that adds the freshly-
+  // created docId to the URL. Tells the hydration effect to ignore that
+  // particular URL change — otherwise the editor would re-fetch the doc
+  // it just POSTed and call loadDocument, which re-stamps every layer ID
+  // and drops the user's current selection.
+  const suppressNextHydration = useRef(false);
 
   // useEditorStore returns a brand-new object every render, so any closure
   // that captures `store` directly will read whatever `doc` was current at
@@ -64,6 +70,11 @@ export function useDocumentSync(
 
   // --- Initial hydration: load existing document by ID, if any. -----------
   useEffect(() => {
+    if (suppressNextHydration.current) {
+      suppressNextHydration.current = false;
+      initialHydrated.current = true;
+      return;
+    }
     if (!enabled || !signedIn || !docIdFromUrl) {
       initialHydrated.current = true;
       return;
@@ -146,6 +157,10 @@ export function useDocumentSync(
         if (!resp.ok) throw new Error(`Create failed: ${resp.status}`);
         const { id } = (await resp.json()) as { id: string };
         resultId = id;
+        // Both setDocId and the router.replace below feed back into the
+        // hydration effect's deps via docIdFromUrl. Flag this turn so we
+        // don't re-pull the doc we just POSTed.
+        suppressNextHydration.current = true;
         setDocId(id);
         const params = new URLSearchParams(window.location.search);
         params.set("doc", id);
