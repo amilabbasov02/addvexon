@@ -4,7 +4,14 @@ import { Pool } from "pg";
 
 const NEON =
   process.argv[2] ??
-  "postgresql://neondb_owner:npg_3oE9IVOTHzZf@ep-lively-snow-apnrcrbi-pooler.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require";
+  process.env.NEON_DATABASE_URL ??
+  process.env.DATABASE_URL ??
+  "";
+
+if (!NEON) {
+  console.error("Usage: npx tsx scripts/patch-documents-is-public.ts '<connection string>'");
+  process.exit(1);
+}
 
 async function main() {
   const pool = new Pool({ connectionString: NEON });
