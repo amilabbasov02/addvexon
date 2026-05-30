@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AdVexa | Lumina AI Workflow</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&amp;family=Geist:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "inverse-on-surface": "#283044",
+                    "surface-container-high": "#222a3d",
+                    "tertiary-fixed-dim": "#00dbe7",
+                    "tertiary": "#00dbe7",
+                    "on-surface": "#dae2fd",
+                    "on-tertiary": "#00363a",
+                    "on-secondary-fixed-variant": "#004395",
+                    "primary-fixed-dim": "#d0bcff",
+                    "surface-tint": "#d0bcff",
+                    "secondary-fixed-dim": "#adc6ff",
+                    "inverse-surface": "#dae2fd",
+                    "background": "#0b1326",
+                    "surface-variant": "#2d3449",
+                    "outline-variant": "#494454",
+                    "on-secondary-fixed": "#001a42",
+                    "secondary-container": "#0566d9",
+                    "error": "#ffb4ab",
+                    "on-primary": "#3c0091",
+                    "outline": "#958ea0",
+                    "secondary-fixed": "#d8e2ff",
+                    "tertiary-fixed": "#74f5ff",
+                    "primary-container": "#a078ff",
+                    "on-background": "#dae2fd",
+                    "surface-container-low": "#131b2e",
+                    "on-tertiary-fixed": "#002022",
+                    "on-surface-variant": "#cbc3d7",
+                    "inverse-primary": "#6d3bd7",
+                    "on-secondary-container": "#e6ecff",
+                    "surface-container": "#171f33",
+                    "surface-container-lowest": "#060e20",
+                    "error-container": "#93000a",
+                    "surface-bright": "#31394d",
+                    "primary": "#d0bcff",
+                    "on-error": "#690005",
+                    "on-primary-fixed": "#23005c",
+                    "on-primary-container": "#340080",
+                    "on-primary-fixed-variant": "#5516be",
+                    "primary-fixed": "#e9ddff",
+                    "on-tertiary-fixed-variant": "#004f54",
+                    "on-error-container": "#ffdad6",
+                    "secondary": "#adc6ff",
+                    "on-tertiary-container": "#002f32",
+                    "on-secondary": "#002e6a",
+                    "surface-dim": "#0b1326",
+                    "tertiary-container": "#00a0a9",
+                    "surface-container-highest": "#2d3449",
+                    "surface": "#0b1326"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "lg": "48px",
+                    "md": "24px",
+                    "xs": "8px",
+                    "margin-desktop": "64px",
+                    "margin-mobile": "16px",
+                    "gutter": "24px",
+                    "sm": "16px",
+                    "base": "4px",
+                    "xl": "80px"
+            },
+            "fontFamily": {
+                    "label-sm": ["Geist"],
+                    "label-md": ["Geist"],
+                    "display-sm": ["Geist"],
+                    "body-md": ["Inter"],
+                    "headline-lg": ["Geist"],
+                    "body-lg": ["Inter"],
+                    "display-lg": ["Geist"],
+                    "headline-lg-mobile": ["Geist"]
+            },
+            "fontSize": {
+                    "label-sm": ["12px", {"lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "label-md": ["14px", {"lineHeight": "1.2", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                    "display-sm": ["40px", {"lineHeight": "1.2", "letterSpacing": "-0.03em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "1.3", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "letterSpacing": "-0.01em", "fontWeight": "400"}],
+                    "display-lg": ["64px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "700"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "1.3", "letterSpacing": "-0.02em", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { background-color: #0b1326; color: #dae2fd; -webkit-font-smoothing: antialiased; }
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .glass-dark { background: rgba(13, 20, 38, 0.6); backdrop-filter: blur(32px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .ai-gradient { background: linear-gradient(135deg, #d0bcff 0%, #a078ff 100%); }
+        .ai-glow { box-shadow: 0 0 20px rgba(208, 188, 255, 0.3); }
+        .shimmer { background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent); background-size: 200% 100%; animation: shimmer 2s infinite linear; }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .floating { animation: float 6s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 left-0 right-0 z-50 bg-surface/80 backdrop-blur-xl border-b border-white/10 shadow-sm flex justify-between items-center w-full px-margin-desktop h-16">
+<div class="flex items-center gap-lg">
+<span class="font-headline-lg text-headline-lg font-bold tracking-tighter text-primary">Lumina AI</span>
+<nav class="hidden md:flex gap-md">
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors" href="#">Projects</a>
+<a class="font-label-md text-label-md text-primary border-b-2 border-primary pb-2" href="#">Assets</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors" href="#">Templates</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors" href="#">Analytics</a>
+</nav>
+</div>
+<div class="flex items-center gap-sm">
+<button class="material-symbols-outlined text-on-surface-variant hover:bg-white/5 p-2 rounded-lg transition-all">notifications</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:bg-white/5 p-2 rounded-lg transition-all">settings</button>
+<button class="bg-primary text-on-primary font-label-md text-label-md px-md py-xs rounded-xl hover:scale-95 transition-transform active:scale-90">Export</button>
+</div>
+</header>
+<div class="flex pt-16 flex-1 h-full overflow-hidden">
+<!-- Side Navigation Bar -->
+<aside class="hidden lg:flex flex-col h-screen w-64 bg-surface-container-low/50 backdrop-blur-2xl border-r border-white/10 py-md">
+<div class="px-md mb-lg">
+<div class="flex items-center gap-sm p-sm rounded-xl bg-white/5 border border-white/5">
+<img alt="Creative Director Profile" class="w-10 h-10 rounded-full object-cover" data-alt="A professional studio portrait of a Creative Director, featuring a confident expression, modern attire, and soft three-point lighting against a deep navy background. The image has a polished, high-end editorial look with subtle warm skin tones and sharp focus on the eyes, embodying technical leadership and creative vision." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOCotdf1uPrPcKNZE-TDcrVxCQx3WWKjeyjE2J_hztstQmVLROWoMhgrs-L2kUBTTyQcElQGSSI1b2Hg-D3-Szuj8mSjszc0LyutaJPHQrf4e1lJJjOE-wEtFTHhNa4VZHUC4A8hryo0vJvAWWFJgZ8zXBrmhumVr57RRURJztv3Hx3-fkpLYU4hqs9jsQ4Xxd14RVi2YDCja67Ri9-n6nOoQbnq7ojDfKgr84kF4D14A7twGgpM7dTkk5093UowN3zeNBgvSdccv7"/>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Banner Studio</p>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-widest">Summer Campaign</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 flex flex-col px-xs gap-base">
+<button class="flex items-center gap-sm px-md py-sm rounded-xl bg-primary-container/20 text-primary border-r-4 border-primary font-label-sm text-label-sm transition-all">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+                    Magic AI
+                </button>
+<button class="flex items-center gap-sm px-md py-sm rounded-xl text-on-surface-variant hover:bg-white/5 font-label-sm text-label-sm transition-all">
+<span class="material-symbols-outlined">layers</span>
+                    Layers
+                </button>
+<button class="flex items-center gap-sm px-md py-sm rounded-xl text-on-surface-variant hover:bg-white/5 font-label-sm text-label-sm transition-all">
+<span class="material-symbols-outlined">folder_open</span>
+                    Assets
+                </button>
+<button class="flex items-center gap-sm px-md py-sm rounded-xl text-on-surface-variant hover:bg-white/5 font-label-sm text-label-sm transition-all">
+<span class="material-symbols-outlined">history</span>
+                    History
+                </button>
+<button class="flex items-center gap-sm px-md py-sm rounded-xl text-on-surface-variant hover:bg-white/5 font-label-sm text-label-sm transition-all">
+<span class="material-symbols-outlined">insights</span>
+                    Heatmaps
+                </button>
+</nav>
+<div class="px-md mt-auto pt-lg space-y-md">
+<button class="w-full py-md ai-gradient rounded-xl font-label-md text-label-md text-on-primary-fixed shadow-lg ai-glow hover:scale-105 transition-transform active:scale-95">Generate Creative</button>
+<div class="flex flex-col gap-base border-t border-white/5 pt-md">
+<button class="flex items-center gap-sm px-md py-sm text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm">
+<span class="material-symbols-outlined">help</span>
+                        Support
+                    </button>
+<button class="flex items-center gap-sm px-md py-sm text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm">
+<span class="material-symbols-outlined">auto_graph</span>
+                        Upgrade
+                    </button>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 overflow-y-auto px-margin-mobile md:px-margin-desktop py-lg relative">
+<!-- Hero Prompt Section -->
+<section class="max-w-4xl mx-auto mb-xl">
+<div class="relative group">
+<div class="absolute -inset-1 bg-gradient-to-r from-primary/50 to-tertiary/50 rounded-2xl blur opacity-25 group-focus-within:opacity-75 transition duration-1000"></div>
+<div class="relative glass-dark p-sm rounded-2xl flex flex-col md:flex-row items-center gap-md">
+<div class="flex-1 w-full flex items-center gap-md px-md">
+<span class="material-symbols-outlined text-primary text-3xl">psychology</span>
+<div class="flex-1">
+<p class="text-[10px] text-primary/70 uppercase tracking-widest font-bold mb-1">User Prompt</p>
+<input class="bg-transparent border-none text-on-surface font-body-lg text-body-lg w-full focus:ring-0 placeholder-on-surface-variant/30" placeholder="Describe your creative vision..." type="text" value="Design a luxury minimalist campaign for a titanium chronograph with deep emerald accents."/>
+</div>
+</div>
+<button class="w-full md:w-auto px-xl py-md ai-gradient text-on-primary-fixed rounded-xl font-headline-lg-mobile text-headline-lg-mobile font-bold hover:shadow-[0_0_30px_rgba(208,188,255,0.4)] transition-all flex items-center justify-center gap-sm">
+                            Generate Magic
+                        </button>
+</div>
+</div>
+</section>
+<!-- Generation Grid -->
+<section class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+<!-- Variation 1: Rendered High Fidelity -->
+<div class="group relative rounded-3xl overflow-hidden glass border-primary/20 aspect-video flex items-center justify-center">
+<img alt="Titanium Chronograph Concept 1" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="A high-end cinematic product shot of a minimalist titanium chronograph watch featuring a deep emerald green dial. The watch is placed on a textured dark basalt surface with dramatic edge lighting. The overall mood is luxurious, sophisticated, and moody, using deep greens, cold titanium greys, and obsidian blacks to create a sense of elite precision." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAY40z6x1bI6kWurXhxsyidZ8TNqbYUvKokBUTkJAcEH0DcwY3noDpYiAJUlnNyH7rIzzbRDO9_ls9-7tS6lz3Nme0tFNyTf_oZ-ccuRScF8soK06BqqeNk-IxmUm6d7ma2rx_61tkZGfJsoV-fnAw7DPDb_gV5BbONKrBy7TSnXEmYpsYZZ90bBeDY2GiXPwp3wYE_y9aAI_3DaKTWbUPkgoy4nCEXnXCiM-8lvbMMMB6m8FfHIFLVam3uvItNsl33r7ZFNIJYRlVm"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+<div class="absolute top-md left-md bg-primary text-on-primary px-sm py-1 rounded-full font-label-sm text-label-sm flex items-center gap-xs ai-glow">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+                        Elite Performance
+                    </div>
+<div class="absolute bottom-md left-md right-md flex justify-between items-end">
+<div>
+<h4 class="font-headline-lg text-headline-lg text-white">Lumina Emerald</h4>
+<p class="font-label-sm text-label-sm text-white/60">Titanium Series 01</p>
+</div>
+<button class="w-12 h-12 rounded-full glass flex items-center justify-center text-white hover:bg-primary hover:text-on-primary transition-all">
+<span class="material-symbols-outlined">expand_content</span>
+</button>
+</div>
+</div>
+<!-- Variation 2: Rendering state -->
+<div class="relative rounded-3xl overflow-hidden glass aspect-video">
+<div class="absolute inset-0 shimmer opacity-50"></div>
+<div class="absolute inset-0 flex flex-col items-center justify-center space-y-md">
+<div class="w-12 h-12 rounded-full border-2 border-primary/30 border-t-primary animate-spin"></div>
+<p class="font-label-md text-label-md text-on-surface-variant animate-pulse">Refining Textures (84%)...</p>
+</div>
+<img alt="Rendering Concept 2" class="absolute inset-0 w-full h-full object-cover opacity-20 grayscale" data-alt="A luxurious product photography scene showing a sleek titanium wristwatch with an emerald face. The watch is presented in a high-tech laboratory setting with cyan and violet accent lighting reflecting off glass surfaces. The composition is clean and minimalist, highlighting the craftsmanship and cold metallic sheen of the titanium." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA_UBmOQYy-z87jBs5OpGI9pHX1zPuU3QM_BV4hOW4uWrTOcDe48OR5LG5E3VBJn9A4RnwViLytCA4DlKGKOGcm2L90s6VVHnSavSB1WkdEudGsHypNFJRzwKkw3p94aremNGNHtpUmtuwAsWUGmGQqwunEtcGXI1N5Lu58xOacLNWGOhGA_gh5948yD9mOuqDJr5mgz8sZNcpB9em_gZ9MlVGn_k5bGl_Wsy4pVM9m1qK6Jvf-4WXh3xfwtyMaTeWxKVRlnx-dzkrP"/>
+</div>
+<!-- Variation 3: Draft -->
+<div class="group relative rounded-3xl overflow-hidden glass aspect-video">
+<img alt="Titanium Chronograph Concept 3" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="An artistic lifestyle shot of a premium titanium chronograph with emerald details, worn by a person in a sharp charcoal suit. The background is a blurred high-rise architecture with golden hour light catching the metallic edges of the watch. The aesthetic is professional and high-performance, using a palette of steel, deep greens, and warm sunlight." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBC6G6oOdMQoXZzG86Av6YaMd1hLWWKLZ6tvo9efubkefqKy255u0zK3at1rfkz0TvWuOgQBhZqHfVTx-VAMjFWt61vVV1mu_vKiObNMRJ9T2tFRtSl9rzAhs7xxs12SVZbY2UYxes8vOBxAKWRfY9aC-3e6G7JOe-fxxiN94i91RVoUbq1GzeN20tSkVaMAuycgkbdc1jJnxuycmMBx4IlSvIpf8ULwffH9t1GzV6310bsuGjOIDEHlDVDuL2QYaU7ES8il82_nO-y"/>
+<div class="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors duration-300"></div>
+<div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="bg-white text-background px-md py-sm rounded-xl font-label-md text-label-md">Select Layout</button>
+</div>
+</div>
+<!-- Variation 4: Brand Linked -->
+<div class="relative rounded-3xl overflow-hidden glass aspect-video">
+<img alt="Titanium Chronograph Concept 4" class="absolute inset-0 w-full h-full object-cover" data-alt="Macro photography of a high-tech chronograph watch featuring intricate titanium gears and a luminous emerald display. The image uses extreme shallow depth of field to focus on the textures of the metal and the glow of the digital accents. The colors are futuristic, leaning into neon teals and deep navy shadows, perfect for a high-performance marketing campaign." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDDMZT9L_vq7oaWTdJ3FnA8YQf8UtEdlzgy6tQ4Odwn6LGxNh6tq0uUZTb1pCMFvXN7I8IaO2gZswCByBPwqdNmX2bmTpQyNpN35ZYeCJtlI7YyE4BecouRv0vQtMJVbBE__G0oHt_ne_sjngWL18qqnYvqzo36COWZ1n0VlOepq2gKtKDYd7PA1RkzKYnG380Zw4Btvf0An89Ua-ESapsx6zUweXeW2cNFlk0Tjqw2_Foyyqi00Lg-L1sFCiKYJ-UrXyxTqFau9y_u"/>
+<div class="absolute inset-0 bg-gradient-to-tr from-background via-transparent to-transparent"></div>
+<div class="absolute bottom-md left-md">
+<span class="font-label-sm text-label-sm text-tertiary uppercase tracking-widest font-bold">Concept D • Minimalist</span>
+</div>
+</div>
+</section>
+</main>
+<!-- Right Side Panel: AI Assistant & Brand Intelligence -->
+<aside class="hidden xl:flex flex-col w-96 h-screen bg-surface-container-lowest/40 backdrop-blur-xl border-l border-white/10 p-md space-y-md">
+<!-- AI Assistant Panel -->
+<div class="glass p-md rounded-2xl space-y-md border-primary/20 floating">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full ai-gradient flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">colors_spark</span>
+</div>
+<h3 class="font-label-md text-label-md text-on-surface">AI Creative Partner</h3>
+</div>
+<div class="bg-white/5 p-sm rounded-xl text-on-surface-variant font-body-md text-body-md border border-white/5">
+                    "I've optimized the CTA contrast for Gen-Z audiences. Should I generate A/B variations with emotional hooks?"
+                </div>
+<div class="flex flex-col gap-xs">
+<button class="w-full py-sm text-left px-md rounded-lg hover:bg-white/5 text-primary font-label-sm text-label-sm transition-all flex justify-between items-center">
+                        Generate A/B Options
+                        <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+<button class="w-full py-sm text-left px-md rounded-lg hover:bg-white/5 text-on-surface-variant font-label-sm text-label-sm transition-all flex justify-between items-center">
+                        Adjust Color Palette
+                        <span class="material-symbols-outlined text-[18px]">palette</span>
+</button>
+</div>
+</div>
+<!-- Brand Intelligence Widget -->
+<div class="glass p-md rounded-2xl space-y-sm">
+<div class="flex justify-between items-center mb-sm">
+<h3 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Brand Intelligence</h3>
+<span class="text-[10px] px-sm py-0.5 rounded-full bg-tertiary/10 text-tertiary border border-tertiary/20">Link Active</span>
+</div>
+<div class="flex items-center gap-sm p-xs bg-white/5 rounded-xl">
+<div class="w-10 h-10 rounded-lg bg-[#004d40] flex items-center justify-center font-bold text-white">V</div>
+<div class="flex-1 overflow-hidden">
+<p class="font-label-md text-label-md truncate">vantage-chronos.com</p>
+<p class="text-[10px] text-on-surface-variant">Last synced 2m ago</p>
+</div>
+</div>
+<div class="pt-sm space-y-xs">
+<p class="text-[10px] text-on-surface-variant font-bold uppercase">Extracted Palette</p>
+<div class="flex gap-xs">
+<div class="h-8 flex-1 rounded-md bg-[#004d40] border border-white/10 group cursor-help relative">
+<span class="hidden group-hover:block absolute -top-8 left-0 text-[10px] bg-surface p-1 rounded">#004D40</span>
+</div>
+<div class="h-8 flex-1 rounded-md bg-[#E0E0E0] border border-white/10 group cursor-help relative">
+<span class="hidden group-hover:block absolute -top-8 left-0 text-[10px] bg-surface p-1 rounded">#E0E0E0</span>
+</div>
+<div class="h-8 flex-1 rounded-md bg-[#121212] border border-white/10 group cursor-help relative">
+<span class="hidden group-hover:block absolute -top-8 left-0 text-[10px] bg-surface p-1 rounded">#121212</span>
+</div>
+<div class="h-8 flex-1 rounded-md bg-tertiary border border-white/10 group cursor-help relative">
+<span class="hidden group-hover:block absolute -top-8 left-0 text-[10px] bg-surface p-1 rounded">#00DBE7</span>
+</div>
+</div>
+</div>
+<div class="pt-sm space-y-xs">
+<p class="text-[10px] text-on-surface-variant font-bold uppercase">Font Family</p>
+<div class="p-sm bg-white/5 rounded-lg flex items-center justify-between">
+<span class="font-display-sm text-[16px]">Geist / Inter UI</span>
+<span class="material-symbols-outlined text-primary text-sm">check_circle</span>
+</div>
+</div>
+</div>
+<!-- Real-time Metrics -->
+<div class="mt-auto glass p-md rounded-2xl">
+<div class="flex justify-between items-center mb-md">
+<p class="font-label-sm text-label-sm text-on-surface-variant">Generation Load</p>
+<p class="font-label-sm text-label-sm text-primary">High Fidelity</p>
+</div>
+<div class="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+<div class="h-full ai-gradient w-[65%] rounded-full shadow-[0_0_10px_#a078ff]"></div>
+</div>
+</div>
+</aside>
+</div>
+<!-- Mobile Bottom Navigation -->
+<footer class="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-surface-container/80 backdrop-blur-xl border-t border-white/10 flex items-center justify-around px-md z-50">
+<button class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined">auto_awesome</span>
+<span class="text-[10px] font-medium">Magic</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined">layers</span>
+<span class="text-[10px] font-medium">Layers</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined">folder_open</span>
+<span class="text-[10px] font-medium">Assets</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-[10px] font-medium">Settings</span>
+</button>
+</footer>
+<script>
+        // Subtle interaction for the prompt input focus
+        const promptInput = document.querySelector('input');
+        const glowParent = promptInput.closest('.group');
+        
+        promptInput.addEventListener('focus', () => {
+            glowParent.querySelector('.blur').style.opacity = '0.9';
+        });
+        
+        promptInput.addEventListener('blur', () => {
+            glowParent.querySelector('.blur').style.opacity = '0.25';
+        });
+
+        // Simulating the "rendering" update
+        setInterval(() => {
+            const statusText = document.querySelector('.animate-pulse');
+            if (statusText) {
+                let current = parseInt(statusText.innerText.match(/\d+/)[0]);
+                if (current < 99) {
+                    statusText.innerText = `Refining Textures (${current + 1}%)...`;
+                } else {
+                    statusText.innerText = "Applying Final Grade...";
+                }
+            }
+        }, 3000);
+    </script>
+</body></html>

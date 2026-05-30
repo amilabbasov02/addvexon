@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AdVexa AI | Analytics Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Geist:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            background-color: #0b1326;
+            color: #dae2fd;
+            -webkit-font-smoothing: antialiased;
+        }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
+        }
+        .ai-glow-border {
+            position: relative;
+        }
+        .ai-glow-border::after {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(208, 188, 255, 0.3), transparent, rgba(0, 219, 231, 0.2));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+        .shimmer {
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+            background-size: 200% 100%;
+            animation: shimmer 3s infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-variant": "#2d3449",
+                        "primary-container": "#a078ff",
+                        "on-primary-fixed-variant": "#5516be",
+                        "inverse-on-surface": "#283044",
+                        "secondary": "#adc6ff",
+                        "on-tertiary-fixed": "#002022",
+                        "background": "#0b1326",
+                        "error-container": "#93000a",
+                        "on-tertiary-container": "#002f32",
+                        "inverse-primary": "#6d3bd7",
+                        "tertiary-container": "#00a0a9",
+                        "surface-container-high": "#222a3d",
+                        "surface-container-low": "#131b2e",
+                        "secondary-fixed-dim": "#adc6ff",
+                        "on-error-container": "#ffdad6",
+                        "outline": "#958ea0",
+                        "on-secondary-fixed": "#001a42",
+                        "tertiary-fixed-dim": "#00dbe7",
+                        "surface-tint": "#d0bcff",
+                        "inverse-surface": "#dae2fd",
+                        "outline-variant": "#494454",
+                        "surface-dim": "#0b1326",
+                        "on-primary": "#3c0091",
+                        "primary-fixed-dim": "#d0bcff",
+                        "surface-container-lowest": "#060e20",
+                        "primary-fixed": "#e9ddff",
+                        "secondary-fixed": "#d8e2ff",
+                        "on-surface-variant": "#cbc3d7",
+                        "error": "#ffb4ab",
+                        "on-surface": "#dae2fd",
+                        "secondary-container": "#0566d9",
+                        "surface-bright": "#31394d",
+                        "primary": "#d0bcff",
+                        "on-primary-fixed": "#23005c",
+                        "surface": "#0b1326",
+                        "on-primary-container": "#340080",
+                        "surface-container": "#171f33",
+                        "on-secondary": "#002e6a",
+                        "on-error": "#690005",
+                        "on-background": "#dae2fd",
+                        "tertiary-fixed": "#74f5ff",
+                        "tertiary": "#00dbe7",
+                        "surface-container-highest": "#2d3449",
+                        "on-secondary-fixed-variant": "#004395",
+                        "on-secondary-container": "#e6ecff",
+                        "on-tertiary-fixed-variant": "#004f54",
+                        "on-tertiary": "#00363a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "4px",
+                        "xl": "80px",
+                        "xs": "8px",
+                        "sm": "16px",
+                        "lg": "48px",
+                        "margin-desktop": "64px",
+                        "md": "24px",
+                        "gutter": "24px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["Geist"],
+                        "display-sm": ["Geist"],
+                        "label-md": ["Geist"],
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["Geist"],
+                        "display-lg": ["Geist"],
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Geist"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["12px", {"lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "display-sm": ["40px", {"lineHeight": "1.2", "letterSpacing": "-0.03em", "fontWeight": "600"}],
+                        "label-md": ["14px", {"lineHeight": "1.2", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "body-md": ["16px", {"lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "1.3", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "display-lg": ["64px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "700"}],
+                        "body-lg": ["18px", {"lineHeight": "1.6", "letterSpacing": "-0.01em", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.3", "letterSpacing": "-0.02em", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface overflow-x-hidden pb-24">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/50 backdrop-blur-xl border-b border-white/10 shadow-2xl">
+<div class="flex justify-between items-center px-margin-mobile py-4">
+<div class="font-headline-lg-mobile text-headline-lg-mobile font-bold tracking-tighter text-primary">AdVexa</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-white/5 active:scale-95 transition-all text-on-surface-variant" id="theme-toggle">
+<span class="material-symbols-outlined">light_mode</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-primary/30">
+<img alt="User profile" data-alt="A close-up professional headshot of a young creative director in a high-tech studio environment. The lighting is dramatic and cool-toned, with subtle violet highlights reflecting off their glasses, embodying a precision luxury aesthetic. The background is a soft-focus digital interface, reinforcing a theme of advanced AI technology and minimalist sophistication." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD67IHekEfkrTSwaOJhlIuBG0qM0Fdfjcp3Ydj1ctlT9NfCDltOPMp5JjnMorXK-63J0FwGL7SooSKqSJ3JHnd2Unfd5OvL_tDmqoe1xf_VvFbCV0UjXFA-INnXrh94JhgAkROZENLuJr-enTi3UGCFGNu_Ow8PifPY_ZFQCh33CLgTHxg9mLWnKH_xacUaA9HkReTUleTwY6Y9ToQMay9TaDUjDSRQ7wzBWbgE5dLkBTVNw-i27X33gR4Ut2qMFaCtfnQQHJUxVfR0"/>
+</div>
+</div>
+</div>
+</header>
+<main class="mt-20 px-margin-mobile space-y-md">
+<!-- Welcome Section -->
+<section class="py-xs">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary">Analytics Hub</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Real-time performance for <span class="text-tertiary">Precision Growth</span></p>
+</section>
+<!-- KPI Grid - Bento Style -->
+<div class="grid grid-cols-2 gap-xs">
+<!-- Impressions -->
+<div class="glass-card ai-glow-border p-md rounded-xl flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-primary text-xl">visibility</span>
+<span class="font-label-sm text-label-sm text-tertiary">+12.4%</span>
+</div>
+<div class="mt-4">
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Impressions</p>
+<p class="font-headline-lg-mobile text-headline-lg-mobile font-bold">1.2M</p>
+</div>
+</div>
+<!-- CPM -->
+<div class="glass-card ai-glow-border p-md rounded-xl flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-tertiary text-xl">payments</span>
+<span class="font-label-sm text-label-sm text-error">-2.1%</span>
+</div>
+<div class="mt-4">
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">CPM</p>
+<p class="font-headline-lg-mobile text-headline-lg-mobile font-bold">$4.82</p>
+</div>
+</div>
+<!-- Clicks -->
+<div class="glass-card ai-glow-border p-md rounded-xl flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-secondary text-xl">touch_app</span>
+<span class="font-label-sm text-label-sm text-tertiary">+8.7%</span>
+</div>
+<div class="mt-4">
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Clicks</p>
+<p class="font-headline-lg-mobile text-headline-lg-mobile font-bold">42.8K</p>
+</div>
+</div>
+<!-- CTR -->
+<div class="glass-card ai-glow-border p-md rounded-xl flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-primary-container text-xl">ads_click</span>
+<span class="font-label-sm text-label-sm text-tertiary">+0.4%</span>
+</div>
+<div class="mt-4">
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">CTR</p>
+<p class="font-headline-lg-mobile text-headline-lg-mobile font-bold">3.56%</p>
+</div>
+</div>
+</div>
+<!-- Main Chart Section -->
+<section class="glass-card ai-glow-border rounded-[32px] p-md overflow-hidden">
+<div class="flex justify-between items-center mb-md">
+<h2 class="font-label-md text-label-md font-bold uppercase tracking-widest">Campaign Flow</h2>
+<div class="flex gap-2">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="w-2 h-2 rounded-full bg-tertiary/40"></span>
+</div>
+</div>
+<!-- Mock Chart Visualization -->
+<div class="h-48 w-full flex items-end justify-between gap-1">
+<div class="w-3 bg-primary/20 rounded-t-full h-[40%]"></div>
+<div class="w-3 bg-primary/40 rounded-t-full h-[60%]"></div>
+<div class="w-3 bg-primary/60 rounded-t-full h-[55%]"></div>
+<div class="w-3 bg-primary rounded-t-full h-[85%] relative">
+<div class="absolute -top-6 left-1/2 -translate-x-1/2 font-label-sm text-label-sm text-primary">Peak</div>
+</div>
+<div class="w-3 bg-primary/80 rounded-t-full h-[70%]"></div>
+<div class="w-3 bg-primary/50 rounded-t-full h-[45%]"></div>
+<div class="w-3 bg-primary/30 rounded-t-full h-[30%]"></div>
+<div class="w-3 bg-primary/40 rounded-t-full h-[50%]"></div>
+<div class="w-3 bg-primary/60 rounded-t-full h-[75%]"></div>
+</div>
+<div class="flex justify-between mt-xs font-label-sm text-label-sm text-on-surface-variant">
+<span>Mon</span><span>Wed</span><span>Fri</span><span>Sun</span>
+</div>
+</section>
+<!-- Real-Time Conversions List -->
+<section class="space-y-xs">
+<div class="flex justify-between items-center">
+<h2 class="font-label-md text-label-md font-bold uppercase tracking-widest">Live Conversions</h2>
+<span class="flex items-center gap-1 text-tertiary font-label-sm text-label-sm">
+<span class="w-2 h-2 bg-tertiary rounded-full animate-pulse"></span> Pulse Live
+                </span>
+</div>
+<div class="space-y-xs">
+<!-- Transaction Item 1 -->
+<div class="glass-card p-sm rounded-xl flex items-center justify-between group active:scale-95 transition-transform">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-lg bg-primary-container/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary-fixed-dim" style="font-variation-settings: 'FILL' 1;">shopping_bag</span>
+</div>
+<div>
+<p class="font-label-md text-label-md font-bold">New Subscription</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">2 mins ago • AI Creative Suite</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-label-md text-label-md text-tertiary font-bold">+$129.00</p>
+</div>
+</div>
+<!-- Transaction Item 2 -->
+<div class="glass-card p-sm rounded-xl flex items-center justify-between group active:scale-95 transition-transform">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-lg bg-tertiary-container/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-tertiary" style="font-variation-settings: 'FILL' 1;">group_add</span>
+</div>
+<div>
+<p class="font-label-md text-label-md font-bold">Lead Generated</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">14 mins ago • Enterprise Tier</p>
+</div>
+</div>
+<div class="text-right">
+<span class="px-2 py-0.5 rounded-full bg-tertiary/10 text-tertiary text-[10px] font-bold uppercase tracking-widest">High Intent</span>
+</div>
+</div>
+<!-- Transaction Item 3 -->
+<div class="glass-card p-sm rounded-xl flex items-center justify-between group active:scale-95 transition-transform">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-lg bg-surface-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant" style="font-variation-settings: 'FILL' 1;">bolt</span>
+</div>
+<div>
+<p class="font-label-md text-label-md font-bold">Token Refill</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">45 mins ago • User_882</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-label-md text-label-md text-on-surface font-bold">+$24.99</p>
+</div>
+</div>
+</div>
+</section>
+<!-- AI Insights Card -->
+<section class="glass-card ai-glow-border rounded-xl p-md relative overflow-hidden group">
+<div class="shimmer absolute inset-0 pointer-events-none opacity-30"></div>
+<div class="relative z-10">
+<div class="flex items-center gap-2 mb-xs">
+<span class="material-symbols-outlined text-primary animate-pulse">auto_awesome</span>
+<h3 class="font-label-md text-label-md font-bold text-primary">AI Optimization Prompt</h3>
+</div>
+<p class="font-body-md text-body-md italic text-on-surface">"Scale the 'Elite Luxury' campaign by 15% in the Nordics. High CTR signal detected on 4k video assets."</p>
+<button class="mt-md w-full py-3 rounded-lg bg-primary text-on-primary font-label-md text-label-md font-bold active:scale-95 transition-all">
+                    Apply Prediction
+                </button>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar (Mobile) -->
+<nav class="fixed bottom-0 w-full z-50 bg-surface-container-low/80 backdrop-blur-lg border-t border-white/5 shadow-xl md:hidden">
+<div class="flex justify-around items-center h-20 px-4">
+<!-- Analytics (Active) -->
+<div class="flex flex-col items-center gap-1 bg-primary-container/20 text-primary-fixed-dim px-4 py-2 rounded-2xl">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">leaderboard</span>
+<span class="font-label-sm text-[10px] font-bold">Analytics</span>
+</div>
+<!-- Editor -->
+<div class="flex flex-col items-center gap-1 text-on-surface-variant opacity-60 px-4 py-2">
+<span class="material-symbols-outlined">auto_awesome</span>
+<span class="font-label-sm text-[10px]">Editor</span>
+</div>
+<!-- User Hub -->
+<div class="flex flex-col items-center gap-1 text-on-surface-variant opacity-60 px-4 py-2">
+<span class="material-symbols-outlined">account_circle</span>
+<span class="font-label-sm text-[10px]">User Hub</span>
+</div>
+</div>
+</nav>
+<!-- FAB for Create action -->
+<button class="fixed bottom-24 right-margin-mobile w-14 h-14 rounded-full bg-tertiary text-on-tertiary shadow-lg flex items-center justify-center active:scale-90 transition-transform z-50">
+<span class="material-symbols-outlined text-2xl">add</span>
+</button>
+<script>
+        document.getElementById('theme-toggle').addEventListener('click', () => {
+            const html = document.documentElement;
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                document.getElementById('theme-toggle').querySelector('span').textContent = 'dark_mode';
+            } else {
+                html.classList.add('dark');
+                document.getElementById('theme-toggle').querySelector('span').textContent = 'light_mode';
+            }
+        });
+
+        // Add small hover interaction for cards
+        const cards = document.querySelectorAll('.glass-card');
+        cards.forEach(card => {
+            card.addEventListener('touchstart', () => {
+                card.style.borderColor = 'rgba(208, 188, 255, 0.4)';
+            });
+            card.addEventListener('touchend', () => {
+                card.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+            });
+        });
+    </script>
+</body></html>

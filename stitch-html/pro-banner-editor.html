@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Lumina AI | Banner Studio</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Geist:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            background-color: #0b1326;
+            color: #dae2fd;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glass-dark {
+            background: rgba(6, 14, 32, 0.8);
+            backdrop-filter: blur(24px);
+        }
+        .ai-gradient {
+            background: linear-gradient(135deg, #d0bcff 0%, #a078ff 100%);
+        }
+        .canvas-grid {
+            background-image: 
+                radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
+        .shimmer {
+            background: linear-gradient(90deg, transparent, rgba(208, 188, 255, 0.1), transparent);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-on-surface": "#283044",
+                        "surface-container-high": "#222a3d",
+                        "tertiary-fixed-dim": "#00dbe7",
+                        "tertiary": "#00dbe7",
+                        "on-surface": "#dae2fd",
+                        "on-tertiary": "#00363a",
+                        "on-secondary-fixed-variant": "#004395",
+                        "primary-fixed-dim": "#d0bcff",
+                        "surface-tint": "#d0bcff",
+                        "secondary-fixed-dim": "#adc6ff",
+                        "inverse-surface": "#dae2fd",
+                        "background": "#0b1326",
+                        "surface-variant": "#2d3449",
+                        "outline-variant": "#494454",
+                        "on-secondary-fixed": "#001a42",
+                        "secondary-container": "#0566d9",
+                        "error": "#ffb4ab",
+                        "on-primary": "#3c0091",
+                        "outline": "#958ea0",
+                        "secondary-fixed": "#d8e2ff",
+                        "tertiary-fixed": "#74f5ff",
+                        "primary-container": "#a078ff",
+                        "on-background": "#dae2fd",
+                        "surface-container-low": "#131b2e",
+                        "on-tertiary-fixed": "#002022",
+                        "on-surface-variant": "#cbc3d7",
+                        "inverse-primary": "#6d3bd7",
+                        "on-secondary-container": "#e6ecff",
+                        "surface-container": "#171f33",
+                        "surface-container-lowest": "#060e20",
+                        "error-container": "#93000a",
+                        "surface-bright": "#31394d",
+                        "primary": "#d0bcff",
+                        "on-error": "#690005",
+                        "on-primary-fixed": "#23005c",
+                        "on-primary-container": "#340080",
+                        "on-primary-fixed-variant": "#5516be",
+                        "primary-fixed": "#e9ddff",
+                        "on-tertiary-fixed-variant": "#004f54",
+                        "on-error-container": "#ffdad6",
+                        "secondary": "#adc6ff",
+                        "on-tertiary-container": "#002f32",
+                        "on-secondary": "#002e6a",
+                        "surface-dim": "#0b1326",
+                        "tertiary-container": "#00a0a9",
+                        "surface-container-highest": "#2d3449",
+                        "surface": "#0b1326"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "lg": "48px",
+                        "md": "24px",
+                        "xs": "8px",
+                        "margin-desktop": "64px",
+                        "margin-mobile": "16px",
+                        "gutter": "24px",
+                        "sm": "16px",
+                        "base": "4px",
+                        "xl": "80px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["Geist"],
+                        "label-md": ["Geist"],
+                        "display-sm": ["Geist"],
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Geist"],
+                        "body-lg": ["Inter"],
+                        "display-lg": ["Geist"],
+                        "headline-lg-mobile": ["Geist"]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="flex flex-col h-screen overflow-hidden">
+<!-- Top Navigation Bar -->
+<header class="flex justify-between items-center w-full px-margin-desktop h-16 bg-surface/80 backdrop-blur-xl text-on-surface border-b border-white/10 shadow-sm z-50 fixed top-0">
+<div class="flex items-center gap-lg">
+<span class="font-headline-lg text-headline-lg font-bold tracking-tighter text-primary">Lumina AI</span>
+<nav class="hidden md:flex items-center gap-md">
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors" href="#">Projects</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors" href="#">Assets</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors" href="#">Templates</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors" href="#">Analytics</a>
+</nav>
+</div>
+<div class="flex items-center gap-sm">
+<button class="material-symbols-outlined p-2 hover:bg-white/5 rounded-lg transition-all">notifications</button>
+<button class="material-symbols-outlined p-2 hover:bg-white/5 rounded-lg transition-all">settings</button>
+<button class="bg-primary text-on-primary font-label-md text-label-md px-4 py-2 rounded-lg scale-95 active:scale-90 transition-transform">Export</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-white/10">
+<img alt="Creative Director Profile" class="w-full h-full object-cover" data-alt="A professional close-up portrait of a Creative Director in a high-end office environment. The person has a focused and confident expression, illuminated by soft cinematic studio lighting. The background features blurred digital displays with architectural design software. The overall aesthetic is clean, modern, and elite, reflecting a persona of technical expertise and creative leadership." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAerCgipra1XOWGpoNCnyIozToUBU6ES7KZ7ulPL6iTtLHLvSkjfoIGeTwxfq58G2HeEWrGkjggaRV59Zc8STHJV_qLWPe8rbwiI-qYsZa7NY_JdA6VXrizCmJa60FH35v5H2ZqVhJY1v_B1lTBmdcMPxNFwDlTYy-ErQi92QIAobYFLOkjIh7CfcWL7Aj48vOdiublULDq1HnMXYMv9h_CQhqytDAm-AlmOiVFqEW9Tf95iMr4LORHp7PxQRFeMbKinN6mfOogfflb"/>
+</div>
+</div>
+</header>
+<div class="flex flex-1 pt-16 h-full">
+<!-- Side Navigation Bar -->
+<aside class="flex flex-col h-full py-md border-r border-white/5 bg-surface-container-low/50 backdrop-blur-2xl w-20 lg:w-64 z-40 transition-all duration-300">
+<div class="px-4 mb-lg flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-primary-container/20 flex items-center justify-center border border-primary/20">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+</div>
+<div class="hidden lg:block overflow-hidden">
+<h2 class="font-label-md text-label-md text-on-surface font-bold truncate">Banner Studio</h2>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-widest truncate">Vibrant Summer Campaign</p>
+</div>
+</div>
+<nav class="flex-1 space-y-2 px-2">
+<button class="flex items-center gap-4 w-full p-3 rounded-xl bg-primary-container/20 text-primary border-r-4 border-primary transition-all">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<span class="font-label-sm text-label-sm hidden lg:block">Magic AI</span>
+</button>
+<button class="flex items-center gap-4 w-full p-3 rounded-xl text-on-surface-variant hover:bg-white/5 transition-all">
+<span class="material-symbols-outlined">layers</span>
+<span class="font-label-sm text-label-sm hidden lg:block">Layers</span>
+</button>
+<button class="flex items-center gap-4 w-full p-3 rounded-xl text-on-surface-variant hover:bg-white/5 transition-all">
+<span class="material-symbols-outlined">folder_open</span>
+<span class="font-label-sm text-label-sm hidden lg:block">Assets</span>
+</button>
+<button class="flex items-center gap-4 w-full p-3 rounded-xl text-on-surface-variant hover:bg-white/5 transition-all">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label-sm text-label-sm hidden lg:block">History</span>
+</button>
+<button class="flex items-center gap-4 w-full p-3 rounded-xl text-on-surface-variant hover:bg-white/5 transition-all">
+<span class="material-symbols-outlined">insights</span>
+<span class="font-label-sm text-label-sm hidden lg:block">Heatmaps</span>
+</button>
+</nav>
+<div class="mt-auto px-4 py-md space-y-4">
+<button class="hidden lg:flex w-full ai-gradient text-on-primary font-label-md text-label-md p-3 rounded-xl items-center justify-center gap-2 shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-[18px]">bolt</span>
+                    Generate Creative
+                </button>
+<div class="border-t border-white/10 pt-4 space-y-2">
+<button class="flex items-center gap-4 w-full p-2 text-on-surface-variant hover:text-on-surface">
+<span class="material-symbols-outlined text-[20px]">help</span>
+<span class="font-label-sm text-label-sm hidden lg:block">Support</span>
+</button>
+<button class="flex items-center gap-4 w-full p-2 text-on-surface-variant hover:text-on-surface">
+<span class="material-symbols-outlined text-[20px]">auto_graph</span>
+<span class="font-label-sm text-label-sm hidden lg:block">Upgrade</span>
+</button>
+</div>
+</div>
+</aside>
+<!-- Main Workspace -->
+<main class="flex-1 relative flex items-center justify-center canvas-grid overflow-hidden">
+<!-- Floating Toolbar -->
+<div class="absolute top-8 left-1/2 -translate-x-1/2 glass px-6 py-3 rounded-full flex items-center gap-6 shadow-2xl z-30">
+<div class="flex items-center gap-4 border-r border-white/10 pr-6">
+<button class="flex flex-col items-center gap-1 text-on-surface-variant hover:text-primary transition-colors group">
+<span class="material-symbols-outlined text-[20px]">text_fields</span>
+<span class="text-[10px] font-label-sm uppercase tracking-tighter">Text</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant hover:text-primary transition-colors group">
+<span class="material-symbols-outlined text-[20px]">category</span>
+<span class="text-[10px] font-label-sm uppercase tracking-tighter">Shapes</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant hover:text-primary transition-colors group">
+<span class="material-symbols-outlined text-[20px]">image</span>
+<span class="text-[10px] font-label-sm uppercase tracking-tighter">Media</span>
+</button>
+</div>
+<div class="flex items-center gap-4">
+<button class="flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full border border-primary/30 hover:bg-primary/20 transition-all">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">auto_fix_high</span>
+<span class="font-label-md text-label-md">AI Gen</span>
+</button>
+</div>
+</div>
+<!-- Canvas Area -->
+<div class="relative group cursor-crosshair">
+<!-- Smart Guides -->
+<div class="absolute -top-12 left-1/2 w-px h-12 bg-primary/40"></div>
+<div class="absolute -bottom-12 left-1/2 w-px h-12 bg-primary/40"></div>
+<div class="absolute top-1/2 -left-12 h-px w-12 bg-primary/40"></div>
+<div class="absolute top-1/2 -right-12 h-px w-12 bg-primary/40"></div>
+<!-- Main Banner Canvas (1080x1350 scaled) -->
+<div class="w-[432px] h-[540px] bg-[#050505] shadow-[0_0_100px_rgba(0,0,0,0.8)] border border-white/10 relative overflow-hidden">
+<img alt="Luxury Watch Banner Base" class="w-full h-full object-cover opacity-60" data-alt="A high-end luxury mechanical watch showcased on a deep obsidian marble surface with dramatic rim lighting. The watch features intricate golden gears and a black leather strap. The background is a soft, dark gradient of midnight blue and deep violet, creating an atmosphere of technical sophistication and elite craftsmanship. The lighting is precise, highlighting the metallic textures and polished surfaces of the timepiece." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDqtTdE3Hy_2kopVahaDTpj-S82j5eELtTf5yrrCL6RpKexQ22rD_DSUd7-hBGxNd0ExMYJStmCuNYcwsTR_K4dcVvvWUPHLO92Zh_GxlRo3Vq0YYqSTk0s-5LurHCHVKBULBGPGU2YPMB_N9-gBHyw8cVHjSaSZXMHwOMWzHi2E1AyN9nTdDCsbdRtnIwiylfN2LUgf2vriVqUxPCkwItfIAAPrzw_36tHq2ys-99h2YIibiOWIhMjBMo6_P_vb16ByH91g3aC7eBA"/>
+<!-- Ad Elements Mock -->
+<div class="absolute top-12 left-8 right-8">
+<h1 class="font-display-sm text-display-sm text-white leading-tight uppercase tracking-widest font-bold">Chronos <br/><span class="text-primary">Elysium</span></h1>
+<p class="font-body-md text-body-md text-white/60 mt-4 max-w-[250px]">Redefining the architecture of time through AI-precision engineering.</p>
+</div>
+<div class="absolute bottom-12 left-1/2 -translate-x-1/2 w-full px-8 flex justify-between items-end">
+<div class="border-l border-primary/50 pl-4">
+<span class="block text-[10px] text-primary uppercase font-bold tracking-widest">Available</span>
+<span class="font-label-md text-label-md text-white">Autumn 2024</span>
+</div>
+<button class="bg-white text-black px-8 py-3 font-label-md text-label-md font-bold uppercase tracking-widest">Order Now</button>
+</div>
+<!-- Heatmap Simulation Overlay -->
+<div class="absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-700" id="heatmap">
+<div class="absolute top-14 left-10 w-24 h-24 bg-red-500/30 blur-[40px] rounded-full"></div>
+<div class="absolute bottom-14 right-14 w-32 h-20 bg-yellow-500/20 blur-[50px] rounded-full"></div>
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 w-48 h-48 bg-orange-500/25 blur-[60px] rounded-full"></div>
+</div>
+</div>
+<!-- Snap Indicators -->
+<div class="absolute -top-6 left-0 text-[10px] font-label-sm text-on-surface-variant">1080 x 1350 px</div>
+<div class="absolute -right-6 top-1/2 translate-x-full text-[10px] font-label-sm text-primary flex items-center gap-2">
+<span class="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
+                    Aligned Center
+                </div>
+</div>
+<!-- Bottom Controls -->
+<div class="absolute bottom-8 left-margin-desktop right-margin-desktop flex items-center justify-between pointer-events-none">
+<div class="pointer-events-auto glass px-4 py-2 rounded-xl flex items-center gap-6">
+<div class="flex items-center gap-2 text-on-surface-variant font-label-sm">
+<button class="material-symbols-outlined text-[18px] hover:text-white">remove</button>
+<span class="w-10 text-center font-label-md">85%</span>
+<button class="material-symbols-outlined text-[18px] hover:text-white">add</button>
+</div>
+<div class="h-4 w-px bg-white/10"></div>
+<div class="flex items-center gap-4 text-on-surface-variant">
+<button class="material-symbols-outlined text-[20px] hover:text-primary transition-colors">grid_view</button>
+<button class="material-symbols-outlined text-[20px] hover:text-primary transition-colors">view_quilt</button>
+</div>
+</div>
+<div class="pointer-events-auto glass px-6 py-3 rounded-xl flex items-center gap-4 w-[400px]">
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]">history</span>
+<input class="flex-1 accent-primary h-1 bg-white/10 rounded-full appearance-none cursor-pointer" type="range"/>
+<span class="font-label-sm text-on-surface-variant text-[10px] uppercase">Iteration 42</span>
+</div>
+</div>
+</main>
+<!-- Right Panel: AI Ad Intelligence -->
+<aside class="w-80 h-full border-l border-white/5 bg-surface-container-low/50 backdrop-blur-2xl flex flex-col p-6 gap-lg z-40 overflow-y-auto no-scrollbar">
+<div class="space-y-sm">
+<div class="flex items-center justify-between">
+<h3 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest">Intelligence</h3>
+<span class="text-[10px] text-primary flex items-center gap-1 bg-primary/10 px-2 py-0.5 rounded-full">
+<span class="w-1 h-1 bg-primary rounded-full"></span> Live
+                    </span>
+</div>
+<!-- CTR Score Card -->
+<div class="glass-dark p-6 rounded-3xl border-l-4 border-primary relative overflow-hidden">
+<div class="shimmer absolute inset-0 opacity-50"></div>
+<div class="relative z-10">
+<p class="text-[10px] font-label-sm text-on-surface-variant uppercase">Predictive CTR</p>
+<div class="flex items-baseline gap-2 mt-2">
+<span class="text-4xl font-headline-lg text-primary">94.8<span class="text-xl">%</span></span>
+</div>
+<p class="text-[11px] font-body-md text-tertiary mt-2">High Probability of Engagement</p>
+</div>
+</div>
+</div>
+<!-- Heatmap Toggle -->
+<div class="space-y-md">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface">Attention Heatmap</span>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" onchange="document.getElementById('heatmap').classList.toggle('opacity-100')" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-variant rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<p class="text-[12px] text-on-surface-variant font-body-md leading-relaxed">AI analysis suggests visual weight is perfectly balanced between branding and CTA.</p>
+</div>
+<!-- Layout Suggestions -->
+<div class="space-y-md">
+<h4 class="font-label-sm text-label-sm text-on-surface uppercase tracking-widest">AI Variations</h4>
+<div class="grid grid-cols-2 gap-4">
+<div class="group relative aspect-[3/4] rounded-xl overflow-hidden border border-white/5 cursor-pointer">
+<img alt="AI Variation 1" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" data-alt="A vertical ad banner variation for a luxury watch. This layout emphasizes a minimalist typography style with the watch centered. The background is a soft, ethereal gray-blue glow. The mood is calm and prestigious, focusing on the refined elegance of the timepiece's face. High-end product photography style with focus on clean lines." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAG55DLkXN86OUS4PA-n1-i0QuYE6iHuKTvbP1kj_KYKwWmIWp2_DBoOU_NnrcuJj3GOHsKfEHwXii1mhc2kbywsVkw1TTKdU3wfiQsnajjRXQEGqGiHOwPfF8w7ggYE9V35s8fk7P_ySf1oAAs2N4fu61sxGzDF3toM49CtaSzPZsnMo1THRp9TDkW2CbFDMEZ9F_bekoA3-pUiTzavMV52ZNPj1t2sjhhpYj78pIWPIy9-zPjQNtnBx3LSsoA2tLr6kCx63JwTC-i"/>
+<div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+<span class="bg-white text-black px-3 py-1 rounded-full text-[10px] font-bold">APPLY</span>
+</div>
+</div>
+<div class="group relative aspect-[3/4] rounded-xl overflow-hidden border border-white/5 cursor-pointer">
+<img alt="AI Variation 2" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" data-alt="A vertical ad banner variation for a luxury watch featuring an asymmetrical layout. The watch is positioned in the lower right corner, while the headline is large and bold in the top left. The color scheme is a warm metallic copper and deep chocolate brown. Lighting is dynamic and shadowy, suggesting a night-time premium lifestyle aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBFlJwif9PBJSlRn1rZqgS75Vh9v15GyOz0Fsp3d1R9XDPRvZ093CGJUyjNYwWb29z3-Aq9YEVJ4jA47_IiAjFE8ljVtO0k82U-lL3yI-k9pSKfrGCOppDpvs28ZI89PhkqyzY0fX7E8xCt8BHg-BEGs51PaiQqxB4dTz48xPl82YDMxgeuLpcUMdJELLErQxJqMHy2fPF6BqrnW8ngHzJIZOC_OCbrfvpS-PNG7eZecHYHAujrDWX891ceKv3z0F0xpldHDDIXJWAI"/>
+<div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+<span class="bg-white text-black px-3 py-1 rounded-full text-[10px] font-bold">APPLY</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Optimization Check -->
+<div class="mt-auto pt-6 border-t border-white/10 space-y-4">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-tertiary text-[20px]">check_circle</span>
+<div>
+<p class="text-[12px] font-label-md text-on-surface">WCAG Compliant</p>
+<p class="text-[10px] text-on-surface-variant font-body-md">Text contrast ratio 7.2:1</p>
+</div>
+</div>
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary text-[20px]">psychology</span>
+<div>
+<p class="text-[12px] font-label-md text-on-surface">Psychological Hook</p>
+<p class="text-[10px] text-on-surface-variant font-body-md">Scarcity trigger identified in CTA</p>
+</div>
+</div>
+</div>
+</aside>
+</div>
+<!-- Micro-interaction Scripts -->
+<script>
+        // Interactive tool hovering effect
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('mousedown', () => {
+                btn.style.transform = 'scale(0.95)';
+            });
+            btn.addEventListener('mouseup', () => {
+                btn.style.transform = '';
+            });
+        });
+
+        // Simulating smart alignment guides appearance
+        const canvas = document.querySelector('.group');
+        canvas.addEventListener('mouseenter', () => {
+            // Logic for snapping indicators could go here
+        });
+    </script>
+</body></html>
