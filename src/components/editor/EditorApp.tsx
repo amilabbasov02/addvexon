@@ -40,8 +40,13 @@ function EditorAppInner({ pro = false }: EditorAppProps) {
   // Show a clean loading overlay while a ?template= is being fetched so the
   // brief gap between mount and loadDocument() doesn't render an empty
   // canvas (which feels like the wrong banner opened).
+  // "Loading template…" overlay shows only when we genuinely need to fetch
+  // a template doc. When ?doc= is also present, useDocumentSync hydrates
+  // the saved layers and we must NOT block on a template fetch — that path
+  // was leaving the overlay stuck on every refresh of a saved-from-template
+  // doc (URL ends up containing both params).
   const [templateLoading, setTemplateLoading] = useState(
-    !!search.get("template"),
+    !!search.get("template") && !search.get("doc"),
   );
   const initialResolved = useRef(false);
   const { data: session } = useSession();
@@ -75,6 +80,10 @@ function EditorAppInner({ pro = false }: EditorAppProps) {
     if (initialResolved.current) return;
     if (search.get("doc")) {
       initialResolved.current = true;
+      // Belt-and-suspenders: if both ?doc= and ?template= are in the URL
+      // (common after first save on a template-derived doc), make sure the
+      // template overlay isn't sticky.
+      setTemplateLoading(false);
       return;
     }
     initialResolved.current = true;
