@@ -15,6 +15,50 @@ import { BannerSocial } from "./BannerSocial";
 
 export const dynamic = "force-dynamic";
 
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? "https://addvoxen.com";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const rows = await db
+    .select({
+      name: templates.name,
+      tagline: templates.tagline,
+      thumbnailUrl: templates.thumbnailUrl,
+    })
+    .from(templates)
+    .where(eq(templates.slug, slug))
+    .limit(1);
+  const t = rows[0];
+  if (!t) return { title: "Banner not found" };
+  const desc = t.tagline ?? `${t.name} — banner template ready to remix in Addvoxen.`;
+  const og = t.thumbnailUrl
+    ? `${SITE_URL}${t.thumbnailUrl}`
+    : `${SITE_URL}/og-cover.png`;
+  return {
+    title: t.name,
+    description: desc,
+    alternates: { canonical: `${SITE_URL}/banner/${slug}` },
+    openGraph: {
+      title: t.name,
+      description: desc,
+      type: "article",
+      url: `${SITE_URL}/banner/${slug}`,
+      images: [{ url: og, width: 1200, height: 630, alt: t.name }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: t.name,
+      description: desc,
+      images: [og],
+    },
+  };
+}
+
 async function loadTemplate(slug: string, viewerId?: string) {
   const rows = await db
     .select({

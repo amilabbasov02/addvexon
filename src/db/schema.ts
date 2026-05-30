@@ -557,6 +557,35 @@ export const usageMetrics = pgTable(
 );
 
 // ============================================================
+//  Site analytics — page views (visitor counts)
+// ============================================================
+
+export const pageViews = pgTable(
+  "page_views",
+  {
+    id: text("id").primaryKey(),
+    path: text("path").notNull(),
+    /** Random UUID stored client-side in localStorage — anonymous device
+     *  fingerprint so we can compute "unique visitors" without tracking
+     *  IP / browser fingerprints. */
+    visitorId: text("visitor_id").notNull(),
+    userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
+    country: text("country"),
+    referrer: text("referrer"),
+    userAgent: text("user_agent"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => ({
+    pathIdx: index("page_views_path_idx").on(t.path),
+    visitorIdx: index("page_views_visitor_idx").on(t.visitorId),
+    createdIdx: index("page_views_created_idx").on(t.createdAt),
+    userIdx: index("page_views_user_idx").on(t.userId),
+  }),
+);
+
+// ============================================================
 //  Payments — upgrade intents (manual + future gateway)
 // ============================================================
 

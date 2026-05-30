@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useLocale } from "@/components/site/LocaleContext";
 import { PayPalButton } from "./PayPalButton";
+import { PaymentNotice } from "@/components/site/PaymentNotice";
 
 const PAYPAL_ENABLED = !!process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
 
@@ -89,6 +90,8 @@ export function CheckoutClient({
           <span className="material-symbols-outlined text-[18px]">arrow_back</span>
           Back to plans
         </Link>
+
+        <PaymentNotice />
 
         <header className="mb-8">
           <p className="text-label-sm font-label-sm uppercase tracking-wider text-tertiary-fixed-dim mb-2">

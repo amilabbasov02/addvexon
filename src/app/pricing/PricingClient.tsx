@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { WaitlistDialog } from "@/components/WaitlistDialog";
+import { PaymentNotice } from "@/components/site/PaymentNotice";
 
 type Cycle = "monthly" | "yearly";
 
@@ -86,6 +87,7 @@ export function PricingClient({
   return (
     <main className="pt-24 pb-16 px-4 sm:px-8 lg:px-16 xl:px-24">
       <div className="w-full max-w-7xl mx-auto">
+        <PaymentNotice />
         <div className="text-center mb-12">
           <p className="text-label-sm font-label-sm uppercase tracking-wider text-tertiary-fixed-dim mb-3">
             Early access — limited spots
