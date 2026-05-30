@@ -54,6 +54,14 @@ export function useDocumentSync(
   const skipNextSave = useRef(false);
   const lastSavedAt = useRef(0);
 
+  // useEditorStore returns a brand-new object every render, so any closure
+  // that captures `store` directly will read whatever `doc` was current at
+  // the moment the closure was memoized — almost always stale. We mirror
+  // the store through a ref that's updated on each render so saveToCloud /
+  // the dirty-detection effect always read the CURRENT document.
+  const storeRef = useRef(store);
+  storeRef.current = store;
+
   // --- Initial hydration: load existing document by ID, if any. -----------
   useEffect(() => {
     if (!enabled || !signedIn || !docIdFromUrl) {
@@ -120,6 +128,7 @@ export function useDocumentSync(
   //     explicit action.
   const saveToCloud = useCallback(async (): Promise<string | null> => {
     if (!enabled || !signedIn) return null;
+    const liveDoc = storeRef.current.doc;
     try {
       setStatus("saving");
       let resultId = docId;
@@ -129,9 +138,9 @@ export function useDocumentSync(
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             title,
-            canvasSize: store.doc.canvasSize,
-            background: store.doc.background,
-            layers: store.doc.layers,
+            canvasSize: liveDoc.canvasSize,
+            background: liveDoc.background,
+            layers: liveDoc.layers,
           }),
         });
         if (!resp.ok) throw new Error(`Create failed: ${resp.status}`);
@@ -147,14 +156,14 @@ export function useDocumentSync(
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             title,
-            canvasSize: store.doc.canvasSize,
-            background: store.doc.background,
-            layers: store.doc.layers,
+            canvasSize: liveDoc.canvasSize,
+            background: liveDoc.background,
+            layers: liveDoc.layers,
           }),
         });
         if (!resp.ok) throw new Error(`Save failed: ${resp.status}`);
       }
-      cloudSnapshotRef.current = JSON.stringify(store.doc);
+      cloudSnapshotRef.current = JSON.stringify(liveDoc);
       setDirty(false);
       lastSavedAt.current = Date.now();
       setStatus("saved");
@@ -164,9 +173,6 @@ export function useDocumentSync(
       setStatus("error");
       return null;
     }
-    // store.doc is read at call time; intentionally not a dep so the callback
-    // identity stays stable across edits.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, signedIn, docId, title, router]);
 
   // Warn before tab close / navigation when there are unsaved changes — only
