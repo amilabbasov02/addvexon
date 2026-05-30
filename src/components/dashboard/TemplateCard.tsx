@@ -8,6 +8,7 @@ import {
   trackBannerEvent,
   useBannerView,
 } from "@/components/analytics/useBannerEvent";
+import { useLocale } from "@/components/site/LocaleContext";
 
 type Tmpl = {
   id: string;
@@ -52,13 +53,16 @@ export function TemplateCard({
   signedIn?: boolean;
 }) {
   const router = useRouter();
+  const { t } = useLocale();
   const isPro = template.tier === "pro";
   const paid = (template.priceCents ?? 0) > 0;
   const priceLabel = paid
     ? formatPrice(template.priceCents ?? 0, template.currency ?? "USD")
-    : "Free";
+    : t("card.tier.free");
   const isCommunity = template.source === "community";
-  const sourceLabel = isCommunity ? "Community" : "Official";
+  const sourceLabel = isCommunity
+    ? t("card.source.community")
+    : t("card.source.official");
   const [buying, setBuying] = useState(false);
   const [bought, setBought] = useState(false);
 
@@ -134,7 +138,11 @@ export function TemplateCard({
               ? "bg-tertiary text-on-tertiary"
               : "bg-primary text-on-primary")
           }
-          title={isCommunity ? "Uploaded by a community creator" : "Curated by the Addvoxen team"}
+          title={
+            isCommunity
+              ? t("card.source.community.title")
+              : t("card.source.official.title")
+          }
         >
           <span className="material-symbols-outlined text-[12px]">
             {isCommunity ? "groups" : "verified"}
@@ -148,7 +156,7 @@ export function TemplateCard({
           </span>
         ) : isPro ? (
           <span className="absolute top-2 right-2 ai-gradient text-on-primary text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">
-            Pro
+            {t("card.tier.pro")}
           </span>
         ) : null}
       </Link>
@@ -168,7 +176,7 @@ export function TemplateCard({
                 <span className="material-symbols-outlined text-[12px] text-tertiary">
                   person
                 </span>
-                by {template.creatorName}
+                {t("card.by").replace("{name}", template.creatorName)}
               </p>
             )}
           </div>
@@ -181,10 +189,10 @@ export function TemplateCard({
             className="w-full ai-gradient text-on-primary px-4 py-2 rounded-full text-label-sm font-label-sm disabled:opacity-60 transition-all"
           >
             {bought
-              ? "Owned ✓"
+              ? t("card.owned")
               : buying
-                ? "Processing…"
-                : `Buy for ${priceLabel}`}
+                ? t("ui.processing")
+                : t("card.buy_for").replace("{price}", priceLabel ?? "")}
           </button>
         ) : (
           <Link
@@ -192,7 +200,7 @@ export function TemplateCard({
             onClick={() => trackBannerEvent(template.slug, "cta")}
             className="w-full text-center bg-surface-container-high/60 hover:bg-primary hover:text-on-primary text-on-surface px-4 py-2 rounded-full text-label-sm font-label-sm transition-all"
           >
-            Use template
+            {t("card.use")}
           </Link>
         )}
       </div>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useLocale } from "@/components/site/LocaleContext";
 
 type Campaign = {
   id: string;
@@ -57,6 +58,7 @@ function fmtCompact(n: number) {
 }
 
 export function CampaignsClient({ campaigns }: { campaigns: Campaign[] }) {
+  const { t } = useLocale();
   const [filter, setFilter] = useState<string>("all");
 
   if (campaigns.length === 0) {
@@ -68,19 +70,16 @@ export function CampaignsClient({ campaigns }: { campaigns: Campaign[] }) {
           </span>
         </div>
         <h3 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-2">
-          No campaigns yet
+          {t("campaigns.empty_dash.title")}
         </h3>
         <p className="text-on-surface-variant text-body-md font-body-md mb-6 max-w-md mx-auto">
-          Pick a design from your dashboard, hit{" "}
-          <strong className="text-on-surface">Launch as Ad</strong>, and
-          Addvoxen will publish it across Meta, Google, TikTok and more on
-          your behalf.
+          {t("campaigns.empty_dash.body")}
         </p>
         <Link
           href="/dashboard"
           className="ai-gradient text-on-primary px-6 py-3 rounded-full text-label-md font-label-md inline-flex items-center gap-2"
         >
-          Go to my designs
+          {t("campaigns.empty_dash.cta")}
         </Link>
       </div>
     );
@@ -108,20 +107,20 @@ export function CampaignsClient({ campaigns }: { campaigns: Campaign[] }) {
     <div className="space-y-6">
       {/* Summary tiles */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-        <SummaryTile label="Live campaigns" value={summary.live.toString()} icon="campaign" />
+        <SummaryTile label={t("campaigns.summary.live")} value={summary.live.toString()} icon="campaign" />
         <SummaryTile
-          label="Impressions"
+          label={t("campaigns.summary.impressions")}
           value={fmtCompact(summary.impressions)}
           icon="visibility"
         />
-        <SummaryTile label="Clicks" value={fmtCompact(summary.clicks)} icon="ads_click" />
+        <SummaryTile label={t("campaigns.summary.clicks")} value={fmtCompact(summary.clicks)} icon="ads_click" />
         <SummaryTile
-          label="Conversions"
+          label={t("campaigns.summary.conversions")}
           value={fmtCompact(summary.conversions)}
           icon="check_circle"
         />
         <SummaryTile
-          label="Spend"
+          label={t("campaigns.summary.spend")}
           value={fmtMoney(summary.spendCents)}
           icon="payments"
           sub={`CTR ${overallCtr}%`}
@@ -130,19 +129,19 @@ export function CampaignsClient({ campaigns }: { campaigns: Campaign[] }) {
 
       {/* Status filter pills */}
       <div className="flex flex-wrap gap-2">
-        {["all", "pending", "live", "paused", "completed"].map((s) => (
+        {(["all", "pending", "live", "paused", "completed"] as const).map((s) => (
           <button
             key={s}
             type="button"
             onClick={() => setFilter(s)}
             className={
-              "px-4 py-1.5 rounded-full text-label-sm font-label-sm capitalize transition-colors " +
+              "px-4 py-1.5 rounded-full text-label-sm font-label-sm transition-colors " +
               (filter === s
                 ? "bg-primary text-on-primary"
                 : "glass-panel text-on-surface-variant hover:text-on-surface")
             }
           >
-            {s}
+            {t(`campaigns.filter.${s}`)}
             <span className="ml-1.5 text-[10px] font-bold opacity-70">
               {s === "all"
                 ? campaigns.length
@@ -158,14 +157,14 @@ export function CampaignsClient({ campaigns }: { campaigns: Campaign[] }) {
           <table className="w-full text-label-sm font-label-sm">
             <thead className="bg-surface-container-high/40 text-on-surface-variant text-[10px] uppercase tracking-wider">
               <tr>
-                <th className="text-left py-3 px-4">Campaign</th>
-                <th className="text-left py-3 px-4">Platform</th>
-                <th className="text-left py-3 px-4">Status</th>
-                <th className="text-right py-3 px-4">Impressions</th>
-                <th className="text-right py-3 px-4">Clicks</th>
-                <th className="text-right py-3 px-4">CTR</th>
-                <th className="text-right py-3 px-4">Spend</th>
-                <th className="text-right py-3 px-4">Budget / day</th>
+                <th className="text-left py-3 px-4">{t("campaigns.table.campaign")}</th>
+                <th className="text-left py-3 px-4">{t("campaigns.table.platform")}</th>
+                <th className="text-left py-3 px-4">{t("campaigns.table.status")}</th>
+                <th className="text-right py-3 px-4">{t("campaigns.table.impressions")}</th>
+                <th className="text-right py-3 px-4">{t("campaigns.table.clicks")}</th>
+                <th className="text-right py-3 px-4">{t("campaigns.table.ctr")}</th>
+                <th className="text-right py-3 px-4">{t("campaigns.table.spend")}</th>
+                <th className="text-right py-3 px-4">{t("campaigns.table.budget")}</th>
               </tr>
             </thead>
             <tbody>
@@ -208,7 +207,9 @@ export function CampaignsClient({ campaigns }: { campaigns: Campaign[] }) {
                           (STATUS_STYLE[c.status] ?? "bg-white/10 text-on-surface")
                         }
                       >
-                        {c.status}
+                        {["pending", "live", "paused", "completed"].includes(c.status)
+                          ? t(`campaigns.filter.${c.status}`)
+                          : c.status}
                       </span>
                     </td>
                     <td className="py-3 px-4 text-right text-on-surface">
@@ -234,15 +235,13 @@ export function CampaignsClient({ campaigns }: { campaigns: Campaign[] }) {
         </div>
         {filtered.length === 0 && (
           <p className="text-center text-on-surface-variant text-body-md py-12">
-            No campaigns match this filter.
+            {t("campaigns.table.empty")}
           </p>
         )}
       </div>
 
       <p className="text-on-surface-variant text-xs text-center">
-        Stats update every few hours via our managed Meta / Google / TikTok
-        Business Manager. New campaigns enter "Pending" until the Addvoxen
-        team approves and publishes them.
+        {t("campaigns.footer_note")}
       </p>
     </div>
   );

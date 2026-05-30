@@ -12,6 +12,15 @@ import {
 } from "@/db/schema";
 import { getSession } from "@/lib/session";
 import { TemplateCard } from "@/components/dashboard/TemplateCard";
+import {
+  ProfileRoleBadge,
+  ProfileJoined,
+  ProfileStatLabel,
+  ProfileSectionHeading,
+  ProfileEmpty,
+  ProfileEditCta,
+  ProfileEditOverlay,
+} from "./ProfileLabels";
 
 export const dynamic = "force-dynamic";
 
@@ -152,9 +161,7 @@ export default async function UserProfilePage({
             )}
             <div className="min-w-0">
               <p className="text-label-sm font-label-sm uppercase tracking-wider text-tertiary-fixed-dim mb-1">
-                {profile.plan === "pro" || profile.plan === "team"
-                  ? `${profile.plan.toUpperCase()} member`
-                  : "Designer"}
+                <ProfileRoleBadge plan={profile.plan ?? null} />
               </p>
               <h1 className="font-display-sm text-display-sm font-bold text-on-surface truncate">
                 {displayName}
@@ -170,7 +177,9 @@ export default async function UserProfilePage({
                 </p>
               )}
               <div className="flex items-center gap-3 mt-3 text-label-sm font-label-sm text-on-surface-variant">
-                <span>Joined {joined.toLocaleDateString()}</span>
+                <span>
+                  <ProfileJoined date={joined.toLocaleDateString()} />
+                </span>
                 {profile.website && (
                   <a
                     href={profile.website.startsWith("http") ? profile.website : `https://${profile.website}`}
@@ -201,24 +210,26 @@ export default async function UserProfilePage({
               className="glass-panel px-5 py-3 rounded-full text-label-md font-label-md text-on-surface-variant hover:text-on-surface transition-colors flex items-center gap-2 self-start"
             >
               <span className="material-symbols-outlined text-[18px]">edit</span>
-              Edit profile
+              <ProfileEditCta />
             </Link>
           )}
         </header>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
-          {[
-            { label: "Templates", value: stats.templates },
-            { label: "Likes", value: stats.likes },
-            { label: "Comments", value: stats.comments },
-            { label: "Sales", value: stats.sales },
-          ].map((s) => (
-            <div key={s.label} className="glass-panel rounded-xl p-4">
+          {(
+            [
+              { kind: "templates" as const, value: stats.templates },
+              { kind: "likes" as const, value: stats.likes },
+              { kind: "comments" as const, value: stats.comments },
+              { kind: "sales" as const, value: stats.sales },
+            ]
+          ).map((s) => (
+            <div key={s.kind} className="glass-panel rounded-xl p-4">
               <p className="text-on-surface text-headline-lg font-headline-lg">
                 {s.value}
               </p>
               <p className="text-on-surface-variant text-[10px] uppercase tracking-wider mt-1">
-                {s.label}
+                <ProfileStatLabel kind={s.kind} />
               </p>
             </div>
           ))}
@@ -226,14 +237,12 @@ export default async function UserProfilePage({
 
         <section>
           <h2 className="font-headline-lg text-headline-lg text-on-surface mb-5">
-            Templates by {displayName}
+            <ProfileSectionHeading name={displayName} />
           </h2>
           {myTemplates.length === 0 ? (
             <div className="glass-panel rounded-3xl p-12 text-center">
               <p className="text-on-surface-variant text-body-md font-body-md">
-                {isMe
-                  ? "Publish your first banner to see it here."
-                  : "No published templates yet."}
+                <ProfileEmpty isMe={isMe} />
               </p>
             </div>
           ) : (
@@ -272,7 +281,7 @@ export default async function UserProfilePage({
                       className="absolute top-2 right-2 z-10 glass-panel rounded-full px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-on-surface hover:bg-primary hover:text-on-primary transition-colors flex items-center gap-1"
                     >
                       <span className="material-symbols-outlined text-[14px]">edit</span>
-                      Edit
+                      <ProfileEditOverlay />
                     </Link>
                   )}
                 </div>

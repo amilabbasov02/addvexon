@@ -12,6 +12,13 @@ import {
 import { getSession } from "@/lib/session";
 import { DocumentThumbnail } from "@/components/dashboard/DocumentThumbnail";
 import { BannerSocial } from "./BannerSocial";
+import {
+  BannerBreadcrumb,
+  BannerCreatorLabel,
+  BannerCreatorRoleLabel,
+  BannerStatLabel,
+  BannerUseCta,
+} from "./BannerLabels";
 
 export const dynamic = "force-dynamic";
 
@@ -142,9 +149,9 @@ export default async function BannerDetailPage({
     layers: unknown[];
   };
   const isOfficial = !tpl.createdBy;
-  const creatorLabel = isOfficial
-    ? "Addvoxen Official"
-    : tpl.creatorName ?? "Community creator";
+  const creatorInitial = isOfficial
+    ? "A"
+    : (tpl.creatorName ?? "C").charAt(0);
   const creatorHref = isOfficial
     ? "/marketplace?source=official"
     : `/u/${tpl.creatorHandle ?? tpl.createdBy}`;
@@ -161,9 +168,7 @@ export default async function BannerDetailPage({
     <main className="pt-24 pb-16 px-4 sm:px-8 lg:px-16 xl:px-24">
       <div className="w-full max-w-7xl mx-auto">
         <nav className="mb-6 text-label-sm font-label-sm text-on-surface-variant flex items-center gap-2">
-          <Link href="/marketplace" className="hover:text-on-surface">
-            Marketplace
-          </Link>
+          <BannerBreadcrumb />
           <span>›</span>
           <span className="text-on-surface truncate">{tpl.name}</span>
         </nav>
@@ -218,15 +223,18 @@ export default async function BannerDetailPage({
                 />
               ) : (
                 <div className="w-10 h-10 rounded-full ai-gradient flex items-center justify-center text-on-primary font-label-md">
-                  {creatorLabel.charAt(0)}
+                  {creatorInitial}
                 </div>
               )}
               <div className="flex-1 min-w-0">
                 <p className="text-on-surface text-label-md font-label-md truncate">
-                  {creatorLabel}
+                  <BannerCreatorLabel
+                    isOfficial={isOfficial}
+                    creatorName={tpl.creatorName ?? null}
+                  />
                 </p>
                 <p className="text-on-surface-variant text-label-sm font-label-sm">
-                  {isOfficial ? "Curated template" : "View profile"}
+                  <BannerCreatorRoleLabel isOfficial={isOfficial} />
                 </p>
               </div>
               <span className="material-symbols-outlined text-on-surface-variant">
@@ -240,7 +248,7 @@ export default async function BannerDetailPage({
                   {likeCount}
                 </p>
                 <p className="text-on-surface-variant text-[10px] uppercase tracking-wider">
-                  Likes
+                  <BannerStatLabel kind="likes" />
                 </p>
               </div>
               <div className="glass-panel rounded-xl p-3">
@@ -248,7 +256,7 @@ export default async function BannerDetailPage({
                   {comments.length}
                 </p>
                 <p className="text-on-surface-variant text-[10px] uppercase tracking-wider">
-                  Comments
+                  <BannerStatLabel kind="comments" />
                 </p>
               </div>
               <div className="glass-panel rounded-xl p-3">
@@ -256,19 +264,13 @@ export default async function BannerDetailPage({
                   {tpl.salesCount ?? tpl.downloads ?? 0}
                 </p>
                 <p className="text-on-surface-variant text-[10px] uppercase tracking-wider">
-                  Uses
+                  <BannerStatLabel kind="uses" />
                 </p>
               </div>
             </div>
 
             <div className="flex flex-col gap-2">
-              <Link
-                href={`/editor?template=${tpl.slug}`}
-                className="ai-gradient text-on-primary px-6 py-3 rounded-full text-label-md font-label-md text-center hover:shadow-[0_0_20px_rgba(208,188,255,0.4)] active:scale-95 transition-all flex items-center justify-center gap-2"
-              >
-                <span className="material-symbols-outlined text-[18px]">edit</span>
-                Use template · {priceLabel}
-              </Link>
+              <BannerUseCta slug={tpl.slug} price={priceLabel} />
               <BannerSocial
                 slug={tpl.slug}
                 initialLiked={liked}

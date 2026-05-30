@@ -41,7 +41,7 @@ export function CheckoutClient({
   billing: Billing;
   userEmail: string;
 }) {
-  const { locale } = useLocale();
+  const { locale, t } = useLocale();
   const [intent, setIntent] = useState<IntentResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -88,22 +88,24 @@ export function CheckoutClient({
           className="text-on-surface-variant hover:text-on-surface text-label-sm font-label-sm flex items-center gap-1 mb-6"
         >
           <span className="material-symbols-outlined text-[18px]">arrow_back</span>
-          Back to plans
+          {t("checkout.back")}
         </Link>
 
         <PaymentNotice />
 
         <header className="mb-8">
           <p className="text-label-sm font-label-sm uppercase tracking-wider text-tertiary-fixed-dim mb-2">
-            Checkout
+            {t("checkout.eyebrow")}
           </p>
           <h1 className="font-display-sm text-display-sm font-bold text-on-surface">
-            Upgrade to {PLAN_LABEL[plan]}
+            {t("checkout.title").replace("{plan}", PLAN_LABEL[plan])}
           </h1>
           <p className="text-on-surface-variant text-body-md font-body-md mt-2">
-            Country: <span className="text-on-surface">{locale.flag} {locale.label}</span>
+            {t("checkout.country")}{" "}
+            <span className="text-on-surface">{locale.flag} {locale.label}</span>
             {" · "}
-            Currency: <span className="text-on-surface">{locale.currency}</span>
+            {t("checkout.currency")}{" "}
+            <span className="text-on-surface">{locale.currency}</span>
           </p>
         </header>
 
@@ -112,7 +114,7 @@ export function CheckoutClient({
             <span className="material-symbols-outlined animate-spin text-primary text-3xl">
               progress_activity
             </span>
-            <p className="mt-3 text-on-surface-variant">Preparing checkout…</p>
+            <p className="mt-3 text-on-surface-variant">{t("checkout.loading")}</p>
           </div>
         )}
 
@@ -131,7 +133,9 @@ export function CheckoutClient({
                     {PLAN_LABEL[intent.plan]} · {intent.billing}
                   </p>
                   <p className="text-on-surface-variant text-label-sm font-label-sm">
-                    Billed {intent.billing === "yearly" ? "once per year" : "monthly"}
+                    {intent.billing === "yearly"
+                      ? t("checkout.billed_yearly")
+                      : t("checkout.billed_monthly")}
                   </p>
                 </div>
                 <p className="text-on-surface font-display-sm text-display-sm">
@@ -160,13 +164,11 @@ export function CheckoutClient({
                     payments
                   </span>
                   <h2 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">
-                    Or pay with PayPal
+                    {t("checkout.paypal.title")}
                   </h2>
                 </div>
                 <p className="text-on-surface-variant text-body-md font-body-md mb-4">
-                  Pay {intent.priceLabel} from your PayPal balance, linked
-                  card or bank — funds settle to the Addvoxen Business
-                  account.
+                  {t("checkout.paypal.body").replace("{price}", intent.priceLabel)}
                 </p>
                 <PayPalButton
                   intentId={intent.id}
@@ -177,18 +179,28 @@ export function CheckoutClient({
             )}
 
             <p className="mt-6 text-on-surface-variant text-label-sm font-label-sm text-center">
-              Trouble paying? Email{" "}
-              <a
-                href="mailto:support@addvoxen.com"
-                className="text-primary hover:underline"
-              >
-                support@addvoxen.com
-              </a>{" "}
-              with your reference{" "}
-              <code className="bg-surface-container-high/60 px-1.5 py-0.5 rounded text-on-surface">
-                {intent.reference}
-              </code>
-              .
+              {(() => {
+                const tpl = t("checkout.support");
+                const idx = tpl.indexOf("{email}");
+                const before = idx === -1 ? tpl : tpl.slice(0, idx);
+                const after = idx === -1 ? "" : tpl.slice(idx + "{email}".length);
+                return (
+                  <>
+                    {before}
+                    <a
+                      href="mailto:support@addvoxen.com"
+                      className="text-primary hover:underline"
+                    >
+                      support@addvoxen.com
+                    </a>
+                    {after}
+                    {" · "}
+                    <code className="bg-surface-container-high/60 px-1.5 py-0.5 rounded text-on-surface">
+                      {intent.reference}
+                    </code>
+                  </>
+                );
+              })()}
             </p>
           </>
         )}

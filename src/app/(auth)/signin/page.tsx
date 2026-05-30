@@ -6,10 +6,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { authClient } from "@/lib/auth-client";
 import { GoogleButton } from "@/components/auth/GoogleButton";
+import { useLocale } from "@/components/site/LocaleContext";
 
 function SignInForm() {
   const router = useRouter();
   const search = useSearchParams();
+  const { t } = useLocale();
   const nextUrl = search.get("next") ?? "/dashboard";
   const [mode, setMode] = useState<"password" | "magic">("password");
   const [email, setEmail] = useState("");
@@ -59,10 +61,10 @@ function SignInForm() {
   return (
     <>
       <h1 className="font-headline-lg text-headline-lg font-bold text-on-surface mb-2">
-        Welcome back
+        {t("auth.signin.title")}
       </h1>
       <p className="text-on-surface-variant text-body-md font-body-md mb-6">
-        Sign in to keep designing.
+        {t("auth.signin.subtitle")}
       </p>
 
       <div className="flex gap-1 mb-6 p-1 bg-surface-container-low/60 rounded-full">
@@ -80,7 +82,7 @@ function SignInForm() {
               : "text-on-surface-variant hover:text-on-surface")
           }
         >
-          Password
+          {t("auth.signin.tab.password")}
         </button>
         <button
           type="button"
@@ -96,14 +98,14 @@ function SignInForm() {
               : "text-on-surface-variant hover:text-on-surface")
           }
         >
-          Magic link
+          {t("auth.signin.tab.magic")}
         </button>
       </div>
 
       <form onSubmit={submit} className="flex flex-col gap-4">
         <label className="flex flex-col gap-1">
           <span className="text-label-sm font-label-sm text-on-surface-variant">
-            Email
+            {t("auth.field.email")}
           </span>
           <input
             type="email"
@@ -112,7 +114,7 @@ function SignInForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="bg-surface-container-high/60 border border-white/10 rounded-lg px-4 py-3 text-on-surface focus:outline-none focus:border-primary"
-            placeholder="you@example.com"
+            placeholder={t("auth.email.placeholder")}
           />
         </label>
 
@@ -120,13 +122,13 @@ function SignInForm() {
           <label className="flex flex-col gap-1">
             <div className="flex justify-between items-center">
               <span className="text-label-sm font-label-sm text-on-surface-variant">
-                Password
+                {t("auth.field.password")}
               </span>
               <Link
                 href="/forgot-password"
                 className="text-label-sm font-label-sm text-primary hover:underline"
               >
-                Forgot?
+                {t("auth.field.forgot")}
               </Link>
             </div>
             <input
@@ -137,7 +139,7 @@ function SignInForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="bg-surface-container-high/60 border border-white/10 rounded-lg px-4 py-3 text-on-surface focus:outline-none focus:border-primary"
-              placeholder="At least 8 characters"
+              placeholder={t("auth.password.placeholder")}
             />
           </label>
         )}
@@ -159,22 +161,22 @@ function SignInForm() {
           className="bg-primary text-on-primary font-label-md text-label-md py-3 rounded-full hover:shadow-[0_0_20px_rgba(208,188,255,0.4)] active:scale-95 transition-all disabled:opacity-50"
         >
           {loading
-            ? "Working…"
+            ? t("ui.working")
             : mode === "password"
-              ? "Sign in"
-              : "Send magic link"}
+              ? t("auth.signin.submit")
+              : t("auth.signin.magic_submit")}
         </button>
 
         <GoogleDivider next={nextUrl} />
       </form>
 
       <p className="text-center mt-6 text-label-sm font-label-sm text-on-surface-variant">
-        New to Addvoxen?{" "}
+        {t("auth.signin.new_to")}{" "}
         <Link
           href={`/signup${nextUrl !== "/dashboard" ? `?next=${encodeURIComponent(nextUrl)}` : ""}`}
           className="text-primary hover:underline font-label-md"
         >
-          Create an account
+          {t("auth.signin.create")}
         </Link>
       </p>
     </>
@@ -182,12 +184,13 @@ function SignInForm() {
 }
 
 function GoogleDivider({ next }: { next: string }) {
+  const { t } = useLocale();
   return (
     <>
       <div className="relative flex items-center gap-3 my-1">
         <div className="flex-1 h-px bg-white/10" />
         <span className="text-label-sm font-label-sm text-on-surface-variant">
-          or
+          {t("ui.or")}
         </span>
         <div className="flex-1 h-px bg-white/10" />
       </div>

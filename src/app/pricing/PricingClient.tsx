@@ -157,7 +157,7 @@ export function PricingClient({
               >
                 {tier.accent && (
                   <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-on-primary text-primary text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full">
-                    Most popular
+                    {t("pricing.tier.popular")}
                   </span>
                 )}
                 <h3
@@ -185,7 +185,7 @@ export function PricingClient({
                       (tier.accent ? "text-on-primary" : "text-on-surface")
                     }
                   >
-                    {price === 0 ? "Free" : `$${price}`}
+                    {price === 0 ? t("pricing.tier.free_label") : `$${price}`}
                   </span>
                   {price > 0 && (
                     <span
@@ -196,8 +196,11 @@ export function PricingClient({
                           : "text-on-surface-variant")
                       }
                     >
-                      /{cycle === "monthly" ? "mo" : "yr"}
-                      {tier.id === "team" && " /seat"}
+                      /
+                      {cycle === "monthly"
+                        ? t("pricing.tier.per_month")
+                        : t("pricing.tier.per_year")}
+                      {tier.id === "team" && " " + t("pricing.tier.per_seat")}
                     </span>
                   )}
                 </div>
@@ -210,7 +213,10 @@ export function PricingClient({
                         : "text-on-surface-variant")
                     }
                   >
-                    Billed yearly · {monthlyEquiv}
+                    {t("pricing.tier.billed_yearly").replace(
+                      "{amount}",
+                      monthlyEquiv,
+                    )}
                   </p>
                 ) : (
                   <div className="mb-6" />
@@ -300,10 +306,10 @@ export function PricingClient({
           </div>
           <div className="flex-1">
             <p className="text-on-surface font-label-md text-label-md">
-              Enterprise — for agencies & 50+ teams
+              {t("pricing.enterprise.title")}
             </p>
             <p className="text-on-surface-variant text-label-sm font-label-sm">
-              SSO, audit log, dedicated support, custom integrations.
+              {t("pricing.enterprise.body")}
             </p>
           </div>
           <button
@@ -311,53 +317,38 @@ export function PricingClient({
             onClick={() => setWaitlistFor("enterprise")}
             className="glass-panel px-5 py-2.5 rounded-full text-label-md font-label-md text-on-surface hover:bg-white/5 transition-colors"
           >
-            Contact sales
+            {t("pricing.enterprise.cta")}
           </button>
         </div>
 
         <p className="text-center mt-10 text-on-surface-variant text-label-sm font-label-sm">
-          All prices in USD · No payment now — we reach out when paid plans open.
+          {t("pricing.footer_note")}
         </p>
 
         <section className="mt-16 max-w-3xl mx-auto">
           <h2 className="font-headline-lg text-headline-lg text-on-surface text-center mb-8">
-            Frequently asked
+            {t("pricing.faq.title")}
           </h2>
           <div className="space-y-4">
             {[
-              {
-                q: "When do paid plans launch?",
-                a: "We're onboarding waitlist users in waves — first cohort within 4-6 weeks. You'll get an email with personal access details when it's your turn.",
-              },
-              {
-                q: "What does the Free plan get me right now?",
-                a: "Full editor, free templates, image upload (50 MB), cloud autosave, watermarked export. Enough to ship real campaigns; the watermark is the only reminder.",
-              },
-              {
-                q: "Will I keep my designs forever?",
-                a: "Yes — your designs stay in your account regardless of plan. Downgrading just removes access to Pro-only features, not your work.",
-              },
-              {
-                q: "Do you offer custom enterprise pricing?",
-                a: "Yes — Enterprise covers SSO, audit log, dedicated support and bespoke integrations. Hit 'Contact sales' above.",
-              },
-              {
-                q: "How will I pay when access opens?",
-                a: "We'll send invoice + bank transfer details directly. Card payment opens later, once our billing integration is complete.",
-              },
+              { qKey: "pricing.faq.q1", aKey: "pricing.faq.a1" },
+              { qKey: "pricing.faq.q2", aKey: "pricing.faq.a2" },
+              { qKey: "pricing.faq.q3", aKey: "pricing.faq.a3" },
+              { qKey: "pricing.faq.q4", aKey: "pricing.faq.a4" },
+              { qKey: "pricing.faq.q5", aKey: "pricing.faq.a5" },
             ].map((item) => (
               <details
-                key={item.q}
+                key={item.qKey}
                 className="glass-panel rounded-xl p-5 group"
               >
                 <summary className="flex justify-between items-center cursor-pointer text-on-surface font-label-md text-label-md">
-                  {item.q}
+                  {t(item.qKey)}
                   <span className="material-symbols-outlined text-on-surface-variant group-open:rotate-180 transition-transform">
                     expand_more
                   </span>
                 </summary>
                 <p className="text-on-surface-variant text-body-md font-body-md mt-3 leading-relaxed">
-                  {item.a}
+                  {t(item.aKey)}
                 </p>
               </details>
             ))}

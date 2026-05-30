@@ -39,7 +39,7 @@ export function SiteHeader() {
             className="font-headline-lg text-headline-lg font-bold tracking-tighter text-primary hover:opacity-80 transition-opacity"
             onClick={() => setOpen(false)}
           >
-            Addvoxen
+            {t("header.brand")}
           </Link>
           <nav className="hidden md:flex items-center gap-7">
             {NAV.map((item) => {
@@ -106,7 +106,7 @@ export function SiteHeader() {
               onClick={() => setOpen(false)}
               className="mt-2 inline-flex items-center justify-center bg-primary text-on-primary font-label-md text-label-md px-5 py-3 rounded-full transition-all"
             >
-              Get Started
+              {t("nav.signup")}
             </Link>
           </div>
         </nav>

@@ -1,10 +1,13 @@
-import Link from "next/link";
 import { eq, desc, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { templates } from "@/db/schema";
 import { getSession } from "@/lib/session";
 import { TemplateCard } from "@/components/dashboard/TemplateCard";
 import { MarketplaceFilters } from "@/components/marketplace/MarketplaceFilters";
+import {
+  MarketplaceHeader,
+  MarketplaceEmpty,
+} from "@/components/marketplace/MarketplaceHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -107,29 +110,7 @@ export default async function MarketplacePage({
   return (
     <main className="pt-24 pb-16 px-4 sm:px-8 lg:px-16 xl:px-24">
       <div className="w-full mx-auto">
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-10">
-          <div>
-            <p className="text-label-sm font-label-sm uppercase tracking-wider text-tertiary-fixed-dim mb-2">
-              Template marketplace
-            </p>
-            <h1 className="font-display-sm text-display-sm font-bold text-on-surface">
-              {totalCount} templates, ready to remix
-            </h1>
-            <p className="text-on-surface-variant text-body-md font-body-md mt-2">
-              Curated banners across every ad size and category. Pick one,
-              hit the editor, ship in minutes.
-            </p>
-          </div>
-          {session?.user && (
-            <Link
-              href="/editor?new=1"
-              className="ai-gradient text-on-primary px-6 py-3 rounded-full text-label-md font-label-md hover:shadow-[0_0_20px_rgba(208,188,255,0.4)] active:scale-95 transition-all flex items-center gap-2 shrink-0"
-            >
-              <span className="material-symbols-outlined text-[18px]">add</span>
-              Blank canvas
-            </Link>
-          )}
-        </div>
+        <MarketplaceHeader totalCount={totalCount} signedIn={!!session?.user} />
 
         <MarketplaceFilters
           categories={categories}
@@ -141,17 +122,7 @@ export default async function MarketplacePage({
         />
 
         {items.length === 0 ? (
-          <div className="glass-panel rounded-3xl p-12 text-center">
-            <p className="text-on-surface-variant text-body-md font-body-md">
-              No templates match your filters yet.
-            </p>
-            <Link
-              href="/marketplace"
-              className="text-primary text-label-md font-label-md hover:underline mt-3 inline-block"
-            >
-              Reset filters
-            </Link>
-          </div>
+          <MarketplaceEmpty />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
             {items.map((t) => (

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useLocale } from "@/components/site/LocaleContext";
 
 export function MarketplaceFilters({
   categories,
@@ -21,6 +22,7 @@ export function MarketplaceFilters({
 }) {
   const router = useRouter();
   const search = useSearchParams();
+  const { t } = useLocale();
   const [q, setQ] = useState(activeQuery ?? "");
 
   // Debounce search → URL
@@ -55,7 +57,7 @@ export function MarketplaceFilters({
           type="text"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Search templates by name…"
+          placeholder={t("filters.search")}
           className="w-full glass-panel rounded-full pl-12 pr-4 py-3 text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary border border-white/10"
         />
       </div>
@@ -72,7 +74,7 @@ export function MarketplaceFilters({
           }
         >
           <span className="material-symbols-outlined text-[16px]">grid_view</span>
-          All
+          {t("filters.all")}
           <span className="text-[10px] font-bold opacity-70">
             {sourceCounts.official + sourceCounts.community}
           </span>
@@ -87,7 +89,7 @@ export function MarketplaceFilters({
           }
         >
           <span className="material-symbols-outlined text-[16px]">verified</span>
-          Official
+          {t("filters.official")}
           <span className="text-[10px] font-bold opacity-70">
             {sourceCounts.official}
           </span>
@@ -102,7 +104,7 @@ export function MarketplaceFilters({
           }
         >
           <span className="material-symbols-outlined text-[16px]">groups</span>
-          Community
+          {t("filters.community")}
           <span className="text-[10px] font-bold opacity-70">
             {sourceCounts.community}
           </span>
@@ -119,7 +121,7 @@ export function MarketplaceFilters({
               : "glass-panel text-on-surface-variant hover:text-on-surface")
           }
         >
-          All categories
+          {t("filters.all_categories")}
         </Link>
         {categories.map((c) => (
           <Link
@@ -157,7 +159,7 @@ export function MarketplaceFilters({
               : "glass-panel text-on-surface-variant hover:text-on-surface")
           }
         >
-          Any plan
+          {t("filters.any_plan")}
         </Link>
         <Link
           href={buildHref({ tier: "free" })}
@@ -168,7 +170,7 @@ export function MarketplaceFilters({
               : "glass-panel text-on-surface-variant hover:text-on-surface")
           }
         >
-          Free
+          {t("filters.free")}
         </Link>
         <Link
           href={buildHref({ tier: "pro" })}
@@ -180,7 +182,7 @@ export function MarketplaceFilters({
           }
         >
           <span className="material-symbols-outlined text-[14px]">bolt</span>
-          Pro
+          {t("filters.pro")}
         </Link>
       </div>
     </div>

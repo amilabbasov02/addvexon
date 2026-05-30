@@ -1,0 +1,252 @@
+"use client";
+
+import Link from "next/link";
+import { useLocale } from "@/components/site/LocaleContext";
+
+const VALUES = [
+  { icon: "auto_awesome", titleKey: "about.value1.title", bodyKey: "about.value1.body" },
+  { icon: "bolt", titleKey: "about.value2.title", bodyKey: "about.value2.body" },
+  { icon: "verified", titleKey: "about.value3.title", bodyKey: "about.value3.body" },
+  { icon: "trending_up", titleKey: "about.value4.title", bodyKey: "about.value4.body" },
+];
+
+const STATS = [
+  { value: "40+", labelKey: "about.stats.templates" },
+  { value: "8", labelKey: "about.stats.packs" },
+  { value: "5", labelKey: "about.stats.sizes" },
+  { value: "70/30", labelKey: "about.stats.split" },
+];
+
+const ROADMAP: Array<{
+  status: "shipped" | "in-progress" | "soon";
+  eta: string;
+  title: string;
+  body: string;
+}> = [
+  {
+    status: "shipped",
+    eta: "May 2026",
+    title: "HTML5 banner export with clickTag",
+    body:
+      "Self-contained banner zips with IAB ad.size meta and Google Ads clickTag — ready for Display & Video 360 / Campaign Manager upload.",
+  },
+  {
+    status: "shipped",
+    eta: "May 2026",
+    title: "Marketplace + community templates",
+    body:
+      "Buy and sell banner designs with a 70/30 creator split. Likes, comments and creator profiles included.",
+  },
+  {
+    status: "shipped",
+    eta: "May 2026",
+    title: "Banner analytics",
+    body:
+      "Per-template views, clicks and CTA opens delivered as a creator-facing dashboard at /analytics.",
+  },
+  {
+    status: "in-progress",
+    eta: "June 2026",
+    title: "AI text generation (Claude-powered)",
+    body:
+      "Headline, sub and CTA copy generated in 4 brand-aware variants. Wired in the editor — text endpoint goes live mid-June.",
+  },
+  {
+    status: "in-progress",
+    eta: "June 2026",
+    title: "AI image generation",
+    body:
+      "Generate / extend / re-prompt photography directly on the canvas. Currently building the queue + safety filter on top of an image model.",
+  },
+  {
+    status: "soon",
+    eta: "July 2026",
+    title: "Animated banners + GIF export",
+    body:
+      "Keyframe timeline, easing presets and Lottie import, exported as MP4 / GIF / animated HTML5 — for video-first inventory.",
+  },
+  {
+    status: "soon",
+    eta: "July 2026",
+    title: "Brand kits + locked palettes",
+    body:
+      "Pin colours, fonts, logos and copy tone-of-voice per workspace so every export stays on-brand without manual review.",
+  },
+  {
+    status: "soon",
+    eta: "August 2026",
+    title: "Managed Meta / Google / TikTok launch",
+    body:
+      "Hand off a finished banner and we host the campaign under Addvoxen Business Manager — no platform OAuth, no app review.",
+  },
+  {
+    status: "soon",
+    eta: "Q3 2026",
+    title: "Team workspaces + roles",
+    body:
+      "Shared brand kits, role-scoped permissions (admin / editor / reviewer) and SSO for organisations.",
+  },
+  {
+    status: "soon",
+    eta: "Q4 2026",
+    title: "Localised AI for AZ / TR / RU / ES",
+    body:
+      "Native-language AI copy with locale-aware tone presets, so a Baku-based DTC brand gets the same generative quality a US team gets.",
+  },
+];
+
+export function AboutPageClient() {
+  const { t } = useLocale();
+
+  return (
+    <main className="pt-24 pb-20 px-4 sm:px-8 lg:px-16 xl:px-24">
+      <div className="w-full max-w-5xl mx-auto">
+        <header className="mb-14 text-center">
+          <p className="text-label-sm font-label-sm uppercase tracking-wider text-tertiary-fixed-dim mb-3">
+            {t("about.eyebrow")}
+          </p>
+          <h1 className="font-display-sm text-display-sm font-bold text-on-surface leading-tight">
+            {t("about.title")}
+          </h1>
+          <p className="text-on-surface-variant text-body-lg font-body-lg mt-6 max-w-2xl mx-auto">
+            {t("about.body")}
+          </p>
+          <div className="mt-8 flex items-center justify-center gap-3">
+            <Link
+              href="/editor?new=1"
+              className="ai-gradient text-on-primary px-6 py-3 rounded-full text-label-md font-label-md hover:shadow-[0_0_20px_rgba(208,188,255,0.4)] transition-all"
+            >
+              {t("about.cta_editor")}
+            </Link>
+            <Link
+              href="/marketplace"
+              className="glass-panel px-6 py-3 rounded-full text-label-md font-label-md text-on-surface-variant hover:text-on-surface transition-colors"
+            >
+              {t("about.cta_templates")}
+            </Link>
+          </div>
+        </header>
+
+        <section className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-16">
+          {STATS.map((s) => (
+            <div key={s.labelKey} className="glass-panel rounded-2xl p-5 text-center">
+              <p className="text-on-surface font-headline-lg text-headline-lg">
+                {s.value}
+              </p>
+              <p className="text-on-surface-variant text-[10px] uppercase tracking-wider mt-1">
+                {t(s.labelKey)}
+              </p>
+            </div>
+          ))}
+        </section>
+
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-16">
+          {VALUES.map((v) => (
+            <div key={v.titleKey} className="glass-panel rounded-2xl p-6">
+              <div className="w-11 h-11 rounded-xl ai-gradient flex items-center justify-center mb-4">
+                <span className="material-symbols-outlined text-on-primary text-[22px]">
+                  {v.icon}
+                </span>
+              </div>
+              <h3 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-2">
+                {t(v.titleKey)}
+              </h3>
+              <p className="text-on-surface-variant text-body-md font-body-md leading-relaxed">
+                {t(v.bodyKey)}
+              </p>
+            </div>
+          ))}
+        </section>
+
+        <section className="mb-16">
+          <div className="flex items-end justify-between mb-6">
+            <div>
+              <p className="text-label-sm font-label-sm uppercase tracking-wider text-tertiary-fixed-dim mb-2">
+                {t("about.roadmap.eyebrow")}
+              </p>
+              <h2 className="font-headline-lg text-headline-lg text-on-surface">
+                {t("about.roadmap.title")}
+              </h2>
+            </div>
+            <p className="text-on-surface-variant text-label-sm font-label-sm hidden md:block">
+              {t("about.roadmap.subtitle")}
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {ROADMAP.map((r) => {
+              const badge =
+                r.status === "shipped"
+                  ? { labelKey: "about.badge.shipped", cls: "bg-tertiary text-on-tertiary" }
+                  : r.status === "in-progress"
+                    ? { labelKey: "about.badge.in_progress", cls: "ai-gradient text-on-primary" }
+                    : { labelKey: "about.badge.soon", cls: "bg-surface-container-high text-on-surface-variant border border-white/15" };
+              return (
+                <div
+                  key={r.title}
+                  className="glass-panel rounded-2xl p-5 flex flex-col gap-2"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span
+                      className={
+                        "text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full " +
+                        badge.cls
+                      }
+                    >
+                      {t(badge.labelKey)}
+                    </span>
+                    <span className="text-on-surface-variant text-label-sm font-label-sm">
+                      {r.eta}
+                    </span>
+                  </div>
+                  <h3 className="text-on-surface font-headline-lg-mobile text-headline-lg-mobile">
+                    {r.title}
+                  </h3>
+                  <p className="text-on-surface-variant text-body-md font-body-md leading-relaxed">
+                    {r.body}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="glass-panel rounded-3xl p-8 md:p-12 mb-16">
+          <p className="text-label-sm font-label-sm uppercase tracking-wider text-tertiary-fixed-dim mb-3">
+            {t("about.origin.eyebrow")}
+          </p>
+          <h2 className="font-headline-lg text-headline-lg text-on-surface mb-4">
+            {t("about.origin.title")}
+          </h2>
+          <div className="text-on-surface-variant text-body-md font-body-md leading-relaxed space-y-4">
+            <p>{t("about.origin.p1")}</p>
+            <p>{t("about.origin.p2")}</p>
+            <p>{t("about.origin.p3")}</p>
+          </div>
+        </section>
+
+        <section className="text-center">
+          <h2 className="font-headline-lg text-headline-lg text-on-surface mb-4">
+            {t("about.cta.title")}
+          </h2>
+          <p className="text-on-surface-variant text-body-md font-body-md mb-6 max-w-xl mx-auto">
+            {t("about.cta.body")}
+          </p>
+          <div className="flex items-center justify-center gap-3">
+            <Link
+              href="/signup"
+              className="ai-gradient text-on-primary px-6 py-3 rounded-full text-label-md font-label-md hover:shadow-[0_0_20px_rgba(208,188,255,0.4)] transition-all"
+            >
+              {t("about.cta.primary")}
+            </Link>
+            <Link
+              href="/pricing"
+              className="glass-panel px-6 py-3 rounded-full text-label-md font-label-md text-on-surface-variant hover:text-on-surface transition-colors"
+            >
+              {t("about.cta.secondary")}
+            </Link>
+          </div>
+        </section>
+      </div>
+    </main>
+  );
+}
