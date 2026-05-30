@@ -258,31 +258,8 @@ export default function LandingPage() {
       </div>
       </section>
       </main>
-      {/* Footer */}
-      <footer className="bg-surface-container-lowest border-t border-outline-variant/20 w-full py-xl mt-xl">
-      <div className="max-w-7xl mx-auto px-margin-desktop flex flex-col md:flex-row justify-between items-center gap-gutter">
-      <div className="flex flex-col items-center md:items-start gap-4">
-      <a className="font-display-sm text-display-sm font-bold text-primary tracking-tighter" href="/">Addvoxen</a>
-      <p className="font-body-md text-body-md text-on-surface-variant max-w-xs text-center md:text-left">
-                          © 2024 Addvoxen AI. Precision Luxury in Advertising.
-                      </p>
-      </div>
-      <nav className="flex flex-wrap justify-center gap-8">
-      <a className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors opacity-80 hover:opacity-100" href="#">Privacy Policy</a>
-      <a className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors opacity-80 hover:opacity-100" href="#">Terms of Service</a>
-      <a className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors opacity-80 hover:opacity-100" href="#">Cookie Settings</a>
-      <a className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors opacity-80 hover:opacity-100" href="#contact">Contact Us</a>
-      </nav>
-      <div className="flex gap-4">
-      <div className="w-10 h-10 rounded-full glass-panel flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-all">
-      <span className="material-symbols-outlined text-[20px]">share</span>
-      </div>
-      <div className="w-10 h-10 rounded-full glass-panel flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-all">
-      <span className="material-symbols-outlined text-[20px]">public</span>
-      </div>
-      </div>
-      </div>
-      </footer>
+      {/* The global SiteFooter (in src/app/layout.tsx) renders here — no
+       *  per-page footer needed. */}
     </div>
   );
 }
