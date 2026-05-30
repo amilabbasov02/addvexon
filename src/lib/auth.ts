@@ -59,9 +59,10 @@ const TRUSTED_ORIGINS = Array.from(
       VERCEL_BRANCH_URL,
       VERCEL_PROJECT_URL,
       // Custom domains alongside the vercel.app one
-      "https://addvexon.com",
-      "https://www.addvexon.com",
+      "https://addvoxen.com",
+      "https://www.addvoxen.com",
       "https://addvexon.vercel.app",
+      "https://addvoxen.vercel.app",
       ...(process.env.PUBLIC_TUNNEL_URL ?? "")
         .split(",")
         .map((s) => s.trim())
