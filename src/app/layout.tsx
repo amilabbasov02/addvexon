@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Inter } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { GlobalHeader } from "@/components/site/GlobalHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
@@ -185,6 +186,7 @@ export default function RootLayout({
           {children}
           <SiteFooter />
         </LocaleProvider>
+        <Analytics />
       </body>
     </html>
   );
