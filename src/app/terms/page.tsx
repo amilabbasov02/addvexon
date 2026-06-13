@@ -1,9 +1,12 @@
 import { LegalArticle, LegalSection } from "@/components/site/LegalArticle";
 import { BRAND } from "@/lib/brand";
 
+import { SITE_URL } from "@/lib/seo";
+
 export const metadata = {
   title: "İstifadə şərtləri",
   description: "addvoxen hazır sayt və hosting xidmətinin istifadə şərtləri.",
+  alternates: { canonical: `${SITE_URL}/terms` },
 };
 
 export default function TermsPage() {

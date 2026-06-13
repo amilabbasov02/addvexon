@@ -10,8 +10,16 @@ import { siteTemplates } from "@/db/schema";
 import { azn } from "@/lib/format";
 import { PT } from "@/lib/platform-i18n";
 import { getLang } from "@/lib/platform-locale";
+import { buildMeta } from "@/lib/seo";
+import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const lang = await getLang();
+  const s = PT[lang].seo;
+  return buildMeta({ title: s.market.t, description: s.market.d, keywords: [...s.market.k, ...s.kw], path: "/marketplace", lang });
+}
 
 type Search = { type?: string; category?: string; q?: string };
 

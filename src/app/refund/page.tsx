@@ -1,9 +1,12 @@
 import { LegalArticle, LegalSection } from "@/components/site/LegalArticle";
 import { BRAND } from "@/lib/brand";
 
+import { SITE_URL } from "@/lib/seo";
+
 export const metadata = {
   title: "Geri qaytarma siyasəti",
   description: "addvoxen abunə və export ödənişləri üçün geri qaytarma şərtləri.",
+  alternates: { canonical: `${SITE_URL}/refund` },
 };
 
 export default function RefundPage() {

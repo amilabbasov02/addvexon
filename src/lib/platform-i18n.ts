@@ -25,6 +25,12 @@ type Dict = {
   detail: { back: string; landing: string; multi: string; preview: string; subT: string; subDesc: string; contact: string; expT: string; expDesc: string; included: string[]; reviewsSoon: string; giris: string; ay: string; once: string };
   footer: { product: string; company: string; legal: string; templates: string; pricing: string; how: string; about: string; support: string; privacy: string; terms: string; refund: string; rights: string };
   common: { perAy: string; giris: string };
+  seo: {
+    kw: string[];
+    home: { t: string; d: string; k: string[] };
+    market: { t: string; d: string; k: string[] };
+    price: { t: string; d: string; k: string[] };
+  };
 };
 
 export const PT: Record<PLang, Dict> = {
@@ -51,6 +57,12 @@ export const PT: Record<PLang, Dict> = {
     detail: { back: "Şablonlar", landing: "Landing", multi: "Çoxsəhifəli", preview: "Canlı önizləmə", subT: "Abunə (hosted)", subDesc: "Biz host edirik, sən idarə edirsən. Öz domenini qoş.", contact: "Əlaqəyə keç", expT: "Export (self-host)", expDesc: "Kod + admin + SQL dump — öz serverinə qur.", included: ["Responsive dizayn", "SEO hazır", "Sürətli yüklənmə", "Panellə idarə", "SSL sertifikat", "Texniki dəstək"], reviewsSoon: "Rəylər və şərhlər tezliklə əlavə olunacaq.", giris: "giriş", ay: "/ay", once: "bir dəfəlik" },
     footer: { product: "Məhsul", company: "Şirkət", legal: "Hüquqi", templates: "Şablonlar", pricing: "Qiymətlər", how: "Necə işləyir", about: "Haqqımızda", support: "Dəstək", privacy: "Məxfilik", terms: "İstifadə şərtləri", refund: "Geri qaytarma", rights: "Bütün hüquqlar qorunur." },
     common: { perAy: "/ay", giris: "giriş" },
+    seo: {
+      kw: ["hazır sayt", "sayt şablonları", "veb sayt hazırlamaq", "managed hosting", "landing page Azərbaycan", "domen qoşma", "onlayn mağaza sayt", "korporativ sayt", "restoran sayt", "klinika sayt", "addvoxen"],
+      home: { t: "Hazır saytlar marketi + managed hosting", d: "Hazır sayt şablonu seç, ödə, biz host edək. Öz domenini qoş, panellə idarə et — kod yazmadan, dəqiqələr içində canlı sayt.", k: ["hazır sayt", "sayt qurmaq", "veb sayt hazırlamaq", "managed hosting Azərbaycan"] },
+      market: { t: "Hazır sayt şablonları — marketplace", d: "Səhiyyə, restoran, biznes, mağaza, gözəllik və agentlik üçün peşəkar hazır sayt şablonları. AZ/RU/EN. Seç, ödə, canlı.", k: ["sayt şablonları", "hazır landing page", "çoxsəhifəli sayt", "şablon marketi"] },
+      price: { t: "Qiymətlər — abunə və export", d: "Hazır sayt qiymətləri: aylıq abunə (managed hosting) və ya bir dəfəlik export. Şəffaf, gizli xərc yoxdur.", k: ["sayt qiyməti", "hosting qiyməti", "sayt abunəsi", "veb sayt qiyməti Azərbaycan"] },
+    },
   },
   en: {
     nav: { templates: "Templates", how: "How it works", pricing: "Pricing", support: "Support", login: "Sign in", viewTpl: "View templates" },
@@ -75,6 +87,12 @@ export const PT: Record<PLang, Dict> = {
     detail: { back: "Templates", landing: "Landing", multi: "Multi-page", preview: "Live preview", subT: "Subscription (hosted)", subDesc: "We host it, you manage it. Connect your domain.", contact: "Contact us", expT: "Export (self-host)", expDesc: "Code + admin + SQL dump — host on your own server.", included: ["Responsive design", "SEO ready", "Fast loading", "Panel control", "SSL certificate", "Technical support"], reviewsSoon: "Reviews and comments coming soon.", giris: "setup", ay: "/mo", once: "one-time" },
     footer: { product: "Product", company: "Company", legal: "Legal", templates: "Templates", pricing: "Pricing", how: "How it works", about: "About", support: "Support", privacy: "Privacy", terms: "Terms", refund: "Refund", rights: "All rights reserved." },
     common: { perAy: "/mo", giris: "setup" },
+    seo: {
+      kw: ["ready-made website", "website templates", "managed hosting", "landing page", "connect domain", "online store website", "corporate website", "restaurant website", "clinic website", "addvoxen"],
+      home: { t: "Ready-made sites marketplace + managed hosting", d: "Pick a ready site template, pay, and we host it. Connect your domain, manage from your panel — no code, live in minutes.", k: ["ready-made website", "build a website", "managed hosting", "website templates"] },
+      market: { t: "Ready site templates — marketplace", d: "Professional ready-made site templates for healthcare, restaurants, business, retail, beauty and agencies. AZ/RU/EN. Pick, pay, go live.", k: ["website templates", "landing page templates", "multi-page website", "template marketplace"] },
+      price: { t: "Pricing — subscription and export", d: "Ready site pricing: monthly subscription (managed hosting) or one-time export. Transparent, no hidden costs.", k: ["website price", "hosting price", "website subscription", "web design cost"] },
+    },
   },
   ru: {
     nav: { templates: "Шаблоны", how: "Как это работает", pricing: "Цены", support: "Поддержка", login: "Вход", viewTpl: "К шаблонам" },
@@ -99,5 +117,11 @@ export const PT: Record<PLang, Dict> = {
     detail: { back: "Шаблоны", landing: "Лендинг", multi: "Многостраничный", preview: "Живое превью", subT: "Подписка (хостинг)", subDesc: "Мы хостим, вы управляете. Подключите домен.", contact: "Связаться", expT: "Экспорт (self-host)", expDesc: "Код + админка + SQL дамп — на своём сервере.", included: ["Адаптивный дизайн", "Готов к SEO", "Быстрая загрузка", "Управление в панели", "SSL сертификат", "Техподдержка"], reviewsSoon: "Отзывы и комментарии скоро.", giris: "установка", ay: "/мес", once: "разово" },
     footer: { product: "Продукт", company: "Компания", legal: "Правовое", templates: "Шаблоны", pricing: "Цены", how: "Как это работает", about: "О нас", support: "Поддержка", privacy: "Конфиденциальность", terms: "Условия", refund: "Возврат", rights: "Все права защищены." },
     common: { perAy: "/мес", giris: "установка" },
+    seo: {
+      kw: ["готовый сайт", "шаблоны сайтов", "управляемый хостинг", "лендинг", "подключение домена", "сайт интернет-магазина", "корпоративный сайт", "сайт ресторана", "сайт клиники", "addvoxen"],
+      home: { t: "Маркетплейс готовых сайтов + хостинг", d: "Выберите готовый шаблон, оплатите — мы захостим. Подключите домен, управляйте из панели — без кода, запуск за минуты.", k: ["готовый сайт", "создать сайт", "управляемый хостинг", "шаблоны сайтов"] },
+      market: { t: "Готовые шаблоны сайтов — маркетплейс", d: "Профессиональные готовые шаблоны для медицины, ресторанов, бизнеса, магазинов, красоты и агентств. AZ/RU/EN.", k: ["шаблоны сайтов", "шаблоны лендингов", "многостраничный сайт", "маркетплейс шаблонов"] },
+      price: { t: "Цены — подписка и экспорт", d: "Цены на готовые сайты: ежемесячная подписка (хостинг) или разовый экспорт. Прозрачно, без скрытых расходов.", k: ["цена сайта", "цена хостинга", "подписка на сайт", "стоимость веб-дизайна"] },
+    },
   },
 };
