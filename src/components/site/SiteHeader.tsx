@@ -5,24 +5,24 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { UserMenu } from "./UserMenu";
 import { Logo } from "./Logo";
-
-type NavItem = { label: string; href: string };
-
-const NAV: NavItem[] = [
-  { label: "Şablonlar", href: "/marketplace" },
-  { label: "Necə işləyir", href: "/#nece-isleyir" },
-  { label: "Qiymətlər", href: "/pricing" },
-  { label: "Dəstək", href: "/support" },
-];
+import { PlatformLangSwitcher } from "./PlatformLangSwitcher";
+import { PT, type PLang } from "@/lib/platform-i18n";
 
 function isActive(pathname: string | null, href: string) {
   if (!pathname || href.includes("#")) return false;
   return pathname === href || pathname.startsWith(href + "/");
 }
 
-export function SiteHeader() {
+export function SiteHeader({ lang }: { lang: PLang }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const t = PT[lang].nav;
+  const NAV = [
+    { label: t.templates, href: "/marketplace" },
+    { label: t.how, href: "/#nece-isleyir" },
+    { label: t.pricing, href: "/pricing" },
+    { label: t.support, href: "/support" },
+  ];
 
   return (
     <header className="sticky top-0 inset-x-0 z-50 border-b border-slate-200/70 bg-white/80 backdrop-blur-xl">
@@ -51,11 +51,12 @@ export function SiteHeader() {
         </div>
 
         <div className="flex items-center gap-3">
+          <PlatformLangSwitcher current={lang} />
           <Link
             href="/marketplace"
             className="hidden rounded-full bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-transform hover:scale-[1.03] sm:inline-flex"
           >
-            Şablona bax
+            {t.viewTpl}
           </Link>
           <UserMenu />
           <button
@@ -90,7 +91,7 @@ export function SiteHeader() {
               onClick={() => setOpen(false)}
               className="mt-2 inline-flex items-center justify-center rounded-full bg-indigo-600 px-5 py-3 text-sm font-semibold text-white"
             >
-              Şablona bax
+              {t.viewTpl}
             </Link>
           </div>
         </nav>

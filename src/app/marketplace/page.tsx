@@ -8,6 +8,8 @@ import { and, eq, asc, desc, ilike, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { siteTemplates } from "@/db/schema";
 import { azn } from "@/lib/format";
+import { PT } from "@/lib/platform-i18n";
+import { getLang } from "@/lib/platform-locale";
 
 export const dynamic = "force-dynamic";
 
@@ -66,6 +68,7 @@ export default async function MarketplacePage({
   searchParams: Promise<Search>;
 }) {
   const params = await searchParams;
+  const m = PT[await getLang()].market;
   const [items, categories] = await Promise.all([
     loadTemplates(params),
     loadCategories(),
@@ -84,21 +87,19 @@ export default async function MarketplacePage({
       {/* Başlıq */}
       <section className="border-b border-slate-100 bg-slate-50">
         <div className="mx-auto max-w-7xl px-4 py-14 sm:px-8">
-          <h1 className="text-3xl font-bold tracking-tight md:text-4xl">Hazır sayt şablonları</h1>
-          <p className="mt-3 max-w-2xl text-lg text-slate-600">
-            Sənayəyə uyğun, peşəkar dizaynlar. Birini seç — qalanını biz edək.
-          </p>
+          <h1 className="text-3xl font-bold tracking-tight md:text-4xl">{m.title}</h1>
+          <p className="mt-3 max-w-2xl text-lg text-slate-600">{m.sub}</p>
         </div>
       </section>
 
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-8">
         {/* Filtrlər */}
         <div className="flex flex-wrap items-center gap-2">
-          <FilterChip active={!params.type} href={qs({ type: undefined })}>Hamısı</FilterChip>
-          <FilterChip active={params.type === "landing"} href={qs({ type: "landing" })}>Landing</FilterChip>
-          <FilterChip active={params.type === "multipage"} href={qs({ type: "multipage" })}>Çoxsəhifəli</FilterChip>
+          <FilterChip active={!params.type} href={qs({ type: undefined })}>{m.all}</FilterChip>
+          <FilterChip active={params.type === "landing"} href={qs({ type: "landing" })}>{m.landing}</FilterChip>
+          <FilterChip active={params.type === "multipage"} href={qs({ type: "multipage" })}>{m.multi}</FilterChip>
           <span className="mx-1 h-5 w-px bg-slate-200" />
-          <FilterChip active={!params.category} href={qs({ category: undefined })}>Bütün kateqoriyalar</FilterChip>
+          <FilterChip active={!params.category} href={qs({ category: undefined })}>{m.allCats}</FilterChip>
           {categories.map((c) => (
             <FilterChip key={c.category} active={params.category === c.category} href={qs({ category: c.category })}>
               {c.category} ({c.n})
@@ -108,9 +109,7 @@ export default async function MarketplacePage({
 
         {/* Grid */}
         {items.length === 0 ? (
-          <p className="mt-12 rounded-2xl border border-dashed border-slate-200 p-12 text-center text-slate-400">
-            Bu filtrə uyğun şablon tapılmadı.
-          </p>
+          <p className="mt-12 rounded-2xl border border-dashed border-slate-200 p-12 text-center text-slate-400">{m.empty}</p>
         ) : (
           <div className="mt-10 grid gap-7 sm:grid-cols-2 lg:grid-cols-3">
             {items.map((t) => (
@@ -132,14 +131,14 @@ export default async function MarketplacePage({
                 <div className="p-5">
                   <div className="flex items-center gap-2">
                     <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-500">
-                      {t.type === "landing" ? "Landing" : "Çoxsəhifəli"}
+                      {t.type === "landing" ? m.landing : m.multi}
                     </span>
                     <span className="text-xs text-slate-400">{t.category}</span>
                   </div>
                   <h3 className="mt-3 text-base font-semibold group-hover:text-indigo-600">{t.name}</h3>
                   <p className="mt-1 line-clamp-2 text-sm text-slate-500">{t.tagline}</p>
                   <p className="mt-4 text-sm font-semibold text-slate-900">
-                    {azn(t.priceSetupAzn)} <span className="font-normal text-slate-400">giriş + {azn(t.priceMonthlyAzn)}/ay</span>
+                    {azn(t.priceSetupAzn)} <span className="font-normal text-slate-400">{m.giris} + {azn(t.priceMonthlyAzn)}{m.ay}</span>
                   </p>
                 </div>
               </Link>

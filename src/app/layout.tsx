@@ -6,6 +6,7 @@ import { GlobalHeader } from "@/components/site/GlobalHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { LocaleProvider } from "@/components/site/LocaleContext";
 import { PageViewTracker } from "@/components/analytics/PageViewTracker";
+import { getLang } from "@/lib/platform-locale";
 
 const geist = Geist({
   variable: "--font-geist",
@@ -112,14 +113,15 @@ const JSON_LD = [
   },
 ];
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const lang = await getLang();
   return (
     <html
-      lang="az"
+      lang={lang}
       className={`${geist.variable} ${inter.variable} light h-full antialiased`}
     >
       <head>
@@ -136,9 +138,9 @@ export default function RootLayout({
       <body className="min-h-full bg-white text-slate-900">
         <LocaleProvider>
           <PageViewTracker />
-          <GlobalHeader />
+          <GlobalHeader lang={lang} />
           {children}
-          <SiteFooter />
+          <SiteFooter lang={lang} />
         </LocaleProvider>
         <Analytics />
       </body>

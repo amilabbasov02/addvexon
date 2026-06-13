@@ -12,6 +12,8 @@ import { db } from "@/db";
 import { siteTemplates } from "@/db/schema";
 import { azn } from "@/lib/format";
 import { BRAND } from "@/lib/brand";
+import { PT } from "@/lib/platform-i18n";
+import { getLang } from "@/lib/platform-locale";
 
 /** Sifariş üçün əlaqə linki (ödəniş axını hələ aktiv deyil). */
 function orderMail(templateName: string, plan: string) {
@@ -61,6 +63,7 @@ export default async function TemplateDetailPage({
   const t = await getTemplate(slug);
   if (!t) notFound();
 
+  const L = PT[await getLang()].detail;
   const previewUrl = await buildPreviewUrl(t.previewSubdomain);
 
   return (
@@ -68,7 +71,7 @@ export default async function TemplateDetailPage({
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-8">
         <Link href="/marketplace" className="inline-flex items-center gap-1 text-sm font-medium text-slate-500 hover:text-slate-900">
           <span className="material-symbols-outlined text-base">arrow_back</span>
-          Şablonlar
+          {L.back}
         </Link>
 
         <div className="mt-6 grid gap-10 lg:grid-cols-2">
@@ -97,7 +100,7 @@ export default async function TemplateDetailPage({
                 className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
               >
                 <span className="material-symbols-outlined text-lg">open_in_new</span>
-                Canlı önizləmə
+                {L.preview}
               </a>
             )}
           </div>
@@ -106,7 +109,7 @@ export default async function TemplateDetailPage({
           <div>
             <div className="flex items-center gap-2">
               <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-500">
-                {t.type === "landing" ? "Landing" : "Çoxsəhifəli"}
+                {t.type === "landing" ? L.landing : L.multi}
               </span>
               <span className="text-xs text-slate-400">{t.category}</span>
             </div>
@@ -118,34 +121,34 @@ export default async function TemplateDetailPage({
             <div className="mt-8 space-y-4">
               <div className="rounded-2xl border-2 border-indigo-200 bg-indigo-50/40 p-5">
                 <div className="flex items-baseline justify-between">
-                  <h3 className="font-semibold text-slate-900">Abunə (hosted)</h3>
+                  <h3 className="font-semibold text-slate-900">{L.subT}</h3>
                   <span className="text-sm font-bold text-indigo-700">
-                    {azn(t.priceSetupAzn)} + {azn(t.priceMonthlyAzn)}/ay
+                    {azn(t.priceSetupAzn)} + {azn(t.priceMonthlyAzn)}{L.ay}
                   </span>
                 </div>
-                <p className="mt-1 text-sm text-slate-500">Biz host edirik, sən idarə edirsən. Öz domenini qoş.</p>
+                <p className="mt-1 text-sm text-slate-500">{L.subDesc}</p>
                 <a
-                  href={orderMail(t.name, "Abunə")}
+                  href={orderMail(t.name, L.subT)}
                   className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold text-white"
                 >
                   <span className="material-symbols-outlined text-lg">mail</span>
-                  Əlaqəyə keç
+                  {L.contact}
                 </a>
               </div>
 
               {t.supportsExport && (
                 <div className="rounded-2xl border border-slate-200 p-5">
                   <div className="flex items-baseline justify-between">
-                    <h3 className="font-semibold text-slate-900">Export (self-host)</h3>
+                    <h3 className="font-semibold text-slate-900">{L.expT}</h3>
                     <span className="text-sm font-bold text-slate-700">{azn(t.priceExportAzn)}</span>
                   </div>
-                  <p className="mt-1 text-sm text-slate-500">Kod + admin + SQL dump — öz serverinə qur.</p>
+                  <p className="mt-1 text-sm text-slate-500">{L.expDesc}</p>
                   <a
-                    href={orderMail(t.name, "Export")}
+                    href={orderMail(t.name, L.expT)}
                     className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
                   >
                     <span className="material-symbols-outlined text-lg">mail</span>
-                    Əlaqəyə keç
+                    {L.contact}
                   </a>
                 </div>
               )}
@@ -153,7 +156,7 @@ export default async function TemplateDetailPage({
 
             {/* Daxildir */}
             <ul className="mt-8 grid grid-cols-2 gap-3 text-sm text-slate-600">
-              {["Responsive dizayn", "SEO hazır", "Sürətli yüklənmə", "Panellə idarə", "SSL sertifikat", "Texniki dəstək"].map((f) => (
+              {L.included.map((f) => (
                 <li key={f} className="flex items-center gap-2">
                   <span className="material-symbols-outlined text-base text-indigo-500">check_circle</span>{f}
                 </li>
@@ -163,9 +166,7 @@ export default async function TemplateDetailPage({
         </div>
 
         {/* Rəy/şərh — tezliklə */}
-        <div className="mt-16 rounded-2xl border border-dashed border-slate-200 p-8 text-center text-slate-400">
-          Rəylər və şərhlər tezliklə əlavə olunacaq.
-        </div>
+        <div className="mt-16 rounded-2xl border border-dashed border-slate-200 p-8 text-center text-slate-400">{L.reviewsSoon}</div>
       </div>
     </main>
   );

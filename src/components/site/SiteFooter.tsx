@@ -4,41 +4,43 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Logo } from "./Logo";
 import { BRAND } from "@/lib/brand";
+import { PT, type PLang } from "@/lib/platform-i18n";
 
 /**
  * Platforma footer-i (işıqlı). /editor, /admin və tenant saytlarında (/sites)
  * gizlənir — onların öz konteksti var.
  */
-export function SiteFooter() {
+export function SiteFooter({ lang }: { lang: PLang }) {
   const pathname = usePathname();
   if (pathname?.startsWith("/editor")) return null;
   if (pathname?.startsWith("/admin")) return null;
   if (pathname?.startsWith("/sites")) return null;
 
   const year = new Date().getFullYear();
+  const f = PT[lang].footer;
 
   const cols: { title: string; links: { label: string; href: string }[] }[] = [
     {
-      title: "Məhsul",
+      title: f.product,
       links: [
-        { label: "Şablonlar", href: "/marketplace" },
-        { label: "Qiymətlər", href: "/pricing" },
-        { label: "Necə işləyir", href: "/#nece-isleyir" },
+        { label: f.templates, href: "/marketplace" },
+        { label: f.pricing, href: "/pricing" },
+        { label: f.how, href: "/#nece-isleyir" },
       ],
     },
     {
-      title: "Şirkət",
+      title: f.company,
       links: [
-        { label: "Haqqımızda", href: "/about" },
-        { label: "Dəstək", href: "/support" },
+        { label: f.about, href: "/about" },
+        { label: f.support, href: "/support" },
       ],
     },
     {
-      title: "Hüquqi",
+      title: f.legal,
       links: [
-        { label: "Məxfilik", href: "/privacy" },
-        { label: "İstifadə şərtləri", href: "/terms" },
-        { label: "Geri qaytarma", href: "/refund" },
+        { label: f.privacy, href: "/privacy" },
+        { label: f.terms, href: "/terms" },
+        { label: f.refund, href: "/refund" },
       ],
     },
   ];
@@ -72,7 +74,7 @@ export function SiteFooter() {
           ))}
         </div>
         <div className="mt-12 flex flex-col items-center justify-between gap-3 border-t border-slate-200 pt-6 text-sm text-slate-400 sm:flex-row">
-          <span>© {year} {BRAND.name}. Bütün hüquqlar qorunur.</span>
+          <span>© {year} {BRAND.name}. {f.rights}</span>
           <a href={`mailto:${BRAND.email}`} className="hover:text-slate-700">
             {BRAND.email}
           </a>
