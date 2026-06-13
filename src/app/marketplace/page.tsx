@@ -1,95 +1,65 @@
-import { eq, desc, sql } from "drizzle-orm";
+/**
+ * Marketplace — hazır sayt şablonları kataloqu (yeni məhsul).
+ * `siteTemplates`-dən oxuyur. Tip (landing/çoxsəhifəli) və kateqoriya filtri
+ * searchParams ilə. Hər kart şablonun detal səhifəsinə keçir.
+ */
+import Link from "next/link";
+import { and, eq, asc, desc, ilike, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { templates } from "@/db/schema";
-import { getSession } from "@/lib/session";
-import { TemplateCard } from "@/components/dashboard/TemplateCard";
-import { MarketplaceFilters } from "@/components/marketplace/MarketplaceFilters";
-import {
-  MarketplaceHeader,
-  MarketplaceEmpty,
-} from "@/components/marketplace/MarketplaceHeader";
+import { siteTemplates } from "@/db/schema";
+import { azn } from "@/lib/format";
+import { PT } from "@/lib/platform-i18n";
+import { getLang } from "@/lib/platform-locale";
 
 export const dynamic = "force-dynamic";
 
-type Search = {
-  category?: string;
-  tier?: string;
-  q?: string;
-  /** "official" = curated by Addvoxen (created_by IS NULL)
-   *  "community" = creator-listed (created_by IS NOT NULL, listingStatus=approved)
-   *  "all" / unset = both */
-  source?: string;
-};
+type Search = { type?: string; category?: string; q?: string };
 
-async function loadTemplates(search: Search) {
-  const isOfficial = search.source === "official";
-  const isCommunity = search.source === "community";
-  const rows = await db.execute(
-    sql`
-      SELECT t.id, t.slug, t.name, t.category, t.tagline, t.tier, t.document, t.downloads,
-             t.price_cents AS "priceCents", t.currency, t.sales_count AS "salesCount",
-             t.thumbnail_url AS "thumbnailUrl",
-             t.created_by AS "createdBy",
-             u.name AS "creatorName",
-             u.image AS "creatorImage",
-             CASE WHEN t.created_by IS NULL THEN 'official' ELSE 'community' END AS source
-      FROM templates t
-      LEFT JOIN users u ON u.id = t.created_by
-      WHERE t.published = TRUE
-        AND (t.listing_status = 'approved' OR t.created_by IS NULL)
-        ${isOfficial ? sql`AND t.created_by IS NULL` : sql``}
-        ${isCommunity ? sql`AND t.created_by IS NOT NULL` : sql``}
-        ${search.category ? sql`AND t.category = ${search.category}` : sql``}
-        ${search.tier === "free" || search.tier === "pro" ? sql`AND t.tier = ${search.tier}` : sql``}
-        ${search.q ? sql`AND t.name ILIKE ${"%" + search.q + "%"}` : sql``}
-      ORDER BY
-        ${isCommunity ? sql`` : sql`(CASE WHEN t.created_by IS NULL THEN 0 ELSE 1 END),`}
-        t.sales_count DESC, t.downloads DESC, t.updated_at DESC
-      LIMIT 60
-    `,
-  );
-  return rows.rows as Array<{
-    id: string;
-    slug: string;
-    name: string;
-    category: string;
-    tagline: string | null;
-    tier: string;
-    document: { canvasSize: { width: number; height: number }; background: string; layers: unknown[] };
-    downloads: number;
-    priceCents: number;
-    currency: string;
-    salesCount: number;
-    thumbnailUrl: string | null;
-    createdBy: string | null;
-    creatorName: string | null;
-    creatorImage: string | null;
-    source: "official" | "community";
-  }>;
-}
-
-async function loadSourceCounts() {
-  const rows = await db.execute(
-    sql`
-      SELECT
-        SUM(CASE WHEN created_by IS NULL THEN 1 ELSE 0 END)::int AS "official",
-        SUM(CASE WHEN created_by IS NOT NULL AND listing_status = 'approved' THEN 1 ELSE 0 END)::int AS "community"
-      FROM templates
-      WHERE published = TRUE
-    `,
-  );
-  const r = rows.rows[0] as { official: number; community: number };
-  return { official: r?.official ?? 0, community: r?.community ?? 0 };
+async function loadTemplates(s: Search) {
+  const conds = [eq(siteTemplates.published, true)];
+  if (s.type === "landing" || s.type === "multipage")
+    conds.push(eq(siteTemplates.type, s.type));
+  if (s.category) conds.push(eq(siteTemplates.category, s.category));
+  if (s.q) conds.push(ilike(siteTemplates.name, `%${s.q}%`));
+  return db
+    .select()
+    .from(siteTemplates)
+    .where(and(...conds))
+    .orderBy(asc(siteTemplates.sortOrder), desc(siteTemplates.createdAt))
+    .limit(60);
 }
 
 async function loadCategories() {
-  const rows = await db
-    .select({ category: templates.category, n: sql<number>`count(*)::int` })
-    .from(templates)
-    .where(eq(templates.published, true))
-    .groupBy(templates.category)
+  return db
+    .select({ category: siteTemplates.category, n: sql<number>`count(*)::int` })
+    .from(siteTemplates)
+    .where(eq(siteTemplates.published, true))
+    .groupBy(siteTemplates.category)
     .orderBy(desc(sql`count(*)`));
-  return rows;
+}
+
+function FilterChip({
+  active,
+  href,
+  children,
+}: {
+  active: boolean;
+  href: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      className={
+        "rounded-full px-4 py-1.5 text-sm font-medium transition-colors " +
+        (active
+          ? "bg-indigo-600 text-white"
+          : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50")
+      }
+    >
+      {children}
+    </Link>
+  );
 }
 
 export default async function MarketplacePage({
@@ -98,35 +68,80 @@ export default async function MarketplacePage({
   searchParams: Promise<Search>;
 }) {
   const params = await searchParams;
-  const session = await getSession();
-  const [items, categories, sourceCounts] = await Promise.all([
+  const m = PT[await getLang()].market;
+  const [items, categories] = await Promise.all([
     loadTemplates(params),
     loadCategories(),
-    loadSourceCounts(),
   ]);
 
-  const totalCount = categories.reduce((s, c) => s + c.n, 0);
+  const qs = (patch: Partial<Search>) => {
+    const merged = { ...params, ...patch };
+    const sp = new URLSearchParams();
+    for (const [k, v] of Object.entries(merged)) if (v) sp.set(k, v);
+    const s = sp.toString();
+    return s ? `/marketplace?${s}` : "/marketplace";
+  };
 
   return (
-    <main className="pt-24 pb-16 px-4 sm:px-8 lg:px-16 xl:px-24">
-      <div className="w-full mx-auto">
-        <MarketplaceHeader totalCount={totalCount} signedIn={!!session?.user} />
+    <main className="bg-white">
+      {/* Başlıq */}
+      <section className="border-b border-slate-100 bg-slate-50">
+        <div className="mx-auto max-w-7xl px-4 py-14 sm:px-8">
+          <h1 className="text-3xl font-bold tracking-tight md:text-4xl">{m.title}</h1>
+          <p className="mt-3 max-w-2xl text-lg text-slate-600">{m.sub}</p>
+        </div>
+      </section>
 
-        <MarketplaceFilters
-          categories={categories}
-          sourceCounts={sourceCounts}
-          activeCategory={params.category}
-          activeTier={params.tier}
-          activeQuery={params.q}
-          activeSource={params.source}
-        />
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-8">
+        {/* Filtrlər */}
+        <div className="flex flex-wrap items-center gap-2">
+          <FilterChip active={!params.type} href={qs({ type: undefined })}>{m.all}</FilterChip>
+          <FilterChip active={params.type === "landing"} href={qs({ type: "landing" })}>{m.landing}</FilterChip>
+          <FilterChip active={params.type === "multipage"} href={qs({ type: "multipage" })}>{m.multi}</FilterChip>
+          <span className="mx-1 h-5 w-px bg-slate-200" />
+          <FilterChip active={!params.category} href={qs({ category: undefined })}>{m.allCats}</FilterChip>
+          {categories.map((c) => (
+            <FilterChip key={c.category} active={params.category === c.category} href={qs({ category: c.category })}>
+              {c.category} ({c.n})
+            </FilterChip>
+          ))}
+        </div>
 
+        {/* Grid */}
         {items.length === 0 ? (
-          <MarketplaceEmpty />
+          <p className="mt-12 rounded-2xl border border-dashed border-slate-200 p-12 text-center text-slate-400">{m.empty}</p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+          <div className="mt-10 grid gap-7 sm:grid-cols-2 lg:grid-cols-3">
             {items.map((t) => (
-              <TemplateCard key={t.id} template={t} signedIn={!!session?.user} />
+              <Link
+                key={t.id}
+                href={`/marketplace/${t.slug}`}
+                className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-lg"
+              >
+                <div className="aspect-16/10 overflow-hidden bg-slate-100">
+                  {t.thumbnailUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={t.thumbnailUrl} alt={t.name} className="h-full w-full object-cover transition-transform group-hover:scale-105" />
+                  ) : (
+                    <div className="flex h-full items-center justify-center bg-linear-to-br from-indigo-50 to-sky-50 text-indigo-300">
+                      <span className="material-symbols-outlined text-5xl">web</span>
+                    </div>
+                  )}
+                </div>
+                <div className="p-5">
+                  <div className="flex items-center gap-2">
+                    <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-500">
+                      {t.type === "landing" ? m.landing : m.multi}
+                    </span>
+                    <span className="text-xs text-slate-400">{t.category}</span>
+                  </div>
+                  <h3 className="mt-3 text-base font-semibold group-hover:text-indigo-600">{t.name}</h3>
+                  <p className="mt-1 line-clamp-2 text-sm text-slate-500">{t.tagline}</p>
+                  <p className="mt-4 text-sm font-semibold text-slate-900">
+                    {azn(t.priceSetupAzn)} <span className="font-normal text-slate-400">{m.giris} + {azn(t.priceMonthlyAzn)}{m.ay}</span>
+                  </p>
+                </div>
+              </Link>
             ))}
           </div>
         )}

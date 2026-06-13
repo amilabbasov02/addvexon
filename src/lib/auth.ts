@@ -54,6 +54,7 @@ const TRUSTED_ORIGINS = Array.from(
   new Set(
     [
       "http://localhost:3210",
+      "http://localhost:3000",
       BASE_URL,
       VERCEL_URL,
       VERCEL_BRANCH_URL,

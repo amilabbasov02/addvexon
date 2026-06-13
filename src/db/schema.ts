@@ -749,6 +749,239 @@ export const userProfiles = pgTable(
 );
 
 // ============================================================
+//  SAYT PLATFORMASI — hazır saytlar marketi + managed hosting
+//  (Faza 1 — banner məhsulunu əvəz edən yeni model)
+//
+//  Memarlıq: hər müştəri saytı = 1 tenant. Bir kod bazası, host-based
+//  routing ilə tenant müəyyən olunur (subdomen / custom domen). Məzmun
+//  tenant-a bağlı JSONB + strukturlu sahələrdə saxlanır ki, həm hosted
+//  instance, həm də export bundle (zip + SQL) verilə bilsin.
+// ============================================================
+
+/** Satılan hazır sayt şablonları — marketplace kataloqu.
+ *  Köhnə banner `templates` cədvəlini funksional olaraq əvəz edir;
+ *  buradakı qeydlər Konva sənədi yox, render olunan sayt şablonudur. */
+export const siteTemplates = pgTable(
+  "site_templates",
+  {
+    id: text("id").primaryKey(),
+    name: text("name").notNull(),
+    slug: text("slug").notNull(),
+    /** "landing" | "multipage" */
+    type: text("type").notNull().default("landing"),
+    category: text("category").notNull(),
+    tagline: text("tagline"),
+    description: text("description"),
+    thumbnailUrl: text("thumbnail_url"),
+    /** Canlı demo subdomeni — ziyarətçi önizləməsi (məs. "demo-klinika"). */
+    previewSubdomain: text("preview_subdomain"),
+    /** Qiymətlər qəpiklə (AZN). 100 AZN = 10000. */
+    priceSetupAzn: integer("price_setup_azn").notNull().default(10000), // 100 AZN giriş
+    priceMonthlyAzn: integer("price_monthly_azn").notNull().default(5000), // 50 AZN/ay
+    /** Export (self-host) bir dəfəlik qiymət — 1000 AZN. */
+    priceExportAzn: integer("price_export_azn").notNull().default(100000),
+    supportsExport: boolean("supports_export").notNull().default(true),
+    published: boolean("published").notNull().default(true),
+    sortOrder: integer("sort_order").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => ({
+    slugIdx: uniqueIndex("site_templates_slug_idx").on(t.slug),
+    typeIdx: index("site_templates_type_idx").on(t.type),
+    categoryIdx: index("site_templates_category_idx").on(t.category),
+    publishedIdx: index("site_templates_published_idx").on(t.published),
+  }),
+);
+
+/** Müştəri sayt instansiyası. Bir alış → bir tenant. Hosted halda
+ *  subdomain/customDomain ilə host-based render olunur. */
+export const tenants = pgTable(
+  "tenants",
+  {
+    id: text("id").primaryKey(),
+    ownerId: text("owner_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    siteTemplateId: text("site_template_id")
+      .notNull()
+      .references(() => siteTemplates.id, { onDelete: "restrict" }),
+    name: text("name").notNull(),
+    /** "*.addvoxen.com" subdomeni — həmişə var, unikaldır. */
+    subdomain: text("subdomain").notNull(),
+    /** Müştərinin öz domeni (A/CNAME ilə). Vercel-ə əlavə olunur. */
+    customDomain: text("custom_domain"),
+    /** Vercel Domains API tərəfindən verilən id — auto-SSL idarəsi üçün. */
+    vercelDomainId: text("vercel_domain_id"),
+    /** none | pending | verified | error */
+    domainStatus: text("domain_status").notNull().default("none"),
+    /** pending | active | suspended | canceled */
+    status: text("status").notNull().default("pending"),
+    /** hosted | export */
+    deliveryType: text("delivery_type").notNull().default("hosted"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => ({
+    subdomainIdx: uniqueIndex("tenants_subdomain_idx").on(t.subdomain),
+    customDomainIdx: uniqueIndex("tenants_custom_domain_idx").on(t.customDomain),
+    ownerIdx: index("tenants_owner_idx").on(t.ownerId),
+    statusIdx: index("tenants_status_idx").on(t.status),
+  }),
+);
+
+/** Tenant-a görə redaktə olunan məzmun + tema. Müştəri öz admin panelindən
+ *  (B-tipli admin) mətnləri, rəngləri, logonu, bölmələri dəyişir. */
+export const tenantContent = pgTable(
+  "tenant_content",
+  {
+    tenantId: text("tenant_id")
+      .primaryKey()
+      .references(() => tenants.id, { onDelete: "cascade" }),
+    /** Bölmələr, mətnlər, şəkil URL-ləri — şablona uyğun struktur. */
+    content: jsonb("content").notNull().$type<Record<string, unknown>>(),
+    /** Tema: rənglər, şriftlər, logo, favicon. */
+    theme: jsonb("theme").notNull().$type<{
+      colors?: Record<string, string>;
+      fonts?: { heading?: string; body?: string };
+      logoUrl?: string;
+      faviconUrl?: string;
+    }>(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+);
+
+/** Strukturlu inteqrasiya sahələri. TƏHLÜKƏSİZLİK: müştəri raw <script>
+ *  yapışdıra BİLMƏZ — yalnız bu ID-lər. Render zamanı təhlükəsiz şəkildə
+ *  GTM/GA/Pixel snippet-lərinə çevrilir. */
+export const tenantIntegrations = pgTable(
+  "tenant_integrations",
+  {
+    tenantId: text("tenant_id")
+      .primaryKey()
+      .references(() => tenants.id, { onDelete: "cascade" }),
+    ga4Id: text("ga4_id"), // G-XXXXXXX
+    metaPixelId: text("meta_pixel_id"),
+    gtmContainerId: text("gtm_container_id"), // GTM-XXXXXX
+    googleVerification: text("google_verification"),
+    metaVerification: text("meta_verification"),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+);
+
+/** Alış sifarişi + təsdiq axını.
+ *  template seç → order (pending_payment) → ödəniş → paid →
+ *  super-admin bildiriş → /admin/orders təsdiq → approved →
+ *  (hosted: tenant aktiv | export: bundle hazırlanır). */
+export const orders = pgTable(
+  "orders",
+  {
+    id: text("id").primaryKey(),
+    buyerId: text("buyer_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    siteTemplateId: text("site_template_id")
+      .notNull()
+      .references(() => siteTemplates.id, { onDelete: "restrict" }),
+    /** Təsdiqdən sonra (hosted) provision olunan tenant. */
+    tenantId: text("tenant_id").references(() => tenants.id, {
+      onDelete: "set null",
+    }),
+    /** hosted | export */
+    deliveryType: text("delivery_type").notNull().default("hosted"),
+    setupAmountAzn: integer("setup_amount_azn").notNull().default(0),
+    monthlyAmountAzn: integer("monthly_amount_azn").notNull().default(0),
+    /**
+     * pending_payment | paid | awaiting_approval | approved | rejected | refunded
+     */
+    status: text("status").notNull().default("pending_payment"),
+    /** payment_intents.reference ilə əlaqə. */
+    paymentRef: text("payment_ref"),
+    approvedBy: text("approved_by").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    approvedAt: timestamp("approved_at", { withTimezone: true }),
+    notes: text("notes"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => ({
+    buyerIdx: index("orders_buyer_idx").on(t.buyerId),
+    statusIdx: index("orders_status_idx").on(t.status),
+    tenantIdx: index("orders_tenant_idx").on(t.tenantId),
+    createdIdx: index("orders_created_idx").on(t.createdAt),
+  }),
+);
+
+/** Aylıq abunə vəziyyəti (AZN, lokal recurring — Stripe-dan asılı deyil).
+ *  Hər aktiv hosted tenant üçün bir qeyd. */
+export const tenantSubscriptions = pgTable(
+  "tenant_subscriptions",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "cascade" }),
+    /** active | past_due | canceled */
+    status: text("status").notNull().default("active"),
+    priceMonthlyAzn: integer("price_monthly_azn").notNull(),
+    currentPeriodEnd: timestamp("current_period_end", { withTimezone: true }),
+    lastPaymentAt: timestamp("last_payment_at", { withTimezone: true }),
+    nextDueAt: timestamp("next_due_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => ({
+    tenantIdx: index("tenant_subscriptions_tenant_idx").on(t.tenantId),
+    statusIdx: index("tenant_subscriptions_status_idx").on(t.status),
+  }),
+);
+
+/** Export (self-host) paketi. Export sifarişi təsdiqlənəndə yaranır:
+ *  frontend+admin zip + tenant data SQL dump + install README. */
+export const exportBundles = pgTable(
+  "export_bundles",
+  {
+    id: text("id").primaryKey(),
+    orderId: text("order_id")
+      .notNull()
+      .references(() => orders.id, { onDelete: "cascade" }),
+    zipUrl: text("zip_url"),
+    sqlDumpUrl: text("sql_dump_url"),
+    /** building | ready | error */
+    status: text("status").notNull().default("building"),
+    expiresAt: timestamp("expires_at", { withTimezone: true }),
+    downloadCount: integer("download_count").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => ({
+    orderIdx: index("export_bundles_order_idx").on(t.orderId),
+  }),
+);
+
+// ============================================================
 //  Type helpers
 // ============================================================
 
@@ -760,3 +993,16 @@ export type NewDocument = typeof documents.$inferInsert;
 export type Template = typeof templates.$inferSelect;
 export type NewTemplate = typeof templates.$inferInsert;
 export type Subscription = typeof subscriptions.$inferSelect;
+
+// Sayt platforması tipləri
+export type SiteTemplate = typeof siteTemplates.$inferSelect;
+export type NewSiteTemplate = typeof siteTemplates.$inferInsert;
+export type Tenant = typeof tenants.$inferSelect;
+export type NewTenant = typeof tenants.$inferInsert;
+export type TenantContent = typeof tenantContent.$inferSelect;
+export type NewTenantContent = typeof tenantContent.$inferInsert;
+export type TenantIntegrations = typeof tenantIntegrations.$inferSelect;
+export type Order = typeof orders.$inferSelect;
+export type NewOrder = typeof orders.$inferInsert;
+export type TenantSubscription = typeof tenantSubscriptions.$inferSelect;
+export type ExportBundle = typeof exportBundles.$inferSelect;

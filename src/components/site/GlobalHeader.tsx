@@ -2,15 +2,16 @@
 
 import { usePathname } from "next/navigation";
 import { SiteHeader } from "./SiteHeader";
+import type { PLang } from "@/lib/platform-i18n";
 
 /**
- * Mounts the marketing/app site header on every route EXCEPT the editor —
- * editor routes render their own contextual EditorHeader inside the page so
- * Save / Export buttons can be wired to the canvas state.
+ * Platforma header-ini editor və tenant saytları (/sites) xaric hər route-da
+ * göstərir.
  */
-export function GlobalHeader() {
+export function GlobalHeader({ lang }: { lang: PLang }) {
   const pathname = usePathname();
   const isEditor = pathname?.startsWith("/editor");
-  if (isEditor) return null;
-  return <SiteHeader />;
+  const isTenantSite = pathname?.startsWith("/sites");
+  if (isEditor || isTenantSite) return null;
+  return <SiteHeader lang={lang} />;
 }
