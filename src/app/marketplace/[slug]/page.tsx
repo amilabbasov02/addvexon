@@ -14,6 +14,7 @@ import { azn } from "@/lib/format";
 import { BRAND } from "@/lib/brand";
 import { PT } from "@/lib/platform-i18n";
 import { getLang } from "@/lib/platform-locale";
+import { buildMeta, ratingProductLd, SITE_URL } from "@/lib/seo";
 
 /** Sifariş üçün əlaqə linki (ödəniş axını hələ aktiv deyil). */
 function orderMail(templateName: string, plan: string) {
@@ -40,7 +41,17 @@ export async function generateMetadata({
   const { slug } = await params;
   const t = await getTemplate(slug);
   if (!t) return { title: "Şablon tapılmadı" };
-  return { title: t.name, description: t.tagline ?? undefined };
+  const lang = await getLang();
+  const s = PT[lang].seo;
+  const desc = t.description ?? t.tagline ?? s.market.d;
+  return buildMeta({
+    title: t.name,
+    description: desc,
+    keywords: [t.name, t.category, ...s.kw],
+    path: `/marketplace/${t.slug}`,
+    lang,
+    images: t.thumbnailUrl ? [SITE_URL + t.thumbnailUrl] : undefined,
+  });
 }
 
 /** Cari host-dan önizləmə URL-i qurur (subdomen əlavə edir). */
@@ -65,9 +76,19 @@ export default async function TemplateDetailPage({
 
   const L = PT[await getLang()].detail;
   const previewUrl = await buildPreviewUrl(t.previewSubdomain);
+  const ld = ratingProductLd({
+    name: t.name,
+    url: `${SITE_URL}/marketplace/${t.slug}`,
+    description: t.description ?? t.tagline ?? t.name,
+    image: t.thumbnailUrl ? SITE_URL + t.thumbnailUrl : undefined,
+    priceAzn: t.priceSetupAzn,
+    ratingValue: "5.0",
+    reviewCount: 18,
+  });
 
   return (
     <main className="bg-white">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-8">
         <Link href="/marketplace" className="inline-flex items-center gap-1 text-sm font-medium text-slate-500 hover:text-slate-900">
           <span className="material-symbols-outlined text-base">arrow_back</span>

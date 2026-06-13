@@ -1,9 +1,12 @@
 import { LegalArticle, LegalSection } from "@/components/site/LegalArticle";
 import { BRAND } from "@/lib/brand";
 
+import { SITE_URL } from "@/lib/seo";
+
 export const metadata = {
   title: "Məxfilik siyasəti",
   description: "addvoxen şəxsi məlumatları necə toplayır, istifadə edir və qoruyur.",
+  alternates: { canonical: `${SITE_URL}/privacy` },
 };
 
 export default function PrivacyPage() {

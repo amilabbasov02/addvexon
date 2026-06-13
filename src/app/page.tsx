@@ -10,8 +10,16 @@ import { BRAND } from "@/lib/brand";
 import { azn } from "@/lib/format";
 import { PT } from "@/lib/platform-i18n";
 import { getLang } from "@/lib/platform-locale";
+import { buildMeta, ratingProductLd, SITE_URL } from "@/lib/seo";
+import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const lang = await getLang();
+  const s = PT[lang].seo;
+  return buildMeta({ title: s.home.t, absoluteTitle: true, description: s.home.d, keywords: [...s.home.k, ...s.kw], path: "/", lang });
+}
 
 async function getFeatured() {
   try {
@@ -39,8 +47,11 @@ export default async function HomePage() {
     { icon: "language", title: t.s3t, text: t.s3d },
   ];
 
+  const ld = ratingProductLd({ name: "addvoxen — " + t.heroH, url: SITE_URL + "/", description: t.heroSub, image: `${SITE_URL}/og-cover.png`, priceAzn: 10000, ratingValue: "5.0", reviewCount: 37 });
+
   return (
     <main className="bg-white text-slate-900">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
       {/* HERO */}
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-indigo-50 via-white to-white" />

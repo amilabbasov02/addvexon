@@ -2,9 +2,8 @@ const BASE =
   process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? "https://addvoxen.com";
 
 /**
- * Crawl directives. Public marketing + marketplace + banner detail + user
- * profile surfaces are crawlable; admin / API / dashboard / editor are
- * private so we explicitly disallow them.
+ * Crawl direktivləri. Public marketinq + marketplace + şablon detalı crawl
+ * olunur; admin / API / panel / dashboard / editor / checkout / settings gizli.
  */
 export default function robots() {
   return {
@@ -16,12 +15,15 @@ export default function robots() {
           "/api/",
           "/admin",
           "/admin/",
+          "/panel",
+          "/panel/",
           "/dashboard",
           "/editor",
           "/editor/",
           "/checkout",
           "/settings",
           "/settings/",
+          "/sites/",
         ],
       },
     ],
