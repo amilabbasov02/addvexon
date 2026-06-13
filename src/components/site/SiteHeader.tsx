@@ -4,44 +4,32 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { UserMenu } from "./UserMenu";
-import { ThemeToggle } from "./ThemeToggle";
-import { LocaleSwitcher } from "./LocaleSwitcher";
-import { useLocale } from "./LocaleContext";
+import { Logo } from "./Logo";
 
-type NavItem = { tKey: string; href: string };
+type NavItem = { label: string; href: string };
 
 const NAV: NavItem[] = [
-  { tKey: "nav.designs", href: "/dashboard" },
-  { tKey: "nav.templates", href: "/marketplace" },
-  { tKey: "nav.campaigns", href: "/campaigns" },
-  { tKey: "nav.pricing", href: "/pricing" },
-  { tKey: "nav.about", href: "/about" },
-  { tKey: "nav.support", href: "/support" },
+  { label: "Şablonlar", href: "/marketplace" },
+  { label: "Necə işləyir", href: "/#nece-isleyir" },
+  { label: "Qiymətlər", href: "/pricing" },
+  { label: "Dəstək", href: "/support" },
 ];
 
 function isActive(pathname: string | null, href: string) {
-  if (!pathname) return false;
-  if (href === "/") return pathname === "/";
+  if (!pathname || href.includes("#")) return false;
   return pathname === href || pathname.startsWith(href + "/");
 }
 
 export function SiteHeader() {
   const pathname = usePathname();
-  const { t } = useLocale();
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 inset-x-0 z-50 bg-surface/60 backdrop-blur-xl border-b border-white/10 shadow-2xl">
-      <div className="flex justify-between items-center px-4 sm:px-8 lg:px-16 py-3 w-full mx-auto">
+    <header className="sticky top-0 inset-x-0 z-50 border-b border-slate-200/70 bg-white/80 backdrop-blur-xl">
+      <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-3 sm:px-8">
         <div className="flex items-center gap-10">
-          <Link
-            href="/"
-            className="font-headline-lg text-headline-lg font-bold tracking-tighter text-primary hover:opacity-80 transition-opacity"
-            onClick={() => setOpen(false)}
-          >
-            {t("header.brand")}
-          </Link>
-          <nav className="hidden md:flex items-center gap-7">
+          <Logo href="/" />
+          <nav className="hidden items-center gap-8 md:flex">
             {NAV.map((item) => {
               const active = isActive(pathname, item.href);
               return (
@@ -49,28 +37,32 @@ export function SiteHeader() {
                   key={item.href}
                   href={item.href}
                   className={
-                    "font-label-md text-label-md transition-colors " +
+                    "text-sm font-medium transition-colors " +
                     (active
-                      ? "text-primary border-b-2 border-primary pb-1"
-                      : "text-on-surface-variant hover:text-on-surface")
+                      ? "text-indigo-600"
+                      : "text-slate-600 hover:text-slate-900")
                   }
                 >
-                  {t(item.tKey)}
+                  {item.label}
                 </Link>
               );
             })}
           </nav>
         </div>
 
-        <div className="flex items-center gap-2">
-          <LocaleSwitcher />
-          <ThemeToggle />
+        <div className="flex items-center gap-3">
+          <Link
+            href="/marketplace"
+            className="hidden rounded-full bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-transform hover:scale-[1.03] sm:inline-flex"
+          >
+            Şablona bax
+          </Link>
           <UserMenu />
           <button
             type="button"
-            aria-label="Toggle navigation"
+            aria-label="Menyu"
             aria-expanded={open}
-            className="md:hidden inline-flex items-center justify-center h-10 w-10 rounded-lg text-on-surface hover:bg-white/5 transition-colors"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-slate-700 transition-colors hover:bg-slate-100 md:hidden"
             onClick={() => setOpen((v) => !v)}
           >
             <span className="material-symbols-outlined">
@@ -81,32 +73,24 @@ export function SiteHeader() {
       </div>
 
       {open && (
-        <nav className="md:hidden border-t border-white/10 bg-surface-container/80 backdrop-blur-xl">
-          <div className="flex flex-col px-margin-mobile py-4 gap-1">
-            {NAV.map((item) => {
-              const active = isActive(pathname, item.href);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setOpen(false)}
-                  className={
-                    "font-label-md text-label-md px-4 py-3 rounded-lg transition-colors " +
-                    (active
-                      ? "bg-primary-container/20 text-primary-fixed-dim"
-                      : "text-on-surface-variant hover:text-on-surface hover:bg-white/5")
-                  }
-                >
-                  {t(item.tKey)}
-                </Link>
-              );
-            })}
+        <nav className="border-t border-slate-200 bg-white md:hidden">
+          <div className="flex flex-col gap-1 px-4 py-4">
+            {NAV.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setOpen(false)}
+                className="rounded-lg px-4 py-3 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100"
+              >
+                {item.label}
+              </Link>
+            ))}
             <Link
-              href="/editor?new=1"
+              href="/marketplace"
               onClick={() => setOpen(false)}
-              className="mt-2 inline-flex items-center justify-center bg-primary text-on-primary font-label-md text-label-md px-5 py-3 rounded-full transition-all"
+              className="mt-2 inline-flex items-center justify-center rounded-full bg-indigo-600 px-5 py-3 text-sm font-semibold text-white"
             >
-              {t("nav.signup")}
+              Şablona bax
             </Link>
           </div>
         </nav>

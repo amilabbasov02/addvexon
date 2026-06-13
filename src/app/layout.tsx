@@ -27,58 +27,47 @@ const SITE_URL =
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "Addvoxen — AI Creative Suite for ad banners",
-    template: "%s · Addvoxen",
+    default: "addvoxen — Hazır saytlar marketi + managed hosting",
+    template: "%s · addvoxen",
   },
   description:
-    "Design, AI-generate, magic-resize and export ad banners in seconds. Built for high-growth marketing teams shipping creative across Meta, Google, TikTok and LinkedIn.",
+    "Hazır sayt şablonu seç, ödə, biz host edək. Öz domenini qoş, öz panelindən idarə et — kod yazmadan, dəqiqələr içində canlı sayt.",
   keywords: [
-    "ad banner generator",
-    "AI banner design",
-    "marketing creative platform",
-    "magic resize",
-    "html5 banner export",
-    "ad creative suite",
-    "social media ads",
-    "google display ads",
+    "hazır sayt",
+    "landing page Azərbaycan",
+    "sayt şablonları",
+    "managed hosting",
+    "sayt qurmaq",
+    "veb sayt hazırlamaq",
+    "domen qoşma",
   ],
-  authors: [{ name: "Addvoxen" }],
-  creator: "Addvoxen",
-  publisher: "Addvoxen",
-  alternates: {
-    canonical: SITE_URL,
-    languages: {
-      en: `${SITE_URL}/en`,
-      az: `${SITE_URL}/az`,
-      tr: `${SITE_URL}/tr`,
-      ru: `${SITE_URL}/ru`,
-      es: `${SITE_URL}/es`,
-    },
-  },
+  authors: [{ name: "addvoxen" }],
+  creator: "addvoxen",
+  publisher: "addvoxen",
+  alternates: { canonical: SITE_URL },
   openGraph: {
     type: "website",
     url: SITE_URL,
-    siteName: "Addvoxen",
-    title: "Addvoxen — AI Creative Suite for ad banners",
+    siteName: "addvoxen",
+    title: "addvoxen — Hazır saytlar marketi + managed hosting",
     description:
-      "Design, AI-generate, magic-resize and export ad banners across every platform — in seconds.",
-    locale: "en_US",
+      "Hazır sayt şablonu seç, ödə, biz host edək. Öz domenini qoş, panellə idarə et — kod yazmadan.",
+    locale: "az_AZ",
     images: [
       {
         url: `${SITE_URL}/og-cover.png`,
         width: 1200,
         height: 630,
-        alt: "Addvoxen AI Creative Suite",
+        alt: "addvoxen — hazır saytlar marketi",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Addvoxen — AI Creative Suite",
+    title: "addvoxen — Hazır saytlar marketi",
     description:
-      "Design, AI-generate, resize and export ad banners across Meta, Google, TikTok, LinkedIn — from one canvas.",
+      "Hazır sayt şablonu seç, ödə, biz host edək — kod yazmadan, dəqiqələr içində canlı.",
     images: [`${SITE_URL}/og-cover.png`],
-    creator: "@addvoxen",
   },
   robots: {
     index: true,
@@ -91,59 +80,34 @@ export const metadata: Metadata = {
       "max-video-preview": -1,
     },
   },
-  category: "Marketing & Advertising",
-  applicationName: "Addvoxen",
+  category: "Web Hosting & Website Builder",
+  applicationName: "addvoxen",
 };
 
-/** JSON-LD structured data — Organization + WebSite + SoftwareApplication.
- *  Tells Google what the site IS, who owns it, and how to render rich
- *  results (sitelinks search box, ratings, pricing). */
+/** JSON-LD — Organization + WebSite (yeni məhsul: hazır saytlar marketi). */
 const JSON_LD = [
   {
     "@context": "https://schema.org",
     "@type": "Organization",
-    name: "Addvoxen",
+    name: "addvoxen",
     url: SITE_URL,
     logo: `${SITE_URL}/icon.svg`,
-    sameAs: [
-      "https://twitter.com/addvoxen",
-      "https://www.linkedin.com/company/addvoxen",
-    ],
     contactPoint: {
       "@type": "ContactPoint",
       email: "support@addvoxen.com",
       contactType: "customer support",
-      availableLanguage: ["English", "Azerbaijani", "Turkish", "Russian", "Spanish"],
+      availableLanguage: ["Azerbaijani"],
     },
   },
   {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: "Addvoxen",
+    name: "addvoxen",
     url: SITE_URL,
     potentialAction: {
       "@type": "SearchAction",
       target: `${SITE_URL}/marketplace?q={search_term_string}`,
       "query-input": "required name=search_term_string",
-    },
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    name: "Addvoxen",
-    operatingSystem: "Web",
-    applicationCategory: "DesignApplication",
-    description:
-      "AI-powered ad banner creative suite: editor, magic resize, marketplace templates, analytics.",
-    offers: [
-      { "@type": "Offer", name: "Free", price: "0", priceCurrency: "USD" },
-      { "@type": "Offer", name: "Pro", price: "12", priceCurrency: "USD" },
-      { "@type": "Offer", name: "Team", price: "25", priceCurrency: "USD" },
-    ],
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: "4.8",
-      reviewCount: "42",
     },
   },
 ];
@@ -155,31 +119,21 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
-      className={`${geist.variable} ${inter.variable} dark h-full antialiased selection:bg-primary selection:text-on-primary`}
+      lang="az"
+      className={`${geist.variable} ${inter.variable} light h-full antialiased`}
     >
       <head>
         <link
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
         />
-        {/* Theme bootstrap — flip html.light before paint if the user
-            previously chose light mode. Inline so no FOUC. */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `try{var t=localStorage.getItem('addvoxen.theme');if(t==='light'){document.documentElement.classList.add('light');document.documentElement.classList.remove('dark')}}catch(e){}`,
-          }}
-        />
-        {/* JSON-LD structured data — Google reads this to render rich
-            results (sitelinks search box, app card, ratings) the moment
-            it indexes the site. */}
+        {/* JSON-LD strukturlu data — Google üçün (hazır saytlar marketi). */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
         />
       </head>
-      <body className="min-h-full bg-surface text-on-surface">
-        <div className="noise-overlay fixed inset-0 z-100 pointer-events-none" aria-hidden />
+      <body className="min-h-full bg-white text-slate-900">
         <LocaleProvider>
           <PageViewTracker />
           <GlobalHeader />

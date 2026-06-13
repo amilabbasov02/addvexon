@@ -2,104 +2,80 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useLocale } from "./LocaleContext";
+import { Logo } from "./Logo";
+import { BRAND } from "@/lib/brand";
 
 /**
- * Site-wide footer with legal + support links. Hidden on /editor (which
- * runs in fixed-fullscreen mode) but visible everywhere else so the legal
- * links are reachable from any page — required by Paddle and most payment
- * providers as part of merchant onboarding.
+ * Platforma footer-i (işıqlı). /editor, /admin və tenant saytlarında (/sites)
+ * gizlənir — onların öz konteksti var.
  */
 export function SiteFooter() {
   const pathname = usePathname();
-  const { t } = useLocale();
   if (pathname?.startsWith("/editor")) return null;
   if (pathname?.startsWith("/admin")) return null;
+  if (pathname?.startsWith("/sites")) return null;
+
+  const year = new Date().getFullYear();
+
+  const cols: { title: string; links: { label: string; href: string }[] }[] = [
+    {
+      title: "Məhsul",
+      links: [
+        { label: "Şablonlar", href: "/marketplace" },
+        { label: "Qiymətlər", href: "/pricing" },
+        { label: "Necə işləyir", href: "/#nece-isleyir" },
+      ],
+    },
+    {
+      title: "Şirkət",
+      links: [
+        { label: "Haqqımızda", href: "/about" },
+        { label: "Dəstək", href: "/support" },
+      ],
+    },
+    {
+      title: "Hüquqi",
+      links: [
+        { label: "Məxfilik", href: "/privacy" },
+        { label: "İstifadə şərtləri", href: "/terms" },
+        { label: "Geri qaytarma", href: "/refund" },
+      ],
+    },
+  ];
 
   return (
-    <footer className="mt-20 border-t border-white/10 bg-surface-container/40">
-      <div className="px-4 sm:px-8 lg:px-16 xl:px-24 py-10 max-w-7xl mx-auto">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          <div className="col-span-2">
-            <Link
-              href="/"
-              className="font-headline-lg-mobile text-headline-lg-mobile font-bold tracking-tighter text-primary inline-block"
-            >
-              Addvoxen
-            </Link>
-            <p className="mt-3 text-on-surface-variant text-label-sm font-label-sm max-w-sm leading-relaxed">
-              {t("footer.tagline")}
-            </p>
-            <p className="mt-4 text-on-surface-variant text-label-sm font-label-sm">
-              <a
-                href="mailto:support@addvoxen.com"
-                className="hover:text-on-surface"
-              >
-                support@addvoxen.com
-              </a>
+    <footer className="border-t border-slate-200 bg-slate-50">
+      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-8">
+        <div className="grid gap-10 md:grid-cols-4">
+          <div className="md:col-span-1">
+            <Logo href="/" />
+            <p className="mt-4 max-w-xs text-sm leading-relaxed text-slate-500">
+              {BRAND.tagline}
             </p>
           </div>
-
-          <div>
-            <p className="text-on-surface font-label-md text-label-md mb-3">
-              {t("footer.product")}
-            </p>
-            <ul className="space-y-2 text-label-sm font-label-sm text-on-surface-variant">
-              <li>
-                <Link href="/marketplace" className="hover:text-on-surface">
-                  {t("nav.templates")}
-                </Link>
-              </li>
-              <li>
-                <Link href="/pricing" className="hover:text-on-surface">
-                  {t("nav.pricing")}
-                </Link>
-              </li>
-              <li>
-                <Link href="/campaigns" className="hover:text-on-surface">
-                  {t("nav.campaigns")}
-                </Link>
-              </li>
-              <li>
-                <Link href="/about" className="hover:text-on-surface">
-                  {t("nav.about")}
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <p className="text-on-surface font-label-md text-label-md mb-3">
-              {t("footer.legal")}
-            </p>
-            <ul className="space-y-2 text-label-sm font-label-sm text-on-surface-variant">
-              <li>
-                <Link href="/terms" className="hover:text-on-surface">
-                  {t("legal.terms")}
-                </Link>
-              </li>
-              <li>
-                <Link href="/privacy" className="hover:text-on-surface">
-                  {t("legal.privacy")}
-                </Link>
-              </li>
-              <li>
-                <Link href="/refund" className="hover:text-on-surface">
-                  {t("legal.refund")}
-                </Link>
-              </li>
-              <li>
-                <Link href="/support" className="hover:text-on-surface">
-                  {t("nav.support")}
-                </Link>
-              </li>
-            </ul>
-          </div>
+          {cols.map((col) => (
+            <div key={col.title}>
+              <h3 className="text-sm font-semibold text-slate-900">{col.title}</h3>
+              <ul className="mt-4 space-y-3">
+                {col.links.map((l) => (
+                  <li key={l.href}>
+                    <Link
+                      href={l.href}
+                      className="text-sm text-slate-500 transition-colors hover:text-slate-900"
+                    >
+                      {l.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
-
-        <div className="mt-10 pt-6 border-t border-white/5 flex flex-col sm:flex-row gap-3 sm:items-center justify-between text-label-sm font-label-sm text-on-surface-variant">
-          <p>© {new Date().getFullYear()} Addvoxen. {t("footer.rights")}</p>
-          <p className="text-xs">{t("footer.payments_by")}</p>
+        <div className="mt-12 flex flex-col items-center justify-between gap-3 border-t border-slate-200 pt-6 text-sm text-slate-400 sm:flex-row">
+          <span>© {year} {BRAND.name}. Bütün hüquqlar qorunur.</span>
+          <a href={`mailto:${BRAND.email}`} className="hover:text-slate-700">
+            {BRAND.email}
+          </a>
         </div>
       </div>
     </footer>

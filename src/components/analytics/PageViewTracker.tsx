@@ -34,7 +34,10 @@ export function PageViewTracker() {
     if (
       pathname.startsWith("/admin") ||
       pathname.startsWith("/editor") ||
-      pathname.startsWith("/api/")
+      pathname.startsWith("/api/") ||
+      // Tenant public saytları platforma analitikasına daxil olmur —
+      // onların öz GA4/GTM-i var.
+      pathname.startsWith("/sites")
     ) {
       return;
     }

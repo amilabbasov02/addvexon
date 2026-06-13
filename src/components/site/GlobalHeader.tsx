@@ -11,6 +11,9 @@ import { SiteHeader } from "./SiteHeader";
 export function GlobalHeader() {
   const pathname = usePathname();
   const isEditor = pathname?.startsWith("/editor");
-  if (isEditor) return null;
+  // Tenant public saytları (host-based rewrite → /_sites) platforma
+  // header-ini göstərmir — onların öz dizaynı var.
+  const isTenantSite = pathname?.startsWith("/sites");
+  if (isEditor || isTenantSite) return null;
   return <SiteHeader />;
 }

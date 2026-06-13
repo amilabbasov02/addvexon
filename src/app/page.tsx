@@ -1,284 +1,245 @@
-"use client";
-// Auto-generated from stitch-html/. Edit the source HTML and rerun
-// `node scripts/convert-stitch.mjs` if you need to regenerate.
-/* eslint-disable @next/next/no-img-element, react/no-unknown-property, @typescript-eslint/no-unused-vars */
-import * as React from "react";
-import { useLocale } from "@/components/site/LocaleContext";
+/**
+ * Ana səhifə — yeni məhsul: hazır saytlar marketi + managed hosting.
+ * Server komponent (async) — featured şablonları birbaşa DB-dən çəkir.
+ * Dizayn: açıq/işıqlı, çoxlu boşluq, yuvarlaq künclər, modern sans-serif.
+ */
+import Link from "next/link";
+import { desc, eq } from "drizzle-orm";
+import { db } from "@/db";
+import { siteTemplates } from "@/db/schema";
+import { BRAND } from "@/lib/brand";
+import { azn } from "@/lib/format";
 
-export default function LandingPage() {
-  const { t } = useLocale();
+export const dynamic = "force-dynamic";
+
+async function getFeatured() {
+  try {
+    return await db
+      .select()
+      .from(siteTemplates)
+      .where(eq(siteTemplates.published, true))
+      .orderBy(siteTemplates.sortOrder, desc(siteTemplates.createdAt))
+      .limit(6);
+  } catch {
+    return [];
+  }
+}
+
+export default async function HomePage() {
+  const templates = await getFeatured();
+
   return (
-    <div data-stitch-theme="dark" className="addvoxen-stitch-screen">
-      {/* Navigation Shell */}
-      <main className="pt-32">
-      {/* Hero Section */}
-      <section className="relative px-margin-mobile md:px-margin-desktop mb-xl overflow-visible">
-      <div className="max-w-[1440px] mx-auto flex flex-col items-center text-center">
-      <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-primary-container/10 border border-primary/20 text-primary-fixed-dim font-label-sm text-label-sm mb-8 animate-pulse">
-      <span className="material-symbols-outlined text-[16px]">auto_awesome</span>
-                          {t("home.hero.eyebrow")}
+    <main className="bg-white text-slate-900">
+      {/* HERO */}
+      <section className="relative overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-indigo-50 via-white to-white" />
+        <div className="mx-auto max-w-7xl px-4 pb-20 pt-20 sm:px-8 md:pt-28">
+          <div className="mx-auto max-w-3xl text-center">
+            <span className="inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-indigo-50 px-4 py-1.5 text-sm font-medium text-indigo-600">
+              <span className="material-symbols-outlined text-base">bolt</span>
+              Kod yazmadan, dəqiqələr içində
+            </span>
+            <h1 className="mt-6 text-4xl font-extrabold leading-tight tracking-tight text-slate-900 md:text-6xl">
+              {BRAND.tagline}
+            </h1>
+            <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate-600">
+              {BRAND.description}
+            </p>
+            <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <Link
+                href="/marketplace"
+                className="inline-flex items-center gap-2 rounded-full bg-indigo-600 px-7 py-3.5 text-sm font-semibold text-white shadow-sm transition-transform hover:scale-[1.03]"
+              >
+                Şablonlara bax
+                <span className="material-symbols-outlined text-lg">arrow_forward</span>
+              </Link>
+              <Link
+                href="#nece-isleyir"
+                className="inline-flex items-center rounded-full border border-slate-200 bg-white px-7 py-3.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+              >
+                Necə işləyir?
+              </Link>
+            </div>
+            <p className="mt-5 text-sm text-slate-400">
+              Abunə: {azn(10000)} giriş + {azn(5000)}/ay · və ya export {azn(100000)}
+            </p>
+          </div>
+
+          {/* Browser mockup */}
+          <div className="mx-auto mt-16 max-w-4xl">
+            <div className="overflow-hidden rounded-2xl border border-slate-200 shadow-xl">
+              <div className="flex items-center gap-2 border-b border-slate-100 bg-slate-50 px-4 py-3">
+                <span className="h-3 w-3 rounded-full bg-red-300" />
+                <span className="h-3 w-3 rounded-full bg-amber-300" />
+                <span className="h-3 w-3 rounded-full bg-green-300" />
+                <span className="ml-3 rounded-md bg-white px-3 py-1 text-xs text-slate-400">
+                  senin-saytin.{BRAND.domain}
+                </span>
+              </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="https://images.unsplash.com/photo-1559028012-481c04fa702d?w=1400&q=80"
+                alt="Sayt önizləməsi"
+                className="h-72 w-full object-cover md:h-96"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* NECƏ İŞLƏYİR */}
+      <section id="nece-isleyir" className="bg-slate-50 py-20 md:py-28">
+        <div className="mx-auto max-w-7xl px-4 sm:px-8">
+          <div className="mx-auto max-w-2xl text-center">
+            <h2 className="text-3xl font-bold tracking-tight md:text-4xl">Necə işləyir?</h2>
+            <p className="mt-4 text-lg text-slate-600">Üç sadə addım — qalanını biz edirik.</p>
+          </div>
+          <div className="mt-14 grid gap-8 md:grid-cols-3">
+            {[
+              {
+                icon: "dashboard_customize",
+                title: "1. Şablon seç",
+                text: "Marketdən bəyəndiyin hazır saytı seç, canlı önizləməyə bax.",
+              },
+              {
+                icon: "verified",
+                title: "2. Ödə və təsdiqlə",
+                text: "Ödənişdən sonra saytın bizim serverdə aktivləşir — heç bir quraşdırma yoxdur.",
+              },
+              {
+                icon: "language",
+                title: "3. Domenini qoş, idarə et",
+                text: "Öz domenini qoş, panellə mətn/rəng/logonu dəyiş — istədiyin kimi.",
+              },
+            ].map((s) => (
+              <div key={s.title} className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+                  <span className="material-symbols-outlined text-2xl">{s.icon}</span>
+                </span>
+                <h3 className="mt-5 text-lg font-semibold">{s.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-slate-600">{s.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FEATURED ŞABLONLAR */}
+      <section className="py-20 md:py-28">
+        <div className="mx-auto max-w-7xl px-4 sm:px-8">
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <h2 className="text-3xl font-bold tracking-tight md:text-4xl">Hazır şablonlar</h2>
+              <p className="mt-3 text-lg text-slate-600">Sənayəyə uyğun, peşəkar dizaynlar.</p>
+            </div>
+            <Link href="/marketplace" className="hidden shrink-0 text-sm font-semibold text-indigo-600 hover:text-indigo-700 sm:inline">
+              Hamısına bax →
+            </Link>
+          </div>
+
+          {templates.length === 0 ? (
+            <p className="mt-10 rounded-2xl border border-dashed border-slate-200 p-10 text-center text-slate-400">
+              Hələ şablon əlavə olunmayıb.
+            </p>
+          ) : (
+            <div className="mt-12 grid gap-7 sm:grid-cols-2 lg:grid-cols-3">
+              {templates.map((t) => (
+                <Link
+                  key={t.id}
+                  href={`/marketplace/${t.slug}`}
+                  className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-lg"
+                >
+                  <div className="aspect-[16/10] overflow-hidden bg-slate-100">
+                    {t.thumbnailUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={t.thumbnailUrl} alt={t.name} className="h-full w-full object-cover transition-transform group-hover:scale-105" />
+                    ) : (
+                      <div className="flex h-full items-center justify-center bg-gradient-to-br from-indigo-50 to-sky-50 text-indigo-300">
+                        <span className="material-symbols-outlined text-5xl">web</span>
                       </div>
-      <h1 className="font-display-lg text-display-lg max-w-4xl mb-6 bg-gradient-to-b from-on-surface to-on-surface/50 bg-clip-text text-transparent">
-                          {t("home.hero.title")}
-                      </h1>
-      <p className="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mb-12">
-                          {t("home.hero.body")}
-                      </p>
-      <div className="flex flex-col sm:flex-row gap-4 mb-xl">
-      <a className="ai-gradient text-on-primary font-label-md text-label-md px-10 py-4 rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-all flex items-center gap-2" href="/editor?new=1" role="button">
-                              {t("home.hero.primary")}
-                              <span className="material-symbols-outlined">arrow_forward</span>
-      </a>
-      <a className="glass-panel text-on-surface font-label-md text-label-md px-10 py-4 rounded-xl hover:bg-white/5 transition-all" href="#showcase" role="button">
-                              {t("home.hero.secondary")}
-                          </a>
-      </div>
-      {/* Floating Banner Preview */}
-      <div className="relative w-full max-w-5xl mt-8">
-      <div className="absolute -top-12 -left-12 w-64 h-64 bg-primary/20 rounded-full blur-[100px] pointer-events-none"></div>
-      <div className="absolute -bottom-12 -right-12 w-64 h-64 bg-tertiary/20 rounded-full blur-[100px] pointer-events-none"></div>
-      <div className="glass-panel rounded-3xl p-4 md:p-8 transform perspective-1000 rotate-x-2 shadow-2xl relative z-10 overflow-hidden">
-      <div className="shimmer absolute inset-0"></div>
-      <img alt="AI Banner Preview" className="w-full h-auto rounded-xl shadow-inner border border-white/5" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBjG_CKgg6mdjXBLAcd8z7u7tjNcFCHujIa1PIH6p8GZqs4IN-SvoRfPPHJaU1EXR7X2fVIETb7-iGjWJxBzTFmZEZoHbmLYnrDIcaH7GmKD6PsJCYYi1dH6AR07ksM0VZhg3o5HCe6M39N_nM8s7zHkl51HnDI_nU8x4xE84WEcDyQ8Zy-lauIi0v4Erzg-IeqIDLG1z8LeqDBZJMukC6Nab8SdcktVoDPjCXb4SB5PeRl3F2UEqZy7jcq6BOEbPep3JBitHCLlk4c" />
-      {/* Floating Micro-UI Elements */}
-      <div className="absolute top-12 left-12 glass-panel p-4 rounded-2xl hidden md:block animate-bounce shadow-2xl">
-      <div className="flex items-center gap-3">
-      <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
-      <span className="material-symbols-outlined text-green-400">trending_up</span>
-      </div>
-      <div>
-      <p className="font-label-sm text-label-sm text-on-surface-variant">CTR Boost</p>
-      <p className="font-label-md text-label-md font-bold text-on-surface">+124%</p>
-      </div>
-      </div>
-      </div>
-      </div>
-      </div>
-      </div>
+                    )}
+                  </div>
+                  <div className="p-5">
+                    <div className="flex items-center gap-2">
+                      <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-500">
+                        {t.type === "landing" ? "Landing" : "Çoxsəhifəli"}
+                      </span>
+                      <span className="text-xs text-slate-400">{t.category}</span>
+                    </div>
+                    <h3 className="mt-3 text-base font-semibold group-hover:text-indigo-600">{t.name}</h3>
+                    <p className="mt-1 line-clamp-2 text-sm text-slate-500">{t.tagline}</p>
+                    <p className="mt-4 text-sm font-semibold text-slate-900">
+                      {azn(t.priceSetupAzn)} <span className="font-normal text-slate-400">giriş + {azn(t.priceMonthlyAzn)}/ay</span>
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
       </section>
-      {/* Trusted By */}
-      <section className="py-xl bg-surface-container-lowest/50">
-      <div className="max-w-7xl mx-auto px-margin-desktop">
-      <p className="text-center font-label-sm text-label-sm text-outline mb-10 tracking-[0.2em] uppercase">{t("home.trusted_by")}</p>
-      <div className="flex flex-wrap justify-center items-center gap-16 opacity-40 grayscale hover:grayscale-0 transition-all duration-700">
-      <span className="font-display-sm text-display-sm font-bold tracking-tighter">NEXUS</span>
-      <span className="font-display-sm text-display-sm font-bold tracking-tighter italic">VORTEX</span>
-      <span className="font-display-sm text-display-sm font-bold tracking-tighter">ZENITH</span>
-      <span className="font-display-sm text-display-sm font-bold tracking-tighter italic underline decoration-primary">PULSE</span>
-      <span className="font-display-sm text-display-sm font-bold tracking-tighter">QUANTUM</span>
-      </div>
-      </div>
+
+      {/* QİYMƏT */}
+      <section className="bg-slate-50 py-20 md:py-28">
+        <div className="mx-auto max-w-5xl px-4 sm:px-8">
+          <div className="mx-auto max-w-2xl text-center">
+            <h2 className="text-3xl font-bold tracking-tight md:text-4xl">Sadə qiymət</h2>
+            <p className="mt-4 text-lg text-slate-600">Gizli xərc yoxdur. İstədiyin modeli seç.</p>
+          </div>
+          <div className="mt-14 grid gap-7 md:grid-cols-2">
+            <div className="rounded-3xl border-2 border-indigo-200 bg-white p-8 shadow-sm">
+              <span className="inline-flex rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-600">Ən populyar</span>
+              <h3 className="mt-4 text-xl font-bold">Abunə (hosted)</h3>
+              <p className="mt-2 text-slate-500">Saytı biz host edirik, sən idarə edirsən.</p>
+              <p className="mt-6 text-3xl font-extrabold">{azn(10000)} <span className="text-base font-medium text-slate-400">giriş</span></p>
+              <p className="text-lg font-semibold text-slate-700">+ {azn(5000)} / ay</p>
+              <ul className="mt-6 space-y-3 text-sm text-slate-600">
+                {["Managed hosting + SSL", "Öz domenini qoş", "Panellə tam idarə", "Texniki dəstək"].map((f) => (
+                  <li key={f} className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-base text-indigo-500">check_circle</span>{f}
+                  </li>
+                ))}
+              </ul>
+              <Link href="/marketplace" className="mt-8 inline-flex w-full items-center justify-center rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold text-white">
+                Şablon seç
+              </Link>
+            </div>
+            <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+              <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">Developer / Agentlik</span>
+              <h3 className="mt-4 text-xl font-bold">Export (self-host)</h3>
+              <p className="mt-2 text-slate-500">Kodu, admini və SQL dump-ı al — öz serverinə qur.</p>
+              <p className="mt-6 text-3xl font-extrabold">{azn(100000)} <span className="text-base font-medium text-slate-400">bir dəfəlik</span></p>
+              <p className="text-lg font-semibold text-transparent">.</p>
+              <ul className="mt-6 space-y-3 text-sm text-slate-600">
+                {["Tam mənbə kodu (zip)", "Admin panel daxil", "SQL dump + install README", "Aylıq ödəniş yoxdur"].map((f) => (
+                  <li key={f} className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-base text-slate-400">check_circle</span>{f}
+                  </li>
+                ))}
+              </ul>
+              <Link href="/marketplace" className="mt-8 inline-flex w-full items-center justify-center rounded-full border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                Ətraflı
+              </Link>
+            </div>
+          </div>
+        </div>
       </section>
-      {/* Trending Templates */}
-      <section className="py-xl px-margin-mobile md:px-margin-desktop">
-      <div className="max-w-7xl mx-auto">
-      <div className="flex justify-between items-end mb-12">
-      <div>
-      <h2 className="font-headline-lg text-headline-lg text-on-surface mb-2">{t("home.templates.title")}</h2>
-      <p className="font-body-md text-body-md text-on-surface-variant">{t("home.templates.body")}</p>
-      </div>
-      <a className="text-primary font-label-md text-label-md flex items-center gap-2 hover:gap-3 transition-all" href="/marketplace" role="button">
-                              {t("home.templates.cta")} <span className="material-symbols-outlined">chevron_right</span>
-      </a>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-gutter">
-      {/* Template Card 1 */}
-      <div className="group glass-panel rounded-3xl overflow-hidden hover:border-primary/50 transition-all duration-500">
-      <div className="aspect-[4/5] overflow-hidden">
-      <img alt="Modern Minimal" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCn4onfvhSl_BVzm3P4_MdkQY59Zl1DrPLZF70nXqQHflsQaNyS6wwU2BfpIsWhLDwBi7d6H7roB8lCn4buYPZ5z5SD4wDik1ny14xijQKeSP18TWDBjDHszL9owj_Eno4qbe3M8eg9fgEhyvxk3tK_JtImOgBW3rtwo0MsnK_Dnu-bE5iWpNfgUvkR_3UsJg9D2h0gYNrdpVZkUAzFpbM7aC_jnz7qH5dklVxpPhfgfxChpTbn-JEpmbrJtKYJ7nYMElrEuQLz9kTf" />
-      </div>
-      <div className="p-6">
-      <div className="flex justify-between items-start mb-4">
-      <h3 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Neo-Minimal</h3>
-      <span className="px-3 py-1 rounded-full bg-primary/10 text-primary font-label-sm text-label-sm">High CTR</span>
-      </div>
-      <a className="w-full py-3 rounded-xl border border-white/10 hover:bg-primary hover:text-on-primary transition-all font-label-md text-label-md" href="/editor?new=1" role="button">{t("home.templates.use")}</a>
-      </div>
-      </div>
-      {/* Template Card 2 */}
-      <div className="group glass-panel rounded-3xl overflow-hidden hover:border-primary/50 transition-all duration-500">
-      <div className="aspect-[4/5] overflow-hidden">
-      <img alt="Vibrant Tech" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCELoea6b1VqNqWMr5L5y0pJP8PG3b7unEkaKBEp-bMkm43kB0oA5ghAl41Xei-joPoHox8Sdc3eaPh4r0hYGOTogRspLKEzWpx5Tn4t-dwajFD8210BCOmf-hdOtOlDOnaM5Syv8cxSWlJfd3hY_BMysmqU2BRTVxQcdd35MiI8lDFPxq5LatG1l-jL_KHJAbKF1_aOh9K1ZsdpvXIzccvfZonKFHR_df_0PWUh-KBVgfZsNgEb21widssWHicABuBVJ_5oaf5wp3r" />
-      </div>
-      <div className="p-6">
-      <div className="flex justify-between items-start mb-4">
-      <h3 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Cyber Flow</h3>
-      <span className="px-3 py-1 rounded-full bg-tertiary/10 text-tertiary font-label-sm text-label-sm">Trending</span>
-      </div>
-      <a className="w-full py-3 rounded-xl border border-white/10 hover:bg-primary hover:text-on-primary transition-all font-label-md text-label-md" href="/editor?new=1" role="button">{t("home.templates.use")}</a>
-      </div>
-      </div>
-      {/* Template Card 3 */}
-      <div className="group glass-panel rounded-3xl overflow-hidden hover:border-primary/50 transition-all duration-500">
-      <div className="aspect-[4/5] overflow-hidden">
-      <img alt="Silk Smooth" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVT2GBJLBZCIFzsZ0YPNb1GydupVnaOPFijaViJzV2i1mZYCoMF2yGNAhGH0NunDt1KjdaObv919nUd3QX-oICis5In7jy6i7j7gkPZIGx3DTFPy6bzVrE4WSotiY9UifG7UXQw22LMczgDsNlImdGIgKzql9k9R1lXlJl8WMcYHuUIE_LMHKMmJotRNCAwTBT4K8MWfyTJQ44oJvLGXQ5QleJnCRLOFQP9upbwUzNJ_s1d7Uk_OQmfIuq-J-IU9Ysp0x0g9dzitzW" />
-      </div>
-      <div className="p-6">
-      <div className="flex justify-between items-start mb-4">
-      <h3 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Luxe Matte</h3>
-      <span className="px-3 py-1 rounded-full bg-primary/10 text-primary font-label-sm text-label-sm">Premium</span>
-      </div>
-      <a className="w-full py-3 rounded-xl border border-white/10 hover:bg-primary hover:text-on-primary transition-all font-label-md text-label-md" href="/editor?new=1" role="button">{t("home.templates.use")}</a>
-      </div>
-      </div>
-      </div>
-      </div>
+
+      {/* FINAL CTA */}
+      <section className="py-20 md:py-28">
+        <div className="mx-auto max-w-5xl px-4 sm:px-8">
+          <div className="rounded-3xl bg-gradient-to-br from-indigo-600 to-violet-600 px-8 py-16 text-center text-white shadow-lg">
+            <h2 className="text-3xl font-bold tracking-tight md:text-4xl">Saytını bu gün canlandır</h2>
+            <p className="mx-auto mt-4 max-w-xl text-indigo-100">
+              Şablonu seç, qalanını biz edək. Bir neçə dəqiqəyə öz domenində canlı sayt.
+            </p>
+            <Link href="/marketplace" className="mt-8 inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-semibold text-indigo-600 transition-transform hover:scale-[1.03]">
+              İndi başla
+              <span className="material-symbols-outlined text-lg">arrow_forward</span>
+            </Link>
+          </div>
+        </div>
       </section>
-      {/* Features Bento Grid */}
-      <section className="py-xl px-margin-mobile md:px-margin-desktop bg-surface-container-lowest">
-      <div className="max-w-7xl mx-auto">
-      <div className="text-center mb-16">
-      <h2 className="font-display-sm text-display-sm text-on-surface mb-4">{t("home.features.title")}</h2>
-      <p className="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto">{t("home.features.body")}</p>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-gutter h-auto md:h-[600px]">
-      <div className="md:col-span-8 glass-panel rounded-[32px] p-10 flex flex-col justify-between group overflow-hidden relative">
-      <div className="relative z-10">
-      <span className="material-symbols-outlined text-primary text-5xl mb-6 group-hover:scale-110 transition-transform">aspect_ratio</span>
-      <h3 className="font-headline-lg text-headline-lg text-on-surface mb-4">{t("home.features.resize.title")}</h3>
-      <p className="font-body-md text-body-md text-on-surface-variant max-w-md">{t("home.features.resize.body")}</p>
-      </div>
-      <div className="absolute bottom-0 right-0 w-1/2 h-full hidden md:block opacity-30 group-hover:opacity-50 transition-opacity">
-      <img alt="Analytics Feature" className="w-full h-full object-cover rounded-tl-[64px]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBIHOzY5ca8EkRIRIMcRYi4vYyuoYwYrCGS92Mkhxmr5Xs1VSQBroQkiF_VidDCnNpMNVifBATTHZ2i1Flb3b719DguiRoxOEzTZyjy7-ghpTT-8oNLoq5N1JC0x9rAKq3M_0C1P5xISNkdMwfDMyvz4KYYI338xFRYXQxW4znpgSyPFVqZMV7GSgHFzOaf5eXqySfwcHra7JfzjSkyojSMHudXb04Tvs27Qg942GJiJ-GoFio1MAgX49APsjERvHDqG6HDcHMfEgHb" />
-      </div>
-      </div>
-      <div className="md:col-span-4 glass-panel rounded-[32px] p-10 flex flex-col justify-center items-center text-center group border-tertiary/20">
-      <span className="material-symbols-outlined text-tertiary text-5xl mb-6 group-hover:rotate-12 transition-transform">auto_fix_high</span>
-      <h3 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-4">{t("home.features.polish.title")}</h3>
-      <p className="font-body-md text-body-md text-on-surface-variant">{t("home.features.polish.body")}</p>
-      </div>
-      <div className="md:col-span-4 glass-panel rounded-[32px] p-10 group bg-primary-container/5 border-primary/20">
-      <span className="material-symbols-outlined text-primary text-5xl mb-6">edit_square</span>
-      <h4 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-2">{t("home.features.editor.title")}</h4>
-      <p className="font-body-md text-body-md text-on-surface-variant">{t("home.features.editor.body")}</p>
-      </div>
-      <div className="md:col-span-8 glass-panel rounded-[32px] p-10 flex items-center gap-8 group">
-      <div className="flex-1">
-      <span className="material-symbols-outlined text-secondary text-5xl mb-6">insights</span>
-      <h4 className="font-headline-lg text-headline-lg text-on-surface mb-2">{t("home.features.analytics.title")}</h4>
-      <p className="font-body-md text-body-md text-on-surface-variant">{t("home.features.analytics.body")}</p>
-      </div>
-      <div className="hidden lg:flex gap-2">
-      <div className="w-12 h-32 bg-primary/20 rounded-full flex items-end p-1">
-      <div className="w-full bg-primary rounded-full h-3/4 animate-bounce"></div>
-      </div>
-      <div className="w-12 h-32 bg-primary/20 rounded-full flex items-end p-1">
-      <div className="w-full bg-primary rounded-full h-1/2 animate-bounce [animation-delay:0.2s]"></div>
-      </div>
-      <div className="w-12 h-32 bg-primary/20 rounded-full flex items-end p-1">
-      <div className="w-full bg-primary rounded-full h-full animate-bounce [animation-delay:0.4s]"></div>
-      </div>
-      </div>
-      </div>
-      </div>
-      </div>
-      </section>
-      {/* Live Analytics Preview */}
-      <section className="py-xl px-margin-mobile md:px-margin-desktop overflow-hidden">
-      <div className="max-w-7xl mx-auto glass-panel rounded-[40px] p-8 md:p-16 flex flex-col lg:flex-row items-center gap-16 relative">
-      <div className="absolute top-0 right-0 w-full h-full bg-primary/5 blur-[120px] pointer-events-none"></div>
-      <div className="flex-1 z-10">
-      <h2 className="font-display-sm text-display-sm text-on-surface mb-6">{t("home.perf.title")}</h2>
-      <p className="font-body-lg text-body-lg text-on-surface-variant mb-10">{t("home.perf.body")}</p>
-      <button className="bg-on-surface text-surface font-label-md text-label-md px-10 py-4 rounded-xl hover:shadow-xl active:scale-95 transition-all">
-                              {t("home.perf.cta")}
-                          </button>
-      </div>
-      <div className="flex-1 w-full z-10">
-      <div className="glass-panel p-6 rounded-3xl border-white/10 shadow-2xl">
-      <div className="flex justify-between items-center mb-8">
-      <div className="flex gap-4">
-      <div className="px-4 py-2 rounded-lg bg-white/5 font-label-sm text-label-sm">CTR: 4.82%</div>
-      <div className="px-4 py-2 rounded-lg bg-white/5 font-label-sm text-label-sm">CPM: $12.40</div>
-      </div>
-      <div className="flex gap-2">
-      <div className="w-2 h-2 rounded-full bg-primary"></div>
-      <div className="w-2 h-2 rounded-full bg-tertiary"></div>
-      </div>
-      </div>
-      {/* Simple Graph Mockup */}
-      <div className="h-48 flex items-end gap-2 px-2">
-      <div className="flex-1 bg-primary/20 rounded-t-lg h-[40%] hover:bg-primary transition-all"></div>
-      <div className="flex-1 bg-primary/20 rounded-t-lg h-[65%] hover:bg-primary transition-all"></div>
-      <div className="flex-1 bg-primary/20 rounded-t-lg h-[50%] hover:bg-primary transition-all"></div>
-      <div className="flex-1 bg-primary/20 rounded-t-lg h-[85%] hover:bg-primary transition-all"></div>
-      <div className="flex-1 bg-primary/20 rounded-t-lg h-[60%] hover:bg-primary transition-all"></div>
-      <div className="flex-1 bg-primary/20 rounded-t-lg h-[95%] hover:bg-primary transition-all"></div>
-      <div className="flex-1 bg-primary/20 rounded-t-lg h-[70%] hover:bg-primary transition-all"></div>
-      </div>
-      <div className="mt-4 pt-4 border-t border-white/10 flex justify-between font-label-sm text-label-sm text-outline">
-      <span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span><span>SUN</span>
-      </div>
-      </div>
-      </div>
-      </div>
-      </section>
-      {/* Pricing Preview — synced with the real /pricing page (Free $0,
-       *  Pro $12/mo, Team $25/mo). Editing prices? Update src/lib/billing.ts
-       *  and src/app/pricing/PricingClient.tsx to keep them in sync. */}
-      <section className="py-xl px-margin-mobile md:px-margin-desktop bg-surface-container-lowest/30">
-      <div className="max-w-7xl mx-auto text-center">
-      <h2 className="font-headline-lg text-headline-lg text-on-surface mb-12">{t("home.pricing.title")}</h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-gutter max-w-6xl mx-auto">
-      {/* Free */}
-      <div className="glass-panel p-10 rounded-[32px] text-left hover:border-primary/30 transition-all">
-      <p className="font-label-md text-label-md text-primary mb-2 uppercase tracking-wider">{t("home.pricing.free.tag")}</p>
-      <h3 className="font-display-sm text-display-sm text-on-surface mb-6">{t("home.pricing.free.price")}<span className="text-on-surface-variant font-body-md">{t("home.pricing.month")}</span></h3>
-      <ul className="space-y-4 mb-10 text-on-surface-variant font-body-md">
-      <li className="flex items-center gap-3"><span className="material-symbols-outlined text-primary">check_circle</span> {t("home.pricing.free.f1")}</li>
-      <li className="flex items-center gap-3"><span className="material-symbols-outlined text-primary">check_circle</span> {t("home.pricing.free.f2")}</li>
-      <li className="flex items-center gap-3"><span className="material-symbols-outlined text-primary">check_circle</span> {t("home.pricing.free.f3")}</li>
-      </ul>
-      <a href="/signup" className="block text-center w-full py-4 rounded-xl border border-white/10 hover:bg-white/5 transition-all font-label-md text-label-md">{t("home.pricing.free.cta")}</a>
-      </div>
-      {/* Pro — Most Popular */}
-      <div className="glass-panel p-10 rounded-[32px] text-left border-primary/50 relative overflow-hidden group">
-      <div className="ai-gradient absolute top-0 right-0 px-6 py-1 rounded-bl-xl font-label-sm text-label-sm text-on-primary">{t("home.pricing.most_popular")}</div>
-      <p className="font-label-md text-label-md text-primary mb-2 uppercase tracking-wider">{t("home.pricing.pro.tag")}</p>
-      <h3 className="font-display-sm text-display-sm text-on-surface mb-6">{t("home.pricing.pro.price")}<span className="text-on-surface-variant font-body-md">{t("home.pricing.month")}</span></h3>
-      <ul className="space-y-4 mb-10 text-on-surface-variant font-body-md">
-      <li className="flex items-center gap-3"><span className="material-symbols-outlined text-primary">check_circle</span> {t("home.pricing.pro.f1")}</li>
-      <li className="flex items-center gap-3"><span className="material-symbols-outlined text-primary">check_circle</span> {t("home.pricing.pro.f2")}</li>
-      <li className="flex items-center gap-3"><span className="material-symbols-outlined text-primary">check_circle</span> {t("home.pricing.pro.f3")}</li>
-      </ul>
-      <a href="/checkout?plan=pro&billing=monthly" className="block text-center w-full py-4 rounded-xl ai-gradient text-on-primary shadow-lg shadow-primary/20 hover:scale-[1.02] transition-all font-label-md text-label-md">{t("home.pricing.pro.cta")}</a>
-      </div>
-      {/* Team */}
-      <div className="glass-panel p-10 rounded-[32px] text-left hover:border-primary/30 transition-all">
-      <p className="font-label-md text-label-md text-primary mb-2 uppercase tracking-wider">{t("home.pricing.team.tag")}</p>
-      <h3 className="font-display-sm text-display-sm text-on-surface mb-6">{t("home.pricing.team.price")}<span className="text-on-surface-variant font-body-md">{t("home.pricing.month")}</span></h3>
-      <ul className="space-y-4 mb-10 text-on-surface-variant font-body-md">
-      <li className="flex items-center gap-3"><span className="material-symbols-outlined text-primary">check_circle</span> {t("home.pricing.team.f1")}</li>
-      <li className="flex items-center gap-3"><span className="material-symbols-outlined text-primary">check_circle</span> {t("home.pricing.team.f2")}</li>
-      <li className="flex items-center gap-3"><span className="material-symbols-outlined text-primary">check_circle</span> {t("home.pricing.team.f3")}</li>
-      </ul>
-      <a href="/checkout?plan=team&billing=monthly" className="block text-center w-full py-4 rounded-xl border border-white/10 hover:bg-white/5 transition-all font-label-md text-label-md">{t("home.pricing.team.cta")}</a>
-      </div>
-      </div>
-      <a href="/pricing" className="mt-10 inline-flex items-center gap-2 text-primary font-label-md text-label-md hover:gap-3 transition-all">
-                          {t("home.pricing.see_all")} <span className="material-symbols-outlined">arrow_forward</span>
-      </a>
-      </div>
-      </section>
-      {/* Testimonial */}
-      <section className="py-xl px-margin-mobile md:px-margin-desktop">
-      <div className="max-w-4xl mx-auto text-center glass-panel p-16 rounded-[40px] relative">
-      <span className="material-symbols-outlined text-primary text-6xl opacity-20 absolute top-10 left-10">format_quote</span>
-      <p className="font-display-sm text-display-sm italic text-on-surface mb-10 leading-tight">
-                          &ldquo;{t("home.testimonial.quote")}&rdquo;
-                      </p>
-      <div className="flex flex-col items-center">
-      <div className="w-20 h-20 rounded-full border-2 border-primary p-1 mb-4">
-      <img alt="Founder" className="w-full h-full rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBKevRcG_KSz4h14yA-KCkRgJGf77zOncTYAU3lhHCuERrNqrFLw3YzrS2JswMIjF-OB01Xmzwkq-kwMLq_ww-J6pW3T5-FofPvcJz3fgQsoEYlnGPVHDUBp8V-MuVAOhTyJ89PwF6vB9oNZu0W1RySVvBQSylUD36_38x2UvpTJHLG5peMklwpY3O8orI_J__HzsOj-fxhAzTK9VWJ63V-vYKFQbjplVPVFFgF7eRrEe53fM3CftiEv1EOX4qruxoUAwmWvaPP43A3" />
-      </div>
-      <h4 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Julian Thorne</h4>
-      <p className="font-label-md text-label-md text-primary">{t("home.testimonial.role")}</p>
-      </div>
-      </div>
-      </section>
-      </main>
-      {/* The global SiteFooter (in src/app/layout.tsx) renders here — no
-       *  per-page footer needed. */}
-    </div>
+    </main>
   );
 }
