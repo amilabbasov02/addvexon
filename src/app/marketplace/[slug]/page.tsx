@@ -12,7 +12,7 @@ import { db } from "@/db";
 import { siteTemplates } from "@/db/schema";
 import { azn } from "@/lib/format";
 import { BRAND } from "@/lib/brand";
-import { PT } from "@/lib/platform-i18n";
+import { PT, coerceLang } from "@/lib/platform-i18n";
 import { getLang } from "@/lib/platform-locale";
 import { buildMeta, ratingProductLd, SITE_URL } from "@/lib/seo";
 
@@ -25,23 +25,30 @@ function orderMail(templateName: string, plan: string) {
 export const dynamic = "force-dynamic";
 
 async function getTemplate(slug: string) {
-  const rows = await db
-    .select()
-    .from(siteTemplates)
-    .where(eq(siteTemplates.slug, slug))
-    .limit(1);
-  return rows[0] ?? null;
+  try {
+    const rows = await db
+      .select()
+      .from(siteTemplates)
+      .where(eq(siteTemplates.slug, slug))
+      .limit(1);
+    return rows[0] ?? null;
+  } catch (e) {
+    console.error("template detail load error:", e);
+    return null;
+  }
 }
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ lang?: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
   const t = await getTemplate(slug);
   if (!t) return { title: "Şablon tapılmadı" };
-  const lang = await getLang();
+  const lang = coerceLang((await searchParams).lang) ?? (await getLang());
   const s = PT[lang].seo;
   const desc = t.description ?? t.tagline ?? s.market.d;
   return buildMeta({
@@ -67,14 +74,17 @@ async function buildPreviewUrl(sub: string | null): Promise<string | null> {
 
 export default async function TemplateDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ lang?: string }>;
 }) {
   const { slug } = await params;
   const t = await getTemplate(slug);
   if (!t) notFound();
 
-  const L = PT[await getLang()].detail;
+  const lang = coerceLang((await searchParams).lang) ?? (await getLang());
+  const L = PT[lang].detail;
   const previewUrl = await buildPreviewUrl(t.previewSubdomain);
   const ld = ratingProductLd({
     name: t.name,

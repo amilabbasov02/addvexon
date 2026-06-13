@@ -8,42 +8,52 @@ import { and, eq, asc, desc, ilike, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { siteTemplates } from "@/db/schema";
 import { azn } from "@/lib/format";
-import { PT } from "@/lib/platform-i18n";
+import { PT, coerceLang } from "@/lib/platform-i18n";
 import { getLang } from "@/lib/platform-locale";
 import { buildMeta } from "@/lib/seo";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const lang = await getLang();
+export async function generateMetadata({ searchParams }: { searchParams: Promise<Search> }): Promise<Metadata> {
+  const lang = coerceLang((await searchParams).lang) ?? (await getLang());
   const s = PT[lang].seo;
   return buildMeta({ title: s.market.t, description: s.market.d, keywords: [...s.market.k, ...s.kw], path: "/marketplace", lang });
 }
 
-type Search = { type?: string; category?: string; q?: string };
+type Search = { type?: string; category?: string; q?: string; lang?: string };
 
 async function loadTemplates(s: Search) {
-  const conds = [eq(siteTemplates.published, true)];
-  if (s.type === "landing" || s.type === "multipage")
-    conds.push(eq(siteTemplates.type, s.type));
-  if (s.category) conds.push(eq(siteTemplates.category, s.category));
-  if (s.q) conds.push(ilike(siteTemplates.name, `%${s.q}%`));
-  return db
-    .select()
-    .from(siteTemplates)
-    .where(and(...conds))
-    .orderBy(asc(siteTemplates.sortOrder), desc(siteTemplates.createdAt))
-    .limit(60);
+  try {
+    const conds = [eq(siteTemplates.published, true)];
+    if (s.type === "landing" || s.type === "multipage")
+      conds.push(eq(siteTemplates.type, s.type));
+    if (s.category) conds.push(eq(siteTemplates.category, s.category));
+    if (s.q) conds.push(ilike(siteTemplates.name, `%${s.q}%`));
+    return await db
+      .select()
+      .from(siteTemplates)
+      .where(and(...conds))
+      .orderBy(asc(siteTemplates.sortOrder), desc(siteTemplates.createdAt))
+      .limit(60);
+  } catch (e) {
+    // DB əlçatan deyilsə (məs. cədvəl/data prod-da yoxdur) səhifə 500 verməsin
+    console.error("marketplace loadTemplates error:", e);
+    return [];
+  }
 }
 
 async function loadCategories() {
-  return db
-    .select({ category: siteTemplates.category, n: sql<number>`count(*)::int` })
-    .from(siteTemplates)
-    .where(eq(siteTemplates.published, true))
-    .groupBy(siteTemplates.category)
-    .orderBy(desc(sql`count(*)`));
+  try {
+    return await db
+      .select({ category: siteTemplates.category, n: sql<number>`count(*)::int` })
+      .from(siteTemplates)
+      .where(eq(siteTemplates.published, true))
+      .groupBy(siteTemplates.category)
+      .orderBy(desc(sql`count(*)`));
+  } catch {
+    return [];
+  }
 }
 
 function FilterChip({
@@ -76,7 +86,8 @@ export default async function MarketplacePage({
   searchParams: Promise<Search>;
 }) {
   const params = await searchParams;
-  const m = PT[await getLang()].market;
+  const lang = coerceLang(params.lang) ?? (await getLang());
+  const m = PT[lang].market;
   const [items, categories] = await Promise.all([
     loadTemplates(params),
     loadCategories(),

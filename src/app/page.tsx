@@ -8,15 +8,17 @@ import { db } from "@/db";
 import { siteTemplates } from "@/db/schema";
 import { BRAND } from "@/lib/brand";
 import { azn } from "@/lib/format";
-import { PT } from "@/lib/platform-i18n";
+import { PT, coerceLang } from "@/lib/platform-i18n";
 import { getLang } from "@/lib/platform-locale";
 import { buildMeta, ratingProductLd, SITE_URL } from "@/lib/seo";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const lang = await getLang();
+type SP = Promise<{ lang?: string }>;
+
+export async function generateMetadata({ searchParams }: { searchParams: SP }): Promise<Metadata> {
+  const lang = coerceLang((await searchParams).lang) ?? (await getLang());
   const s = PT[lang].seo;
   return buildMeta({ title: s.home.t, absoluteTitle: true, description: s.home.d, keywords: [...s.home.k, ...s.kw], path: "/", lang });
 }
@@ -34,8 +36,8 @@ async function getFeatured() {
   }
 }
 
-export default async function HomePage() {
-  const lang = await getLang();
+export default async function HomePage({ searchParams }: { searchParams: SP }) {
+  const lang = coerceLang((await searchParams).lang) ?? (await getLang());
   const t = PT[lang].home;
   const m = PT[lang].market;
   const templates = await getFeatured();

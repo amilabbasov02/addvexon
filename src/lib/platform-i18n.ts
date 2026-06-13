@@ -9,6 +9,11 @@ export const PLANGS: PLang[] = ["az", "en", "ru"];
 export const PLANG_LABELS: Record<PLang, string> = { az: "AZ", en: "EN", ru: "RU" };
 export const PLANG_COOKIE = "lang";
 
+/** ?lang= dəyərini etibarlı PLang-a çevirir (yoxsa null). */
+export function coerceLang(v?: string | null): PLang | null {
+  return v && (PLANGS as string[]).includes(v) ? (v as PLang) : null;
+}
+
 type Dict = {
   nav: { templates: string; how: string; pricing: string; support: string; login: string; viewTpl: string };
   home: {

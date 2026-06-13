@@ -30,7 +30,7 @@ async function getHost(): Promise<string | null> {
 }
 
 /** Ziyarətçinin dilini təyin edir və həmin dildə məzmunu qaytarır. */
-async function localeContext(raw: unknown) {
+async function localeContext(raw: unknown, override?: string) {
   const c = await cookies();
   const h = await headers();
   const available = isLocalizedBundle(raw)
@@ -38,7 +38,7 @@ async function localeContext(raw: unknown) {
     : [];
   const defaultLocale = isLocalizedBundle(raw) ? raw.defaultLocale ?? null : null;
   const locale = resolveLocale({
-    cookie: c.get(SITE_LOCALE_COOKIE)?.value,
+    cookie: override ?? c.get(SITE_LOCALE_COOKIE)?.value, // ?lang ən yüksək prioritet
     country: h.get("x-vercel-ip-country"),
     available,
     defaultLocale,
@@ -46,11 +46,15 @@ async function localeContext(raw: unknown) {
   return pickLocaleContent(raw, locale); // { content, available, locale }
 }
 
-export async function generateMetadata(): Promise<Metadata> {
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ lang?: string }>;
+}): Promise<Metadata> {
   const resolved = await resolveTenantByHost(await getHost());
   if (!resolved) return { title: "Sayt tapılmadı" };
 
-  const { content } = await localeContext(resolved.content?.content);
+  const { content } = await localeContext(resolved.content?.content, (await searchParams).lang);
   const theme = (resolved.content?.theme ?? {}) as SiteTheme;
   const title = content?.siteName ?? resolved.tenant.name;
   const verification: Metadata["verification"] = {};
@@ -69,8 +73,10 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function TenantSitePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug?: string[] }>;
+  searchParams: Promise<{ lang?: string }>;
 }) {
   const { slug } = await params;
   const pageSlug = (slug ?? []).join("/");
@@ -87,7 +93,7 @@ export default async function TenantSitePage({
     );
   }
 
-  const { content, available, locale } = await localeContext(resolved.content?.content);
+  const { content, available, locale } = await localeContext(resolved.content?.content, (await searchParams).lang);
   const theme = (resolved.content?.theme ?? {}) as SiteTheme;
   const gtm = resolved.integrations?.gtmContainerId?.replace(/[^A-Za-z0-9_-]/g, "");
 

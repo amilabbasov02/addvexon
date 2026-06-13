@@ -5,23 +5,25 @@
 import Link from "next/link";
 import { BRAND } from "@/lib/brand";
 import { azn } from "@/lib/format";
-import { PT } from "@/lib/platform-i18n";
+import { PT, coerceLang } from "@/lib/platform-i18n";
 import { getLang } from "@/lib/platform-locale";
 import { buildMeta } from "@/lib/seo";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const lang = await getLang();
+type SP = Promise<{ lang?: string }>;
+
+export async function generateMetadata({ searchParams }: { searchParams: SP }): Promise<Metadata> {
+  const lang = coerceLang((await searchParams).lang) ?? (await getLang());
   const s = PT[lang].seo;
   return buildMeta({ title: s.price.t, description: s.price.d, keywords: [...s.price.k, ...s.kw], path: "/pricing", lang });
 }
 
 const MAIL = `mailto:${BRAND.email}?subject=${encodeURIComponent("Sayt sifarişi")}`;
 
-export default async function PricingPage() {
-  const lang = await getLang();
+export default async function PricingPage({ searchParams }: { searchParams: SP }) {
+  const lang = coerceLang((await searchParams).lang) ?? (await getLang());
   const p = PT[lang].price;
   const devAg = PT[lang].home.devAg;
   return (

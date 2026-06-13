@@ -11,6 +11,21 @@ export const SITE_URL =
 
 const OG_LOCALE: Record<PLang, string> = { az: "az_AZ", en: "en_US", ru: "ru_RU" };
 
+/** Bir yol üçün 3 dilin URL-lərini qurur. AZ default (param yox), digərləri ?lang=. */
+export function langUrl(origin: string, path: string, l: PLang): string {
+  if (l === "az") return `${origin}${path}`;
+  return `${origin}${path}${path.includes("?") ? "&" : "?"}lang=${l}`;
+}
+/** hreflang alternativləri (sitemap + metadata üçün). */
+export function hreflangMap(origin: string, path: string): Record<string, string> {
+  return {
+    az: langUrl(origin, path, "az"),
+    en: langUrl(origin, path, "en"),
+    ru: langUrl(origin, path, "ru"),
+    "x-default": langUrl(origin, path, "az"),
+  };
+}
+
 export function buildMeta(opts: {
   title: string;
   description: string;
@@ -20,13 +35,14 @@ export function buildMeta(opts: {
   absoluteTitle?: boolean;
   images?: string[];
 }): Metadata {
-  const url = SITE_URL + (opts.path ?? "");
+  const path = opts.path ?? "/";
+  const url = langUrl(SITE_URL, path, opts.lang);
   const images = opts.images ?? [`${SITE_URL}/og-cover.png`];
   return {
     title: opts.absoluteTitle ? { absolute: opts.title } : opts.title,
     description: opts.description,
     keywords: opts.keywords,
-    alternates: { canonical: url },
+    alternates: { canonical: url, languages: hreflangMap(SITE_URL, path) },
     openGraph: {
       type: "website",
       url,
