@@ -74,7 +74,9 @@ export function SiteFooter({ lang }: { lang: PLang }) {
           ))}
         </div>
         <div className="mt-12 flex flex-col items-center justify-between gap-3 border-t border-slate-200 pt-6 text-sm text-slate-400 sm:flex-row">
-          <span>© {year} {BRAND.name}. {f.rights}</span>
+          {/* Hüquqi şəxsin adı brenddən fərqlidir — Google Play təşkilat
+              doğrulaması saytın hansı şirkətə aid olduğunu burada axtarır. */}
+          <span>© {year} {BRAND.legalName}. {f.rights}</span>
           <a href={`mailto:${BRAND.email}`} className="hover:text-slate-700">
             {BRAND.email}
           </a>

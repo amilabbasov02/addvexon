@@ -8,6 +8,12 @@
  */
 export const BRAND = {
   name: "addvoxen",
+  /** Hüquqi şəxsin adı — saytı işlədən şirkət.
+   *
+   *  Altbilgidə GÖRÜNMƏLİDİR: Google Play təşkilat hesabının doğrulanmasında
+   *  saytın hansı hüquqi şəxsə aid olduğu yoxlanılır. Brend adı (addvoxen)
+   *  ilə şirkət adı fərqlidir, ona görə əlaqə saytda açıq yazılmalıdır. */
+  legalName: "Novacode MMC",
   /** Böyük başlıqlarda istifadə üçün. */
   displayName: "addvoxen",
   tagline: "Hazır saytlar, dəqiqələr içində canlı.",
