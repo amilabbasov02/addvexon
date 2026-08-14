@@ -23,7 +23,16 @@ export type ResolvedTenant = {
   integrations: typeof tenantIntegrations.$inferSelect | null;
 };
 
-/** Host header-dən aktiv tenant-ı tapır. Yalnız `active` tenant render
+/**
+ * Render oluna bilən tenant statusları.
+ *
+ * `demo` — Lead Finder tərəfindən avtomatik yaradılan satış demoları. Onlar
+ * qəsdən publikdir: bütün məqsəd potensial müştəriyə linki göndərməkdir.
+ * `pending`, `suspended`, `canceled` isə render olunmur.
+ */
+const RENDERABLE_STATUSES = new Set(["active", "demo"]);
+
+/** Host header-dən tenant-ı tapır. Yalnız RENDERABLE_STATUSES render
  *  olunur. Tapılmasa null. React cache ilə eyni request-də təkrarlanmır. */
 export const resolveTenantByHost = cache(
   async (rawHost: string | null | undefined): Promise<ResolvedTenant | null> => {
@@ -43,7 +52,7 @@ export const resolveTenantByHost = cache(
       .where(where)
       .limit(1);
     const tenant = rows[0];
-    if (!tenant || tenant.status !== "active") return null;
+    if (!tenant || !RENDERABLE_STATUSES.has(tenant.status)) return null;
 
     const [template] = await db
       .select()

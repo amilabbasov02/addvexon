@@ -823,6 +823,12 @@ export const tenants = pgTable(
     status: text("status").notNull().default("pending"),
     /** hosted | export */
     deliveryType: text("delivery_type").notNull().default("hosted"),
+    /**
+     * Set when this tenant is an auto-generated sales demo built for a lead
+     * (status = "demo"). Null for every real customer site, so the two never
+     * get confused in billing, listings or the customer's own panel.
+     */
+    leadId: text("lead_id").references(() => leads.id, { onDelete: "set null" }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -835,6 +841,7 @@ export const tenants = pgTable(
     customDomainIdx: uniqueIndex("tenants_custom_domain_idx").on(t.customDomain),
     ownerIdx: index("tenants_owner_idx").on(t.ownerId),
     statusIdx: index("tenants_status_idx").on(t.status),
+    leadIdx: index("tenants_lead_idx").on(t.leadId),
   }),
 );
 
@@ -1006,3 +1013,369 @@ export type Order = typeof orders.$inferSelect;
 export type NewOrder = typeof orders.$inferInsert;
 export type TenantSubscription = typeof tenantSubscriptions.$inferSelect;
 export type ExportBundle = typeof exportBundles.$inferSelect;
+
+// ============================================================
+// LEAD FINDER — business discovery, scoring, demos, outreach
+// ============================================================
+
+/**
+ * Generic background job queue.
+ *
+ * Deliberately a database table rather than an external queue: the workload is
+ * a handful of long-running searches per day, and a table gives us durable
+ * state, progress reporting and crash recovery without another vendor. A cron
+ * endpoint claims due jobs with SELECT … FOR UPDATE SKIP LOCKED, so several
+ * concurrent cron invocations never pick up the same job.
+ */
+export const backgroundJobs = pgTable(
+  "background_jobs",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    /** lead_search | website_analysis | demo_build | outreach_send | imap_poll */
+    type: text("type").notNull(),
+    payload: jsonb("payload").notNull().$type<Record<string, unknown>>(),
+    /** queued | running | completed | failed | cancelled */
+    status: text("status").notNull().default("queued"),
+    /** 0–100, surfaced to the user as a progress bar. */
+    progress: integer("progress").notNull().default(0),
+    /** Human-readable current stage, e.g. "Analyzing websites". */
+    step: text("step"),
+    error: text("error"),
+    attempts: integer("attempts").notNull().default(0),
+    maxAttempts: integer("max_attempts").notNull().default(3),
+    /** Lets a retry back off instead of hammering a failing source. */
+    runAfter: timestamp("run_after", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    /** Set when a worker claims the job; used to reap stuck jobs. */
+    lockedAt: timestamp("locked_at", { withTimezone: true }),
+    startedAt: timestamp("started_at", { withTimezone: true }),
+    finishedAt: timestamp("finished_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => ({
+    claimIdx: index("background_jobs_claim_idx").on(t.status, t.runAfter),
+    userIdx: index("background_jobs_user_idx").on(t.userId),
+    workspaceIdx: index("background_jobs_workspace_idx").on(t.workspaceId),
+  }),
+);
+
+/** One "Start Lead Search" run: the filters, and the roll-up of what it found. */
+export const leadSearches = pgTable(
+  "lead_searches",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    jobId: text("job_id").references(() => backgroundJobs.id, {
+      onDelete: "set null",
+    }),
+    /** ISO-3166 alpha-2, e.g. "AZ". */
+    country: text("country").notNull(),
+    city: text("city").notNull(),
+    /** Our internal niche key, e.g. "beauty_salon" — maps to a template category. */
+    category: text("category").notNull(),
+    maxLeads: integer("max_leads").notNull().default(100),
+    /** Free-form extra filters so the UI can grow without a migration. */
+    filters: jsonb("filters").$type<Record<string, unknown>>(),
+    /** queued | running | completed | failed | cancelled */
+    status: text("status").notNull().default("queued"),
+    totalFound: integer("total_found").notNull().default(0),
+    highCount: integer("high_count").notNull().default(0),
+    mediumCount: integer("medium_count").notNull().default(0),
+    lowCount: integer("low_count").notNull().default(0),
+    error: text("error"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+  },
+  (t) => ({
+    userIdx: index("lead_searches_user_idx").on(t.userId),
+    workspaceIdx: index("lead_searches_workspace_idx").on(t.workspaceId),
+    createdIdx: index("lead_searches_created_idx").on(t.createdAt),
+  }),
+);
+
+/**
+ * A discovered business.
+ *
+ * Scoped to a workspace, never to a search: the same business found by two
+ * searches is one lead with one contact history. `dedupeKey` is what makes
+ * that true — see lib/leads/dedupe.ts for how it is derived.
+ */
+export const leads = pgTable(
+  "leads",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    /** The search that first surfaced this business. */
+    searchId: text("search_id").references(() => leadSearches.id, {
+      onDelete: "set null",
+    }),
+
+    name: text("name").notNull(),
+    category: text("category"),
+    country: text("country"),
+    city: text("city"),
+    address: text("address"),
+    /** Stored ×1e6 as integers — no float drift, and cheap to index. */
+    lat: integer("lat"),
+    lng: integer("lng"),
+
+    phone: text("phone"),
+    email: text("email"),
+    websiteUrl: text("website_url"),
+    socials: jsonb("socials").$type<{
+      facebook?: string;
+      instagram?: string;
+      linkedin?: string;
+      other?: string[];
+    }>(),
+
+    /** Which provider produced this row, and its id there (for re-fetch). */
+    source: text("source").notNull(),
+    sourceId: text("source_id"),
+    /** Attribution string the provider's licence requires us to display. */
+    sourceAttribution: text("source_attribution"),
+
+    /** Normalised fingerprint; unique per workspace. */
+    dedupeKey: text("dedupe_key").notNull(),
+
+    score: integer("score").notNull().default(0),
+    /** high | medium | low */
+    band: text("band").notNull().default("low"),
+    /** Why this scored what it did — shown verbatim in the UI. */
+    scoreReasons: jsonb("score_reasons").$type<
+      { rule: string; points: number; label: string }[]
+    >(),
+
+    /** new | contacted | replied | interested | not_interested | converted | archived | excluded */
+    status: text("status").notNull().default("new"),
+    contactedAt: timestamp("contacted_at", { withTimezone: true }),
+
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => ({
+    dedupeIdx: uniqueIndex("leads_workspace_dedupe_idx").on(
+      t.workspaceId,
+      t.dedupeKey,
+    ),
+    workspaceIdx: index("leads_workspace_idx").on(t.workspaceId),
+    searchIdx: index("leads_search_idx").on(t.searchId),
+    scoreIdx: index("leads_score_idx").on(t.workspaceId, t.score),
+    statusIdx: index("leads_status_idx").on(t.workspaceId, t.status),
+  }),
+);
+
+/** Result of fetching and inspecting a lead's website. One row per lead. */
+export const leadAnalyses = pgTable("lead_analyses", {
+  leadId: text("lead_id")
+    .primaryKey()
+    .references(() => leads.id, { onDelete: "cascade" }),
+  hasWebsite: boolean("has_website").notNull().default(false),
+  /** Did it actually respond? A dead domain is a strong buying signal. */
+  reachable: boolean("reachable").notNull().default(false),
+  httpStatus: integer("http_status"),
+  /** Milliseconds to first byte — slow sites are an easy pitch. */
+  responseMs: integer("response_ms"),
+  isHttps: boolean("is_https"),
+  hasViewportMeta: boolean("has_viewport_meta"),
+  hasTitle: boolean("has_title"),
+  hasDescription: boolean("has_description"),
+  /** Rough page weight in bytes. */
+  htmlBytes: integer("html_bytes"),
+  /** Plain-language problems, ready to show the user. */
+  issues: jsonb("issues").$type<string[]>(),
+  screenshotUrl: text("screenshot_url"),
+  error: text("error"),
+  analyzedAt: timestamp("analyzed_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+/** Append-only audit of everything that happened to a lead. */
+export const leadEvents = pgTable(
+  "lead_events",
+  {
+    id: text("id").primaryKey(),
+    leadId: text("lead_id")
+      .notNull()
+      .references(() => leads.id, { onDelete: "cascade" }),
+    /** discovered | analyzed | scored | demo_created | message_drafted |
+     *  email_sent | email_failed | reply_received | status_changed | note */
+    type: text("type").notNull(),
+    /** Null when the system did it rather than a person. */
+    actorUserId: text("actor_user_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    detail: jsonb("detail").$type<Record<string, unknown>>(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => ({
+    leadIdx: index("lead_events_lead_idx").on(t.leadId, t.createdAt),
+  }),
+);
+
+/**
+ * Opt-out list. Checked before any outreach is sent, and never deleted from —
+ * an unsubscribe has to survive the lead being re-discovered by a later search.
+ */
+export const suppressionList = pgTable(
+  "suppression_list",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    /** Lower-cased email, or a bare domain to suppress everyone there. */
+    value: text("value").notNull(),
+    /** email | domain */
+    kind: text("kind").notNull().default("email"),
+    /** unsubscribed | bounced | complained | manual */
+    reason: text("reason").notNull().default("manual"),
+    note: text("note"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => ({
+    uniqueIdx: uniqueIndex("suppression_workspace_value_idx").on(
+      t.workspaceId,
+      t.value,
+    ),
+  }),
+);
+
+/**
+ * A drafted outreach message for one lead.
+ *
+ * Kept separate from the email that carries it: a message can be drafted,
+ * edited and approved without ever being sent, and the same message may be
+ * retried across several email attempts.
+ */
+export const outreachMessages = pgTable(
+  "outreach_messages",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    leadId: text("lead_id")
+      .notNull()
+      .references(() => leads.id, { onDelete: "cascade" }),
+    /** Which of the generated variants this is (1-based), for A/B comparison. */
+    variant: integer("variant").notNull().default(1),
+    /** az | en | ru */
+    locale: text("locale").notNull().default("az"),
+    subject: text("subject").notNull(),
+    body: text("body").notNull(),
+    /** The demo link embedded in the body, if one was included. */
+    demoUrl: text("demo_url"),
+    /** draft | ready | sent | replied | interested | not_interested | converted */
+    status: text("status").notNull().default("draft"),
+    /** template | ai — how the copy was produced. */
+    generator: text("generator").notNull().default("template"),
+    createdBy: text("created_by").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => ({
+    leadIdx: index("outreach_messages_lead_idx").on(t.leadId),
+    workspaceIdx: index("outreach_messages_workspace_idx").on(t.workspaceId),
+    statusIdx: index("outreach_messages_status_idx").on(t.workspaceId, t.status),
+  }),
+);
+
+/**
+ * Every email that left or arrived, in both directions.
+ *
+ * `messageId` is the RFC 5322 Message-ID and is unique — that is what makes
+ * inbound polling idempotent, so re-reading the mailbox can never duplicate a
+ * reply. `inReplyTo` / `references` are what thread a reply back to the
+ * outbound message that provoked it.
+ */
+export const emailMessages = pgTable(
+  "email_messages",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    leadId: text("lead_id").references(() => leads.id, { onDelete: "cascade" }),
+    outreachMessageId: text("outreach_message_id").references(
+      () => outreachMessages.id,
+      { onDelete: "set null" },
+    ),
+    /** outbound | inbound */
+    direction: text("direction").notNull(),
+    fromAddress: text("from_address").notNull(),
+    toAddress: text("to_address").notNull(),
+    subject: text("subject"),
+    bodyText: text("body_text"),
+    bodyHtml: text("body_html"),
+    /** RFC Message-ID, including angle brackets. */
+    messageId: text("message_id"),
+    inReplyTo: text("in_reply_to"),
+    references: text("references"),
+    /** queued | sent | failed | bounced | received */
+    status: text("status").notNull().default("queued"),
+    error: text("error"),
+    attempts: integer("attempts").notNull().default(0),
+    sentAt: timestamp("sent_at", { withTimezone: true }),
+    receivedAt: timestamp("received_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => ({
+    messageIdIdx: uniqueIndex("email_messages_message_id_idx").on(t.messageId),
+    leadIdx: index("email_messages_lead_idx").on(t.leadId, t.createdAt),
+    workspaceIdx: index("email_messages_workspace_idx").on(t.workspaceId),
+    threadIdx: index("email_messages_in_reply_to_idx").on(t.inReplyTo),
+  }),
+);
+
+// Lead Finder tipləri
+export type OutreachMessage = typeof outreachMessages.$inferSelect;
+export type NewOutreachMessage = typeof outreachMessages.$inferInsert;
+export type EmailMessage = typeof emailMessages.$inferSelect;
+export type NewEmailMessage = typeof emailMessages.$inferInsert;
+export type BackgroundJob = typeof backgroundJobs.$inferSelect;
+export type NewBackgroundJob = typeof backgroundJobs.$inferInsert;
+export type LeadSearch = typeof leadSearches.$inferSelect;
+export type NewLeadSearch = typeof leadSearches.$inferInsert;
+export type Lead = typeof leads.$inferSelect;
+export type NewLead = typeof leads.$inferInsert;
+export type LeadAnalysis = typeof leadAnalyses.$inferSelect;
+export type NewLeadAnalysis = typeof leadAnalyses.$inferInsert;
+export type LeadEvent = typeof leadEvents.$inferSelect;
+export type NewLeadEvent = typeof leadEvents.$inferInsert;
+export type Suppression = typeof suppressionList.$inferSelect;

@@ -11,7 +11,9 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
-    "db:ping": "tsx scripts/db-ping.ts"
+    "db:ping": "tsx scripts/db-ping.ts",
+    "leads:probe": "tsx scripts/lead-finder-probe.ts",
+    "leads:work": "tsx scripts/leads-worker.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.98.0",
@@ -22,6 +24,7 @@
     "jszip": "^3.10.1",
     "konva": "^10.3.0",
     "next": "16.2.6",
+    "nodemailer": "^9.0.5",
     "pg": "^8.21.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
@@ -33,6 +36,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/nodemailer": "^8.0.1",
     "@types/pg": "^8.20.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
