@@ -43,18 +43,31 @@ export type ScoreResult = {
 };
 
 /**
- * NOTE ON THE CEILING — read before retuning.
+ * NOTE ON THE BANDS — read before retuning.
  *
- * "No website" (+30) and "weak website" (+20) are mutually exclusive: a
- * business without a site cannot also have a bad one. So the reachable ceilings
- * are 80 for a business with no website and 70 for one with a weak website.
+ * The weights encode what we believe predicts a sale. The bands encode how
+ * selective the list should be. When High turned out to be unreachable, the
+ * band moved — the weights did not. Inflating a weight to fix a band would
+ * corrupt the model to fix a display problem.
  *
- * With the high band starting at 80, that means only a no-website business
- * hitting *every* other signal reaches High, and a weak-website business never
- * can. That may be exactly what you want — no website is the strongest buying
- * signal there is. If High turns out to be too rare in practice, lower
- * BANDS.high rather than inflating the rule weights; the weights encode what
- * you believe, the bands encode how selective you want the list to be.
+ * Why 70 and not 80. "No website" (+30) and "weak website" (+20) are mutually
+ * exclusive, so the real ceilings are 80 for a business with no site and 70 for
+ * one with a bad site. Reaching 80 additionally requires social links, and
+ * measured against live OpenStreetMap data for Baku those are almost absent:
+ *
+ *   beauty salons  159 found   social 11%   phone 28%   email  7%
+ *   restaurants    300+ found  social  0%   phone 11%   email  1%
+ *   cafes          299 found   social  4%   phone 10%   email  2%
+ *   dental          90 found   social  3%   phone 24%   email  9%
+ *
+ * With High at 80, four of five categories produced **zero** High leads, and
+ * the genuinely best prospects — no website, reachable by phone, visibly
+ * trading — all sat in Medium. At 70 those surface correctly and High becomes
+ * roughly a quarter to a third of a search.
+ *
+ * If a richer data source is added later (one that actually carries social and
+ * email), revisit this: the ceiling stops being artificial and 80 may be right
+ * again.
  */
 export const SCORING_CONFIG: {
   rules: ScoreRule[];
@@ -105,7 +118,8 @@ export const SCORING_CONFIG: {
       test: (i) => i.hasMatchingTemplate,
     },
   ],
-  bands: { high: 80, medium: 50 },
+  // Ölçülmüş data əsasında tənzimlənib. İzah aşağıdadır.
+  bands: { high: 70, medium: 45 },
 };
 
 export function scoreLead(input: ScoringInput): ScoreResult {

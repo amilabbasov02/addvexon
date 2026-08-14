@@ -91,18 +91,35 @@ is a potential customer?" — the score and the explanation cannot drift apart.
 | Active social media presence | +10 |
 | A matching Addvoxen template is available | +10 |
 
-Bands: **High** ≥ 80, **Medium** ≥ 50, **Low** below.
+Bands: **High** ≥ 70, **Medium** ≥ 45, **Low** below.
 
-**A ceiling worth understanding before you retune.** "No website" and "weak
-website" are mutually exclusive, so the reachable maximums are 80 for a business
-with no site and 70 for one with a bad site. With High starting at 80, only a
-no-website business hitting every other signal reaches High, and a weak-website
-business never can.
+**The bands were tuned against live data, and the weights were not.** That
+distinction is the point: the weights encode what predicts a sale, the bands
+encode how selective the list is. When High turned out to be unreachable, the
+band moved.
 
-That may be exactly right — no website is the strongest buying signal there is.
-But if High turns out to be too rare in practice, lower `bands.high` rather than
-inflating the weights: the weights encode what you believe, the bands encode how
-selective the list should be.
+"No website" and "weak website" are mutually exclusive, so the real ceilings are
+80 without a site and 70 with a bad one. Reaching 80 also needs social links —
+and measured against live OSM data for Baku, those barely exist:
+
+| Category | Found | Social | Phone | Email |
+|---|---|---|---|---|
+| Beauty salons | 159 | 11% | 28% | 7% |
+| Restaurants | 300+ | 0% | 11% | 1% |
+| Cafes | 299 | 4% | 10% | 2% |
+| Dental | 90 | 3% | 24% | 9% |
+
+With High at 80, four of five categories produced **zero** High leads and the
+best prospects all sat in Medium. At 70 they surface correctly.
+
+Re-check this if a richer data source is ever added — the ceiling stops being
+artificial and 80 may become right again.
+
+**A note on what the bands mean in this market.** Across 300 stored leads the
+split is roughly 49 High / 15 Medium / 236 Low. The large Low group is not a
+tuning failure: those businesses have no phone, no email and no social profile
+in the data, so there is no way to contact them at all. `pnpm leads:probe` is
+the tool for re-measuring this against any city or category.
 
 ## Security
 
@@ -152,6 +169,26 @@ kind of object, which is the point: it inherits subdomain hosting, the renderer,
 the content editor and the AZ/EN/RU localisation that already exist for paying
 customers. A demo that lands converts into a real site by changing a status,
 not by migrating anything.
+
+### Templates
+
+Five second-generation templates back the generator, one per trade rather than
+one generic design recoloured five times:
+
+| Slug | Design | Trade | Preview |
+|---|---|---|---|
+| `gozellik-lumen` | Lumen | Salon / spa / barber | `demo-lumen` |
+| `restoran-ember` | Ember | Restaurant / cafe | `demo-ember` |
+| `klinika-meridian` | Meridian | Dental / medical | `demo-meridian` |
+| `fitnes-forge` | Forge | Gym / sports club | `demo-forge` |
+| `korporativ-atlas` | Atlas | Professional services / B2B | `demo-atlas` |
+
+Each renders 11–15 sections in AZ/EN/RU. They sit at `sortOrder` 1–5 while the
+first-generation templates sit at 90, because `findTemplateForCategory()` takes
+the lowest sort order per category — that ordering is what makes the demo
+generator pick the new designs.
+
+Re-seed after editing content: `pnpm seed:templates` (idempotent).
 
 Content is produced by **cloning the template's own preview tenant** (found via
 `site_templates.preview_subdomain`) and substituting the business's details.
