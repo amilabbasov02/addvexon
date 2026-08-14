@@ -1,10 +1,14 @@
 /**
  * "atlas" dizaynı — korporativ / peşəkar xidmətlər / B2B.
  *
- * Konsepsiya: "cədvəl" (ledger). Kart və kölgə əvəzinə bütün səhifə 1px
- * incə xətlərlə qurulur; asimmetrik redaksiya grid-i, iri və dəqiq tipoqrafiya,
- * xidmətlər siyahı kimi (saniyələr içində oxunur), rəqəmlər tünd zolaqda,
- * əlaqə yolu isə həmişə göz önündə. Vurğu rəngi çox az yerdə işlənir.
+ * Konsepsiya: "cədvəl" (ledger) — amma foto ilə. Müasir memarlıq bürosunun
+ * saytı kimi: səhifənin böyük hissəsi fotodur, onları isə ciddi 1px xətt
+ * sistemi və dəqiq tipoqrafiya bir yerdə saxlayır. Kart və kölgə yoxdur.
+ *
+ * Prioritet: dizayn ŞƏKİL VAR fərziyyəsi ilə qurulur. Şəkil yoxdursa bölmələr
+ * yenə düzgün işləyir (sadəcə daha sadə görünür) — bu, ehtiyat yoldur, hədəf
+ * deyil. Foto üzərində mətn həmişə tünd örtük (scrim) üstündə verilir ki,
+ * kontrast şəkildən asılı olmasın.
  */
 import type {
   SiteContent,
@@ -36,6 +40,21 @@ const INK = "#101113";
 const HAIR = "color-mix(in srgb, var(--site-text) 14%, transparent)";
 /** Tünd zolaqda incə xətt. */
 const HAIR_INK = "rgba(255,255,255,0.18)";
+/** Foto üzərində ağ mətn üçün xətt. */
+const HAIR_OVER = "rgba(255,255,255,0.32)";
+
+/**
+ * Foto üzərinə salınan tünd örtüklər.
+ *
+ * Kontrast şəkildən asılı olmamalıdır: ən pis halda (tam ağ foto) belə
+ * ağ mətn AA-nı keçir — aşağıdakı sıxlıqlar bunun üçün seçilib.
+ * `BOTTOM` mətn aşağıda duranda (hero), `FLAT` bütün zolaq mətn olanda işlənir.
+ */
+const SCRIM_BOTTOM =
+  "linear-gradient(to top, rgba(16,17,19,0.90) 0%, rgba(16,17,19,0.74) 34%, rgba(16,17,19,0.40) 72%, rgba(16,17,19,0.24) 100%)";
+const SCRIM_FLAT = "rgba(16,17,19,0.80)";
+/** Foto üzərində ikinci dərəcəli mətn — 0.80 örtük üzərində AA keçir. */
+const OVER_MUTED = "rgba(255,255,255,0.84)";
 
 const HEAD: React.CSSProperties = {
   fontFamily: "'Archivo', var(--site-font-heading), system-ui, sans-serif",
@@ -337,8 +356,73 @@ function SiteHeader({
 }
 
 // ── Hero ────────────────────────────────────────────────────────────────────
+/**
+ * Foto varsa hero fotonun ÖZÜDÜR: böyük şəkil, üstündə tünd örtük, mətn aşağı
+ * sol künçdə. Bu, sahibkarın işini/obyektini ilk ekranda göstərir — mətn siyahısı
+ * yox. Foto yoxdursa köhnə tipoqrafik variant qalır.
+ *
+ * Hündürlük `svh` yox, px ilə verilir: mobil brauzerlərdə ünvan zolağı yığılanda
+ * viewport vahidləri sıçrayır və layout tərpənir.
+ */
 function Hero({ s, cHref }: { s: HeroSection; cHref: string }) {
   const hasFoot = Boolean(s.subheading || s.ctaText);
+
+  if (s.imageUrl) {
+    return (
+      <section className="relative isolate border-b" style={{ borderColor: HAIR }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={s.imageUrl}
+          alt=""
+          className="absolute inset-0 -z-10 h-full w-full object-cover"
+        />
+        <div aria-hidden="true" className="absolute inset-0 -z-10" style={{ background: SCRIM_BOTTOM }} />
+
+        <div
+          className={`${WRAP} flex min-h-[500px] flex-col justify-end pb-12 pt-24 sm:min-h-[600px] lg:min-h-[740px] lg:pb-16 lg:pt-32`}
+        >
+          {s.heading && (
+            <h1
+              style={HEAD}
+              className="max-w-[18ch] break-words text-[clamp(2.25rem,6.4vw,5rem)] font-semibold leading-[1.02] tracking-[-0.035em] text-white"
+            >
+              {s.heading}
+            </h1>
+          )}
+
+          {hasFoot && (
+            <div
+              className={`grid gap-6 lg:grid-cols-12 lg:items-end lg:gap-10 ${
+                s.heading ? "mt-8 border-t pt-7 lg:mt-12 lg:pt-8" : ""
+              }`}
+              style={{ borderColor: HAIR_OVER }}
+            >
+              {s.subheading && (
+                <p
+                  className="max-w-[52ch] text-base leading-relaxed lg:col-span-7 lg:text-lg"
+                  style={{ color: OVER_MUTED }}
+                >
+                  {s.subheading}
+                </p>
+              )}
+              {s.ctaText && (
+                <div className="lg:col-span-5 lg:justify-self-end">
+                  <a
+                    href={s.ctaUrl ?? cHref}
+                    className={`inline-block rounded-sm px-7 py-4 text-[13px] font-semibold uppercase tracking-[0.08em] text-[var(--site-on-primary)] duration-200 hover:brightness-90 motion-reduce:transition-none ${FOCUS_INK}`}
+                    style={{ background: "var(--site-primary)", transitionProperty: "filter" }}
+                  >
+                    {s.ctaText}
+                  </a>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="border-b" style={{ borderColor: HAIR }}>
       <div className={`${WRAP} pt-14 sm:pt-20 lg:pt-28`}>
@@ -378,18 +462,7 @@ function Hero({ s, cHref }: { s: HeroSection; cHref: string }) {
           </div>
         )}
 
-        {s.imageUrl && (
-          <div className="mt-12 lg:mt-16">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={s.imageUrl}
-              alt={s.heading ?? ""}
-              className="aspect-4/3 w-full object-cover sm:aspect-video lg:aspect-[21/9]"
-            />
-          </div>
-        )}
-
-        {!s.imageUrl && <div className="h-14 lg:h-20" />}
+        <div className="h-14 lg:h-20" />
       </div>
     </section>
   );
@@ -411,12 +484,8 @@ function Services({ s }: { s: FeaturesSection }) {
         )}
 
         <ul className={hasHead ? "lg:col-span-8" : "lg:col-span-12"}>
-          {items.map((it, i) => (
-            <li
-              key={i}
-              className="grid gap-2 border-t py-7 last:border-b sm:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] sm:gap-10"
-              style={{ borderColor: HAIR }}
-            >
+          {items.map((it, i) => {
+            const title = (
               <h3
                 style={HEAD}
                 className="flex min-w-0 items-start gap-2.5 text-lg font-semibold leading-snug tracking-[-0.015em]"
@@ -432,13 +501,50 @@ function Services({ s }: { s: FeaturesSection }) {
                 )}
                 <span className="min-w-0">{it.title}</span>
               </h3>
-              {it.text && (
-                <p className="min-w-0 leading-relaxed" style={{ color: "var(--site-muted)" }}>
-                  {it.text}
-                </p>
-              )}
-            </li>
-          ))}
+            );
+            const text = it.text && (
+              <p className="min-w-0 leading-relaxed" style={{ color: "var(--site-muted)" }}>
+                {it.text}
+              </p>
+            );
+
+            // Fotolu xidmət: şəkil sətrin yarısını tutur və tərəf növbələşir —
+            // eyni ritm, amma səhifə mətn siyahısı kimi oxunmur.
+            if (it.imageUrl) {
+              return (
+                <li
+                  key={i}
+                  className="grid gap-5 border-t py-8 last:border-b sm:grid-cols-2 sm:items-center sm:gap-8"
+                  style={{ borderColor: HAIR }}
+                >
+                  <div className={i % 2 === 1 ? "sm:order-2" : ""}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={it.imageUrl}
+                      alt=""
+                      loading="lazy"
+                      className="aspect-4/3 w-full object-cover"
+                    />
+                  </div>
+                  <div className={`flex min-w-0 flex-col gap-3 ${i % 2 === 1 ? "sm:order-1" : ""}`}>
+                    {title}
+                    {text}
+                  </div>
+                </li>
+              );
+            }
+
+            return (
+              <li
+                key={i}
+                className="grid gap-2 border-t py-7 last:border-b sm:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] sm:gap-10"
+                style={{ borderColor: HAIR }}
+              >
+                {title}
+                {text}
+              </li>
+            );
+          })}
         </ul>
       </div>
     </section>
@@ -452,14 +558,26 @@ function Stats({ s }: { s: StatsSection }) {
   const cols = items.length <= 2 ? "sm:grid-cols-2" : items.length === 3 ? "sm:grid-cols-3" : "sm:grid-cols-2 lg:grid-cols-4";
 
   return (
-    <section style={{ background: INK, color: "#ffffff" }}>
-      <div className={`${WRAP} py-14 lg:py-16`}>
+    <section className="relative isolate" style={{ background: INK, color: "#ffffff" }}>
+      {s.imageUrl && (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={s.imageUrl}
+            alt=""
+            loading="lazy"
+            className="absolute inset-0 -z-10 h-full w-full object-cover"
+          />
+          <div aria-hidden="true" className="absolute inset-0 -z-10" style={{ background: SCRIM_FLAT }} />
+        </>
+      )}
+      <div className={`${WRAP} ${s.imageUrl ? "py-20 lg:py-28" : "py-14 lg:py-16"}`}>
         <dl className={`grid grid-cols-1 gap-y-8 sm:gap-y-10 ${cols} sm:gap-x-10`}>
           {items.map((it, i) => (
             <div
               key={i}
               className="flex flex-col-reverse border-t pt-5"
-              style={{ borderColor: HAIR_INK }}
+              style={{ borderColor: s.imageUrl ? HAIR_OVER : HAIR_INK }}
             >
               <dt className="mt-3 text-sm leading-snug" style={{ color: "rgba(255,255,255,0.66)" }}>
                 {it.label}
@@ -485,7 +603,8 @@ function About({ s }: { s: AboutSection }) {
   return (
     <section className={`border-b ${PAD}`} style={{ borderColor: HAIR }}>
       <div className={`${WRAP} grid items-start gap-10 lg:grid-cols-12 lg:gap-16`}>
-        <div className={s.imageUrl ? "lg:col-span-6" : "lg:col-span-8"}>
+        {/* Foto varsa mətn sıxılır: şəkil 7 sütun tutur və bölmənin əsas ağırlığı olur. */}
+        <div className={s.imageUrl ? "lg:col-span-5" : "lg:col-span-8"}>
           {s.heading && <H2 className="max-w-[26ch]">{s.heading}</H2>}
           {s.body && (
             <p
@@ -498,12 +617,13 @@ function About({ s }: { s: AboutSection }) {
         </div>
 
         {s.imageUrl && (
-          <div className="lg:col-span-6">
+          <div className="lg:col-span-7">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={s.imageUrl}
               alt={s.heading ?? ""}
-              className="aspect-4/3 w-full object-cover"
+              loading="lazy"
+              className="aspect-4/3 w-full object-cover sm:aspect-[3/2] lg:aspect-4/3"
             />
           </div>
         )}
@@ -513,35 +633,58 @@ function About({ s }: { s: AboutSection }) {
 }
 
 // ── Layihələr ───────────────────────────────────────────────────────────────
+/**
+ * Səhifənin ən böyük bölməsi. Podratçı və ya logistika şirkəti üçün görülmüş iş
+ * bütün təklifdir, ona görə burada eyni ölçülü kartlar deyil, redaksiya mozaikası
+ * işlənir: 6 sütunlu ciddi grid üzərində 5 addımlıq ritm təkrarlanır.
+ *
+ * Sinif adları statik massivdən gəlir — Tailwind dinamik şablonu görmür.
+ */
+const WORK_RHYTHM: { li: string; img: string }[] = [
+  { li: "sm:col-span-2 lg:col-span-6", img: "aspect-[16/9] lg:aspect-[16/7]" },
+  { li: "lg:col-span-3", img: "aspect-4/3" },
+  { li: "lg:col-span-3", img: "aspect-4/3" },
+  { li: "lg:col-span-2", img: "aspect-4/3 lg:aspect-3/4" },
+  { li: "lg:col-span-4", img: "aspect-4/3" },
+];
+
 function Work({ s }: { s: GallerySection }) {
   const items = (s.items ?? []).filter((it) => it.imageUrl);
   if (items.length === 0) return null;
 
   return (
-    <section id="layiheler" className={`border-b ${PAD}`} style={{ borderColor: HAIR }}>
+    <section
+      id="layiheler"
+      className="border-b py-20 sm:py-24 lg:py-32"
+      style={{ borderColor: HAIR }}
+    >
       <div className={WRAP}>
         <SectionIntro heading={s.heading} />
-        <ul className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 lg:gap-x-8">
-          {items.map((it, i) => (
-            <li key={i}>
-              <figure>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={it.imageUrl}
-                  alt={it.caption ?? ""}
-                  className="aspect-4/3 w-full object-cover"
-                />
-                {it.caption && (
-                  <figcaption
-                    className="mt-3 border-t pt-3 text-sm leading-snug"
-                    style={{ borderColor: HAIR, color: "var(--site-muted)" }}
-                  >
-                    {it.caption}
-                  </figcaption>
-                )}
-              </figure>
-            </li>
-          ))}
+        <ul className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-6 lg:gap-x-8 lg:gap-y-12">
+          {items.map((it, i) => {
+            const rhythm = WORK_RHYTHM[i % WORK_RHYTHM.length]!;
+            return (
+              <li key={i} className={rhythm.li}>
+                <figure>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={it.imageUrl}
+                    alt={it.caption ?? ""}
+                    loading="lazy"
+                    className={`w-full object-cover ${rhythm.img}`}
+                  />
+                  {it.caption && (
+                    <figcaption
+                      className="mt-3 border-t pt-3 text-sm leading-snug"
+                      style={{ borderColor: HAIR, color: "var(--site-muted)" }}
+                    >
+                      {it.caption}
+                    </figcaption>
+                  )}
+                </figure>
+              </li>
+            );
+          })}
         </ul>
       </div>
     </section>
@@ -565,6 +708,7 @@ function Products({ s }: { s: ProductsSection }) {
                 <img
                   src={it.imageUrl}
                   alt={it.name}
+                  loading="lazy"
                   className="aspect-4/3 w-full object-cover"
                 />
               )}
@@ -642,6 +786,7 @@ function Logos({ s }: { s: LogosSection }) {
                 <img
                   src={it.imageUrl}
                   alt={it.name}
+                  loading="lazy"
                   className="max-h-9 w-auto max-w-full object-contain opacity-70 grayscale duration-200 hover:opacity-100 hover:grayscale-0 motion-reduce:transition-none lg:max-h-10"
                   style={{ transitionProperty: "opacity, filter" }}
                 />
@@ -856,7 +1001,8 @@ function Testimonials({ s, ui }: { s: TestimonialsSection; ui: Ui }) {
                       <img
                         src={it.avatarUrl}
                         alt=""
-                        className="h-11 w-11 shrink-0 object-cover"
+                        loading="lazy"
+                        className="h-14 w-14 shrink-0 object-cover"
                       />
                     )}
                     <span className="min-w-0">
@@ -890,11 +1036,18 @@ function Team({ s }: { s: TeamSection }) {
   const items = (s.items ?? []).filter((it) => it.name?.trim());
   if (items.length === 0) return null;
 
+  // Bio yoxdursa portretlər divar kimi düzülür (mobildə də iki sütun);
+  // bio varsa mətnə yer lazımdır, ona görə mobildə tək sütun qalır.
+  const hasBio = items.some((it) => it.bio?.trim());
+  const cols = hasBio
+    ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+    : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4";
+
   return (
     <section className={`border-b ${PAD}`} style={{ borderColor: HAIR }}>
       <div className={WRAP}>
         <SectionIntro heading={s.heading} subheading={s.subheading} />
-        <ul className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 lg:gap-x-8">
+        <ul className={`grid gap-x-4 gap-y-10 sm:gap-x-6 lg:gap-x-8 ${cols}`}>
           {items.map((it, i) => (
             <li key={i} className="self-start">
               {it.imageUrl && (
@@ -902,6 +1055,7 @@ function Team({ s }: { s: TeamSection }) {
                 <img
                   src={it.imageUrl}
                   alt={it.name}
+                  loading="lazy"
                   className="mb-4 aspect-3/4 w-full object-cover"
                 />
               )}
@@ -1098,9 +1252,23 @@ function Cta({ s, cHref }: { s: CtaSection; cHref: string }) {
   if (!s.heading && !s.ctaText) return null;
 
   return (
-    <section style={{ background: INK, color: "#ffffff" }}>
+    <section className="relative isolate" style={{ background: INK, color: "#ffffff" }}>
+      {s.imageUrl && (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={s.imageUrl}
+            alt=""
+            loading="lazy"
+            className="absolute inset-0 -z-10 h-full w-full object-cover"
+          />
+          <div aria-hidden="true" className="absolute inset-0 -z-10" style={{ background: SCRIM_FLAT }} />
+        </>
+      )}
       <div
-        className={`${WRAP} flex flex-col gap-8 py-16 lg:flex-row lg:items-center lg:justify-between lg:gap-16 lg:py-20`}
+        className={`${WRAP} flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between lg:gap-16 ${
+          s.imageUrl ? "py-24 lg:py-32" : "py-16 lg:py-20"
+        }`}
       >
         <div className="max-w-[34ch]">
           {s.heading && (

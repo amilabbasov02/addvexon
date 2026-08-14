@@ -24,7 +24,12 @@ import {
   users,
 } from "../src/db/schema";
 import { uid } from "../src/lib/ids";
-import type { LocalizedBundle, SiteTheme } from "../src/lib/site-content";
+import type { LocalizedBundle, SiteContent, SiteTheme } from "../src/lib/site-content";
+import {
+  fetchImagesForQuery,
+  imageProviderConfigured,
+  type StockImage,
+} from "../src/lib/leads/image-provider";
 
 import { lumenContent, lumenTheme } from "./seed-content/lumen";
 import { emberContent, emberTheme } from "./seed-content/ember";
@@ -50,6 +55,9 @@ type TemplateSpec = {
   priceSetupAzn: number;
   priceMonthlyAzn: number;
   priceExportAzn: number;
+  /** Stock-photo search term — templates do not map onto the lead niches. */
+  imageQuery: string;
+  imageAlt: string;
 };
 
 /**
@@ -66,6 +74,8 @@ const TEMPLATES: TemplateSpec[] = [
     description:
       "Jurnal estetikası, asimmetrik qalereya, xidmət indeksi, qiymət siyahısı və onlayn qeydiyyat çağırışı. 12 bölmə, AZ/EN/RU.",
     previewSubdomain: "demo-lumen",
+    imageQuery: "modern hair salon interior",
+    imageAlt: "Gözəllik salonu interyeri",
     content: lumenContent,
     theme: lumenTheme,
     sortOrder: 1,
@@ -81,6 +91,8 @@ const TEMPLATES: TemplateSpec[] = [
     description:
       "Çap menyu kartı təsiri, qrup üzrə menyu, set menyular, komanda və iş saatları. 12 bölmə, AZ/EN/RU.",
     previewSubdomain: "demo-ember",
+    imageQuery: "restaurant interior warm dining",
+    imageAlt: "Restoran zalı",
     content: emberContent,
     theme: emberTheme,
     sortOrder: 2,
@@ -96,6 +108,8 @@ const TEMPLATES: TemplateSpec[] = [
     description:
       "Xidmətlər spesifikasiya siyahısı kimi, həkim komandası, müalicə prosesi, indikativ qiymətlər və daimi qeydiyyat düyməsi. 12 bölmə, AZ/EN/RU.",
     previewSubdomain: "demo-meridian",
+    imageQuery: "modern dental clinic interior",
+    imageAlt: "Diş klinikası interyeri",
     content: meridianContent,
     theme: meridianTheme,
     sortOrder: 3,
@@ -111,6 +125,8 @@ const TEMPLATES: TemplateSpec[] = [
     description:
       "Tünd fon, iri rəqəmlər, abunə paketləri, məşqçilər və dərs cədvəli. 13 bölmə, AZ/EN/RU.",
     previewSubdomain: "demo-forge",
+    imageQuery: "modern gym interior training",
+    imageAlt: "İdman zalı",
     content: forgeContent,
     theme: forgeTheme,
     sortOrder: 4,
@@ -126,6 +142,8 @@ const TEMPLATES: TemplateSpec[] = [
     description:
       "Redaksiya şəbəkəsi, xidmət siyahısı, iş prosesi, tarif cədvəli və partnyor zolağı. 13 bölmə, AZ/EN/RU.",
     previewSubdomain: "demo-atlas",
+    imageQuery: "modern office meeting workspace",
+    imageAlt: "Ofis interyeri",
     content: atlasContent,
     theme: atlasTheme,
     sortOrder: 5,
@@ -134,6 +152,75 @@ const TEMPLATES: TemplateSpec[] = [
     priceExportAzn: 150000,
   },
 ];
+
+/**
+ * Fill the preview content's photo slots.
+ *
+ * Every locale of a template shows the same premises, so one fetch covers all
+ * three. Fields already carrying a URL are never overwritten — hand-picked
+ * photography always beats stock, and re-running the seeder must not undo it.
+ */
+async function fillPreviewImages(spec: TemplateSpec): Promise<LocalizedBundle> {
+  if (!imageProviderConfigured()) return spec.content;
+
+  const images = await fetchImagesForQuery(spec.imageQuery, 12, spec.imageAlt);
+  if (images.length === 0) {
+    console.log("    (no images returned — seeding text-only)");
+    return spec.content;
+  }
+
+  for (const locale of Object.keys(spec.content.locales) as (keyof LocalizedBundle["locales"])[]) {
+    const content = spec.content.locales[locale];
+    if (content) applyImages(content, images);
+  }
+
+  console.log(`    ${images.length} images applied`);
+  return spec.content;
+}
+
+function applyImages(content: SiteContent, images: StockImage[]): void {
+  let next = 0;
+  const take = (): string | undefined => images[next++ % images.length]?.url;
+
+  for (const page of content.pages ?? []) {
+    for (const section of page.sections ?? []) {
+      switch (section.type) {
+        case "hero":
+          section.imageUrl ??= images[0]?.url;
+          break;
+        case "about":
+        case "cta":
+        case "stats":
+          section.imageUrl ??= take();
+          break;
+        case "gallery":
+          for (const item of section.items ?? []) item.imageUrl ??= take();
+          break;
+        case "features":
+          for (const item of section.items ?? []) item.imageUrl ??= take();
+          break;
+        case "menu": {
+          section.imageUrl ??= take();
+          // A plate on every line stops reading as a menu; a few is enough.
+          let plated = 0;
+          for (const group of section.groups ?? []) {
+            for (const item of group.items ?? []) {
+              if (item.imageUrl || plated >= 4) continue;
+              item.imageUrl = take();
+              plated++;
+            }
+          }
+          break;
+        }
+        // Team portraits stay empty on purpose: a stock photo of a stranger
+        // captioned with a named person is a fabrication, and the designs
+        // render a deliberate initials tile instead.
+        default:
+          break;
+      }
+    }
+  }
+}
 
 async function resolveOwner(): Promise<string> {
   // Preview tenants need an owner row; the admin account is the natural one.
@@ -208,7 +295,12 @@ async function seedTemplate(spec: TemplateSpec, ownerId: string): Promise<void> 
     });
   }
 
-  const content = spec.content as unknown as Record<string, unknown>;
+  // Photography, if a provider key is configured. Without one the templates
+  // seed text-only and the designs fall back to their plainer layouts — which
+  // is why the "no images" path has to keep working.
+  const withImages = await fillPreviewImages(spec);
+
+  const content = withImages as unknown as Record<string, unknown>;
   const theme = spec.theme as unknown as Record<string, unknown>;
 
   const existingContent = await db

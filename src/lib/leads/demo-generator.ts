@@ -252,6 +252,43 @@ function applyImages(content: SiteContent, images: StockImage[]): void {
           }
           break;
         }
+
+        // The designs switch to image-led layouts as soon as these carry a
+        // photo — a service list becomes a card grid, a stats band becomes a
+        // photographic ground. Leaving them empty is what made the pages read
+        // as documents, so they are filled whenever imagery is available.
+        case "features": {
+          for (const item of section.items ?? []) {
+            if (item.imageUrl) continue;
+            const img = take();
+            if (img) item.imageUrl = img.url;
+          }
+          break;
+        }
+
+        case "menu": {
+          // Only a handful of dishes, not every line — a menu where every item
+          // carries a plate stops reading as a menu.
+          section.imageUrl ??= take()?.url;
+          let plated = 0;
+          for (const group of section.groups ?? []) {
+            for (const item of group.items ?? []) {
+              if (item.imageUrl || plated >= 4) continue;
+              const img = take();
+              if (img) {
+                item.imageUrl = img.url;
+                plated++;
+              }
+            }
+          }
+          break;
+        }
+
+        case "cta":
+        case "stats": {
+          section.imageUrl ??= take()?.url;
+          break;
+        }
         // Team portraits are deliberately left empty: a stock photo of a
         // stranger presented as a named employee is a fabrication, and every
         // design already degrades team members to a clean text block.

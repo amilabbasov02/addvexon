@@ -130,6 +130,17 @@ const label: React.CSSProperties = {
 const HAIR = "color-mix(in srgb, var(--site-text) 14%, transparent)";
 const HAIR_STRONG = "color-mix(in srgb, var(--site-text) 28%, transparent)";
 
+/**
+ * Foto üzərindəki mətn temadan asılı ola bilməz — tenant hansı rəngi seçsə də
+ * şəkil naməlum qalır. Ona görə foto üzərində sabit ağ mətn + tünd pərdə
+ * işlədilir; pərdə kontrastı WCAG AA-dan yuxarı saxlayır.
+ */
+const ON_PHOTO = "#ffffff";
+const ON_PHOTO_SOFT = "rgba(255,255,255,0.88)";
+const ON_PHOTO_MUTED = "rgba(255,255,255,0.72)";
+/** Aşağıdan yuxarı güclənən tünd pərdə — mətn alt hissədə yerləşir. */
+const PHOTO_SCRIM =
+  "linear-gradient(to top, rgba(0,0,0,0.86) 0%, rgba(0,0,0,0.62) 38%, rgba(0,0,0,0.34) 68%, rgba(0,0,0,0.24) 100%)";
 /** Hər interaktiv element üçün eyni, həmişə görünən fokus halqası. */
 const focus =
   "focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current";
@@ -428,39 +439,91 @@ function PrimaryLink({
 /* ------------------------------------------------------------------ */
 
 function Hero(s: HeroSection & { siteName: string }) {
-  const hasImage = Boolean(s.imageUrl);
+  /* Foto varsa: tam enli fotoqrafiya — səhifəni açan ən güclü vasitə.
+     Yoxdursa: köhnə tipoqrafik variant qalır (daha sadə, amma düzgün). */
+  return s.imageUrl ? <HeroPhoto {...s} /> : <HeroPlain {...s} />;
+}
 
+/** Şaquli kənar etiketi — dizaynın imzası. Hər iki hero variantında var. */
+function EdgeLabel({ text, onDark }: { text: string; onDark?: boolean }) {
   return (
-    <section className="relative overflow-hidden">
-      {/* İmza: səhifə kənarındakı şaquli etiket */}
+    <>
       <span
         aria-hidden
-        className="absolute bottom-16 left-4 hidden text-xs xl:block"
+        className="absolute bottom-16 left-4 z-10 hidden text-xs xl:block"
         style={{
           ...label,
           writingMode: "vertical-rl",
           transform: "rotate(180deg)",
-          color: "var(--site-muted)",
+          color: onDark ? ON_PHOTO_MUTED : "var(--site-muted)",
         }}
       >
-        {s.siteName}
+        {text}
       </span>
       <span
         aria-hidden
-        className="absolute left-8 top-0 hidden h-full w-px xl:block"
-        style={{ background: HAIR }}
+        className="absolute left-8 top-0 z-10 hidden h-full w-px xl:block"
+        style={{ background: onDark ? "rgba(255,255,255,0.28)" : HAIR }}
       />
+    </>
+  );
+}
 
-      <div
-        className={`mx-auto grid max-w-6xl gap-12 px-5 sm:px-8 xl:px-12 ${
-          hasImage ? "lg:grid-cols-12 lg:gap-10" : ""
-        }`}
-      >
-        <div
-          className={`flex flex-col justify-center py-16 sm:py-20 lg:py-32 ${
-            hasImage ? "lg:col-span-6" : "mx-auto max-w-3xl text-balance"
-          }`}
+function HeroPhoto(s: HeroSection & { siteName: string }) {
+  return (
+    <section className="relative isolate overflow-hidden" style={{ background: "#111111" }}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={s.imageUrl}
+        alt=""
+        className="absolute inset-0 h-full w-full object-cover"
+      />
+      <span aria-hidden className="absolute inset-0" style={{ background: PHOTO_SCRIM }} />
+
+      <EdgeLabel text={s.siteName} onDark />
+
+      <div className="relative mx-auto flex min-h-[78svh] max-w-6xl flex-col justify-end px-5 pb-16 pt-32 sm:px-8 sm:pb-20 lg:min-h-[86svh] lg:pb-28 xl:px-12">
+        <span
+          aria-hidden
+          className="mb-8 block h-px w-16"
+          style={{ background: "var(--site-primary)" }}
+        />
+        <h1
+          style={{
+            ...display,
+            fontSize: "clamp(2.75rem, 8vw, 5.5rem)",
+            lineHeight: 0.98,
+            letterSpacing: "-0.015em",
+            color: ON_PHOTO,
+          }}
+          className="max-w-3xl font-light break-words hyphens-auto"
         >
+          {s.heading}
+        </h1>
+        {s.subheading && (
+          <p
+            className="mt-6 max-w-xl text-base leading-relaxed sm:text-lg"
+            style={{ color: ON_PHOTO_SOFT }}
+          >
+            {s.subheading}
+          </p>
+        )}
+        {s.ctaText && (
+          <div className="mt-10">
+            <PrimaryLink href={s.ctaUrl ?? "#elaqe"}>{s.ctaText}</PrimaryLink>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function HeroPlain(s: HeroSection & { siteName: string }) {
+  return (
+    <section className="relative overflow-hidden">
+      <EdgeLabel text={s.siteName} />
+      <div className="mx-auto max-w-6xl px-5 sm:px-8 xl:px-12">
+        <div className="mx-auto flex max-w-3xl flex-col justify-center py-20 text-balance sm:py-24 lg:py-32">
           <span
             aria-hidden
             className="mb-8 block h-px w-16"
@@ -491,22 +554,6 @@ function Hero(s: HeroSection & { siteName: string }) {
             </div>
           )}
         </div>
-
-        {s.imageUrl && (
-          <div className="relative pb-16 lg:col-span-5 lg:col-start-8 lg:pb-32 lg:pt-32">
-            <span
-              aria-hidden
-              className="absolute -left-4 top-28 hidden h-full w-full border lg:block"
-              style={{ borderColor: HAIR_STRONG }}
-            />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={s.imageUrl}
-              alt={s.heading}
-              className="relative aspect-3/4 w-full object-cover"
-            />
-          </div>
-        )}
       </div>
     </section>
   );
@@ -518,30 +565,99 @@ function Hero(s: HeroSection & { siteName: string }) {
 
 function Services(s: FeaturesSection & { n: string }) {
   if (!s.items?.length) return null;
+  const withPhotos = s.items.some((it) => it.imageUrl);
 
+  /* Başlıq bloku hər iki variantda eynidir. */
+  const head = (
+    <>
+      <Eyebrow n={s.n} />
+      {s.heading && (
+        <h2 style={display} className="mt-6 text-3xl font-light leading-tight sm:text-4xl">
+          {s.heading}
+        </h2>
+      )}
+      {s.subheading && (
+        <p
+          className="mt-4 max-w-md text-sm leading-relaxed"
+          style={{ color: "var(--site-muted)" }}
+        >
+          {s.subheading}
+        </p>
+      )}
+    </>
+  );
+
+  /* Foto varsa — kart şəbəkəsi. Xidməti göstərmək onu təsvir etməkdən güclüdür. */
+  if (withPhotos) {
+    return (
+      <section id="xidmetler" className="py-20 sm:py-24 lg:py-28">
+        <div className="mx-auto max-w-7xl px-5 sm:px-8 xl:px-12">
+          <div className="max-w-2xl">{head}</div>
+          <ol className="mt-12 grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-2 sm:gap-x-8 lg:grid-cols-3">
+            {s.items.map((it, i) => (
+              <li key={i} className="group">
+                {it.imageUrl ? (
+                  <div className="relative overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={it.imageUrl}
+                      alt=""
+                      loading="lazy"
+                      className="aspect-4/5 w-full object-cover transition-transform duration-200 group-hover:scale-[1.03] motion-reduce:transform-none motion-reduce:transition-none"
+                    />
+                    <span
+                      aria-hidden
+                      className="absolute left-0 top-0 px-4 py-3 text-xs"
+                      style={{
+                        ...label,
+                        color: ON_PHOTO,
+                        background: "rgba(0,0,0,0.45)",
+                      }}
+                    >
+                      {ord(i)}
+                    </span>
+                  </div>
+                ) : (
+                  /* Bu xidmətin fotosu yoxdursa — şəbəkə ritmi pozulmasın deyə
+                     eyni ölçülü, nömrəli çərçivə. */
+                  <div
+                    className="flex aspect-4/5 w-full items-end border p-5"
+                    style={{ borderColor: HAIR_STRONG }}
+                  >
+                    <span
+                      aria-hidden
+                      style={{ ...display, color: "var(--site-primary)" }}
+                      className="text-5xl font-light leading-none"
+                    >
+                      {ord(i)}
+                    </span>
+                  </div>
+                )}
+                <h3 style={display} className="mt-5 text-2xl font-normal leading-snug">
+                  {it.title}
+                </h3>
+                {it.text && (
+                  <p
+                    className="mt-2 text-sm leading-relaxed"
+                    style={{ color: "var(--site-muted)" }}
+                  >
+                    {it.text}
+                  </p>
+                )}
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+    );
+  }
+
+  /* Foto yoxdursa — köhnə nömrələnmiş indeks. Sadə, amma düzgün. */
   return (
     <section id="xidmetler" className="py-20 sm:py-24 lg:py-32">
       <div className="mx-auto max-w-6xl px-5 sm:px-8 xl:px-12">
         <div className="lg:grid lg:grid-cols-12 lg:gap-10">
-          <div className="lg:col-span-4">
-            <Eyebrow n={s.n} />
-            {s.heading && (
-              <h2
-                style={display}
-                className="mt-6 text-3xl font-light leading-tight sm:text-4xl"
-              >
-                {s.heading}
-              </h2>
-            )}
-            {s.subheading && (
-              <p
-                className="mt-4 max-w-sm text-sm leading-relaxed"
-                style={{ color: "var(--site-muted)" }}
-              >
-                {s.subheading}
-              </p>
-            )}
-          </div>
+          <div className="lg:col-span-4">{head}</div>
 
           <ol className="mt-10 lg:col-span-8 lg:mt-0">
             {s.items.map((it, i) => (
@@ -556,7 +672,7 @@ function Services(s: FeaturesSection & { n: string }) {
                     style={{ ...label, color: "var(--site-muted)" }}
                     aria-hidden
                   >
-                    {String(i + 1).padStart(2, "0")}
+                    {ord(i)}
                   </span>
                   <div className="min-w-0 flex-1 sm:flex sm:items-baseline sm:gap-8">
                     <h3
@@ -607,26 +723,29 @@ function About(s: AboutSection & { n: string }) {
       style={{ background: "var(--site-surface)" }}
     >
       <div
-        className={`mx-auto grid max-w-6xl items-center gap-12 px-5 sm:px-8 xl:px-12 ${
-          hasImage ? "lg:grid-cols-12 lg:gap-16" : ""
+        className={`mx-auto grid max-w-7xl items-center gap-10 px-5 sm:px-8 xl:px-12 ${
+          hasImage ? "lg:grid-cols-12 lg:gap-14" : ""
         }`}
       >
         {s.imageUrl && (
-          <div className="relative lg:col-span-5">
+          /* Şəkil mətndən böyükdür: bu bölmə salonun özünü göstərməlidir,
+             mətn isə ona şərh verir. */
+          <div className="relative lg:col-span-7">
             <span
               aria-hidden
-              className="absolute -bottom-4 -left-4 hidden h-full w-full border lg:block"
+              className="absolute -bottom-5 -left-5 hidden h-full w-full border lg:block"
               style={{ borderColor: HAIR_STRONG }}
             />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={s.imageUrl}
-              alt={s.heading ?? ""}
-              className="relative aspect-4/5 w-full object-cover"
+              alt=""
+              loading="lazy"
+              className="relative aspect-4/3 w-full object-cover sm:aspect-3/2 lg:aspect-4/5"
             />
           </div>
         )}
-        <div className={hasImage ? "lg:col-span-6 lg:col-start-7" : "mx-auto max-w-2xl"}>
+        <div className={hasImage ? "lg:col-span-5" : "mx-auto max-w-2xl"}>
           <Eyebrow n={s.n} />
           {s.heading && (
             <h2
@@ -694,19 +813,54 @@ function Stats(s: StatsSection) {
 /*  Qalereya — qeyri-bərabər redaksiya şəbəkəsi                        */
 /* ------------------------------------------------------------------ */
 
-/** 12 sütunlu şəbəkədə 7/5 və 5/7 cütlərinin növbələşməsi. */
-function galleryCell(i: number, total: number) {
-  if (total === 1) return { span: "md:col-span-12", ratio: "aspect-16/9", offset: "" };
+/**
+ * 12 sütunlu şəbəkədə 7/5 və 5/7 cütlərinin növbələşməsi. Nisbətlər əvvəlkindən
+ * iridir — qalereya salonun portfoliosudur, ona görə səhifənin ən böyük bölməsi
+ * olmalıdır.
+ */
+function galleryCell(i: number) {
   switch (i % 4) {
     case 0:
       return { span: "md:col-span-7", ratio: "aspect-4/3", offset: "" };
     case 1:
-      return { span: "md:col-span-5", ratio: "aspect-3/4", offset: "md:mt-16" };
+      return { span: "md:col-span-5", ratio: "aspect-3/4", offset: "md:mt-20" };
     case 2:
       return { span: "md:col-span-5", ratio: "aspect-3/4", offset: "" };
     default:
-      return { span: "md:col-span-7", ratio: "aspect-4/3", offset: "md:mt-16" };
+      return { span: "md:col-span-7", ratio: "aspect-4/3", offset: "md:mt-20" };
   }
+}
+
+/** Bir qalereya şəkli — eyni hover və başlıq davranışı hər yerdə. */
+function GalleryFigure({
+  imageUrl,
+  caption,
+  ratio,
+  className = "",
+}: {
+  imageUrl?: string;
+  caption?: string;
+  ratio: string;
+  className?: string;
+}) {
+  return (
+    <figure className={className}>
+      <div className="overflow-hidden">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={imageUrl}
+          alt={caption ?? ""}
+          loading="lazy"
+          className={`${ratio} w-full object-cover transition-transform duration-200 hover:scale-[1.02] motion-reduce:transform-none motion-reduce:transition-none`}
+        />
+      </div>
+      {caption && (
+        <figcaption className="mt-3 text-xs" style={{ ...label, color: "var(--site-muted)" }}>
+          {caption}
+        </figcaption>
+      )}
+    </figure>
+  );
 }
 
 function Gallery(s: GallerySection & { n: string }) {
@@ -715,46 +869,47 @@ function Gallery(s: GallerySection & { n: string }) {
   // ümumiyyətlə render olunmur.
   const items = (s.items ?? []).filter((it) => it.imageUrl);
   if (items.length === 0) return null;
-  s = { ...s, items };
+
+  /* Birinci şəkil aparıcıdır — geniş, demək olar tam enli. Qalanları redaksiya
+     şəbəkəsində davam edir. */
+  const [lead, ...rest] = items;
 
   return (
-    <section id="qalereya" className="py-20 sm:py-24 lg:py-32">
-      <div className="mx-auto max-w-6xl px-5 sm:px-8 xl:px-12">
+    <section id="qalereya" className="py-20 sm:py-24 lg:py-28">
+      <div className="mx-auto max-w-7xl px-5 sm:px-8 xl:px-12">
         <Eyebrow n={s.n} />
         {s.heading && (
           <h2
             style={display}
-            className="mt-6 max-w-2xl text-3xl font-light leading-tight sm:text-4xl"
+            className="mt-6 max-w-2xl text-3xl font-light leading-tight sm:text-4xl lg:text-5xl"
           >
             {s.heading}
           </h2>
         )}
-        <div className="mt-12 grid grid-cols-1 items-start gap-6 sm:gap-8 md:grid-cols-12">
-          {s.items.map((it, i) => {
-            const c = galleryCell(i, s.items.length);
-            return (
-              <figure key={i} className={`${c.span} ${c.offset}`}>
-                <div className="overflow-hidden">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={it.imageUrl}
-                    alt={it.caption ?? ""}
-                    loading="lazy"
-                    className={`${c.ratio} w-full object-cover transition-opacity duration-200 hover:opacity-90 motion-reduce:transition-none`}
-                  />
-                </div>
-                {it.caption && (
-                  <figcaption
-                    className="mt-3 text-xs"
-                    style={{ ...label, color: "var(--site-muted)" }}
-                  >
-                    {it.caption}
-                  </figcaption>
-                )}
-              </figure>
-            );
-          })}
-        </div>
+
+        <GalleryFigure
+          imageUrl={lead.imageUrl}
+          caption={lead.caption}
+          ratio="aspect-4/3 sm:aspect-16/9 lg:aspect-21/9"
+          className="mt-12"
+        />
+
+        {rest.length > 0 && (
+          <div className="mt-8 grid grid-cols-1 items-start gap-6 sm:mt-10 sm:gap-8 md:grid-cols-12">
+            {rest.map((it, i) => {
+              const c = galleryCell(i);
+              return (
+                <GalleryFigure
+                  key={i}
+                  imageUrl={it.imageUrl}
+                  caption={it.caption}
+                  ratio={c.ratio}
+                  className={`${c.span} ${c.offset}`}
+                />
+              );
+            })}
+          </div>
+        )}
       </div>
     </section>
   );
@@ -866,8 +1021,25 @@ function Cta(s: CtaSection) {
   if (!s.heading && !s.ctaText) return null;
 
   return (
-    <section style={{ background: "#111111", color: "#ffffff" }}>
-      <div className="mx-auto max-w-4xl px-5 py-20 text-center sm:px-8 sm:py-24 lg:py-28">
+    <section className="relative isolate overflow-hidden" style={{ background: "#111111", color: ON_PHOTO }}>
+      {s.imageUrl && (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={s.imageUrl}
+            alt=""
+            loading="lazy"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+          {/* Pərdə: fotonun üstündə ağ mətn hər halda AA-nı keçsin. */}
+          <span
+            aria-hidden
+            className="absolute inset-0"
+            style={{ background: "rgba(0,0,0,0.62)" }}
+          />
+        </>
+      )}
+      <div className="relative mx-auto max-w-4xl px-5 py-20 text-center sm:px-8 sm:py-28 lg:py-36">
         <span
           aria-hidden
           className="mx-auto mb-8 block h-px w-16"
@@ -884,7 +1056,7 @@ function Cta(s: CtaSection) {
         {s.subheading && (
           <p
             className="mx-auto mt-6 max-w-xl text-base leading-relaxed"
-            style={{ color: "rgba(255,255,255,0.72)" }}
+            style={{ color: ON_PHOTO_SOFT }}
           >
             {s.subheading}
           </p>
@@ -994,16 +1166,33 @@ function Testimonials(s: TestimonialsSection & { n: string; ui: Ui }) {
           </p>
         )}
 
-        {/* Aparıcı sitat — böyük, redaksiya üslubunda */}
-        <figure className="mt-12 lg:grid lg:grid-cols-12 lg:gap-10">
-          <span
-            aria-hidden
-            style={{ ...display, color: "var(--site-primary)" }}
-            className="block text-6xl leading-[0.5] opacity-25 lg:col-span-1 lg:text-7xl"
+        {/* Aparıcı sitat — foto varsa portret onun yanında iri render olunur:
+            müştərinin üzü mətndən daha çox etibar verir. */}
+        <figure className="mt-12 gap-10 lg:grid lg:grid-cols-12">
+          {lead.avatarUrl ? (
+            <div className="lg:col-span-5">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={lead.avatarUrl}
+                alt=""
+                loading="lazy"
+                className="aspect-4/5 w-full object-cover"
+              />
+            </div>
+          ) : (
+            <span
+              aria-hidden
+              style={{ ...display, color: "var(--site-primary)" }}
+              className="block text-6xl leading-[0.5] opacity-25 lg:col-span-1 lg:text-7xl"
+            >
+              &ldquo;
+            </span>
+          )}
+          <blockquote
+            className={`mt-6 lg:mt-0 lg:self-center ${
+              lead.avatarUrl ? "lg:col-span-7" : "lg:col-span-11"
+            }`}
           >
-            &ldquo;
-          </span>
-          <blockquote className="mt-4 lg:col-span-11 lg:mt-0">
             <p
               style={{
                 ...display,
@@ -1017,7 +1206,8 @@ function Testimonials(s: TestimonialsSection & { n: string; ui: Ui }) {
             <Attribution
               author={lead.author}
               role={lead.role}
-              avatarUrl={lead.avatarUrl}
+              /* Portret artıq yuxarıda göstərilib — kiçik təkrarı verilmir. */
+              avatarUrl={undefined}
               rating={lead.rating}
               term={s.ui.rating}
               large
@@ -1146,7 +1336,9 @@ function Team(s: TeamSection & { n: string }) {
             {s.subheading}
           </p>
         )}
-        <ul className="mt-12 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+        {/* Portret aparıcıdır: mobil ekranda belə iki sütun — komanda bölməsi
+            mətn blokuna yox, üzlərə bənzəməlidir. */}
+        <ul className="mt-12 grid grid-cols-2 gap-x-5 gap-y-10 sm:gap-x-8 sm:gap-y-14 lg:grid-cols-3">
           {items.map((it, i) => (
             <li key={i}>
               {it.imageUrl ? (
@@ -1156,14 +1348,26 @@ function Team(s: TeamSection & { n: string }) {
                     src={it.imageUrl}
                     alt={it.name}
                     loading="lazy"
-                    className="aspect-3/4 w-full object-cover transition-opacity duration-200 hover:opacity-90 motion-reduce:transition-none"
+                    className="aspect-3/4 w-full object-cover transition-transform duration-200 hover:scale-[1.03] motion-reduce:transform-none motion-reduce:transition-none"
                   />
                 </div>
               ) : (
-                /* Şəkil yoxdursa — boş çərçivə yerinə incə xətt */
-                <span aria-hidden className="block h-px w-16" style={{ background: "var(--site-primary)" }} />
+                /* Şəkil yoxdursa — eyni ölçüdə, adın baş hərfi ilə çərçivə;
+                   şəbəkə ritmi qorunur. */
+                <div
+                  aria-hidden
+                  className="flex aspect-3/4 w-full items-center justify-center border"
+                  style={{ borderColor: HAIR_STRONG }}
+                >
+                  <span
+                    style={{ ...display, color: "var(--site-primary)" }}
+                    className="text-5xl font-light leading-none sm:text-6xl"
+                  >
+                    {it.name.trim().charAt(0)}
+                  </span>
+                </div>
               )}
-              <h3 style={display} className="mt-5 text-2xl font-normal leading-snug">
+              <h3 style={display} className="mt-5 text-xl font-normal leading-snug sm:text-2xl">
                 {it.name}
               </h3>
               {it.role && (

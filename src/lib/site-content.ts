@@ -57,6 +57,12 @@ export interface FeatureItem {
   title: string;
   text?: string;
   icon?: string;
+  /**
+   * Xidmətin fotosu. Gözəllik/yemək kimi vizual sahələrdə xidmət siyahısı
+   * yalnız mətn olanda satmır — foto varsa dizayn kart şəbəkəsinə keçir,
+   * yoxdursa nömrələnmiş siyahıya qayıdır.
+   */
+  imageUrl?: string;
 }
 export interface FeaturesSection {
   type: "features";
@@ -104,6 +110,8 @@ export interface CtaSection {
   subheading?: string;
   ctaText?: string;
   ctaUrl?: string;
+  /** Arxa fon fotosu. Yoxdursa dizayn tünd lövhəyə qayıdır. */
+  imageUrl?: string;
 }
 
 /** Restoran menyusu — qruplar üzrə adlar + qiymətlər. */
@@ -111,10 +119,21 @@ export interface MenuItem {
   name: string;
   desc?: string;
   price?: string;
+  /**
+   * İmza yeməyin fotosu. Bütün sətirlərə lazım deyil — məqsəd menyunu foto
+   * şəbəkəsinə çevirmək yox, bir neçə yeməyi göstərməkdir. Şəkli olan sətir
+   * daha iri render olunur, olmayan sətir əvvəlki kimi çap sətri qalır.
+   */
+  imageUrl?: string;
 }
 export interface MenuSection {
   type: "menu";
   heading?: string;
+  /**
+   * Bölmənin atmosfer fotosu (zal, mətbəx, masa). Menyu kartı bu fotonun
+   * üstünə oturur. Yoxdursa kart əvvəlki kimi tünd fonda dayanır.
+   */
+  imageUrl?: string;
   groups: { name: string; items: MenuItem[] }[];
 }
 
@@ -126,6 +145,11 @@ export interface StatItem {
 export interface StatsSection {
   type: "stats";
   items: StatItem[];
+  /**
+   * Zolağın arxa fon fotosu (obyekt, sex, komanda). Yoxdursa dizayn tünd
+   * lövhəyə qayıdır — `CtaSection.imageUrl` ilə eyni məntiq.
+   */
+  imageUrl?: string;
 }
 
 /** Məhsul kataloqu (mağaza/e-ticarət). */

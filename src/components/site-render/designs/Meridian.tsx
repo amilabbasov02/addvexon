@@ -6,6 +6,16 @@
  * sürətlə göz gəzdirilən siyahı (dl) kimi verilir; statistika sakit dəlil
  * kimi oxunur. Böyük mətn ölçüləri — pasiyentlər çox vaxt yaşlı olur.
  * Sabit "zəng et / növbə al" paneli mobil ekranda həmişə əlçatandır.
+ *
+ * Foto haqqında: səhiyyədə etibarın bir hissəsi vizualdır — təmiz otaq, real
+ * avadanlıq, həkimin üzü. Ona görə dizayn FOTO VAR fərziyyəsi ilə qurulur:
+ * hero, komanda, xidmətlər, qalereya, haqqında və çağırış zolağı şəkil üçün
+ * real yer ayırır. Foto yoxdursa hər bölmə sadələşir (monoqram, ikon, tünd
+ * lövhə) — amma bu, ehtiyat variantdır, hədəf deyil.
+ *
+ * Uydurma qadağandır: demo saytlarda həkim portretləri boş qalır, çünki yad
+ * adamın stok fotosunu adı çəkilən həkim kimi göstərmək saxtakarlıqdır.
+ * Portret yerinə ad monoqramı verilir — bilərəkdən boşluq, sınıq şəkil yox.
  */
 import type {
   SiteContent,
@@ -440,56 +450,80 @@ function SectionView({ section, ui, bookHref }: { section: Section; ui: Strings;
 
 // ---------------------------------------------------------------- hero
 
+/**
+ * Foto varsa mətn sütunu 5/12-yə yığılır, foto 7/12 tutur və lg-dən yuxarı
+ * ekranın sağ kənarına qədər daşır — səhifə ilk ekranda sənəd yox, klinika
+ * kimi görünür. `min(0px, …)` sayəsində konteyner enindən kiçik ekranlarda
+ * daşma sıfırlanır; kök element onsuz da `overflow-x-clip`-dir.
+ */
+const BLEED_RIGHT = "lg:mr-[min(0px,calc(-2rem_-_(100vw_-_72rem)/2))]";
+
 function Hero(s: HeroSection & { ui: Strings }) {
   const heading = s.heading?.trim();
   if (!heading) return null;
-  const hasImage = Boolean(s.imageUrl);
+  const img = s.imageUrl?.trim();
+
+  const text = (
+    <>
+      <h1
+        style={display}
+        className="text-balance text-[2.4rem] leading-[1.08] font-semibold tracking-tight sm:text-[3.1rem] lg:text-[3.4rem]"
+      >
+        {heading}
+      </h1>
+
+      {s.subheading && (
+        <p className="mt-6 max-w-[38ch] text-pretty text-lg leading-relaxed sm:text-xl sm:leading-[1.65]">
+          {s.subheading}
+        </p>
+      )}
+
+      {s.ctaText && (
+        <div className="mt-9 flex flex-wrap gap-3">
+          <a
+            href={s.ctaUrl ?? "#elaqe"}
+            className={`inline-flex min-h-[3.25rem] items-center gap-2 rounded-md px-7 text-base font-semibold text-[var(--site-on-primary)] ${darken} ${focus}`}
+            style={{ background: "var(--site-primary)" }}
+          >
+            {s.ctaText}
+            <span aria-hidden="true" className="material-symbols-outlined text-[20px]">arrow_forward</span>
+          </a>
+        </div>
+      )}
+    </>
+  );
+
+  if (!img) {
+    // Ehtiyat variant: foto yoxdursa geniş mətn sütunu — sadə, amma bitmiş.
+    return (
+      <section className="border-b" style={{ borderColor: HAIR_SOFT }}>
+        <div className="mx-auto max-w-6xl px-5 py-14 sm:px-8 md:py-20 lg:py-24">
+          <div className="max-w-3xl">{text}</div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="border-b" style={{ borderColor: HAIR_SOFT }}>
-      <div className="mx-auto max-w-6xl px-5 py-14 sm:px-8 md:py-20 lg:py-24">
-        <div className={hasImage ? "grid items-center gap-10 lg:grid-cols-12 lg:gap-14" : ""}>
-          <div className={hasImage ? "min-w-0 lg:col-span-7" : "max-w-3xl"}>
-            <h1
-              style={display}
-              className="text-balance text-[2.4rem] leading-[1.08] font-semibold tracking-tight sm:text-[3.1rem] lg:text-[3.6rem]"
+      <div className="mx-auto max-w-6xl px-5 sm:px-8">
+        <div className="grid items-center gap-10 py-12 md:py-16 lg:grid-cols-12 lg:gap-14 lg:py-0">
+          <div className="min-w-0 lg:col-span-5 lg:py-24">{text}</div>
+
+          <div className={`lg:col-span-7 ${BLEED_RIGHT}`}>
+            <div
+              className="overflow-hidden rounded-xl lg:rounded-r-none"
+              style={{ boxShadow: `inset 0 0 0 1px ${HAIR}` }}
             >
-              {heading}
-            </h1>
-
-            {s.subheading && (
-              <p className="mt-6 max-w-[38ch] text-pretty text-lg leading-relaxed sm:text-xl sm:leading-[1.65]">
-                {s.subheading}
-              </p>
-            )}
-
-            {s.ctaText && (
-              <div className="mt-9 flex flex-wrap gap-3">
-                <a
-                  href={s.ctaUrl ?? "#elaqe"}
-                  className={`inline-flex min-h-[3.25rem] items-center gap-2 rounded-md px-7 text-base font-semibold text-[var(--site-on-primary)] ${darken} ${focus}`}
-                  style={{ background: "var(--site-primary)" }}
-                >
-                  {s.ctaText}
-                  <span aria-hidden="true" className="material-symbols-outlined text-[20px]">arrow_forward</span>
-                </a>
-              </div>
-            )}
-          </div>
-
-          {s.imageUrl && (
-            <div className="lg:col-span-5">
-              <div className="overflow-hidden rounded-xl border" style={{ borderColor: HAIR, boxShadow: "0 18px 40px -24px rgb(0 0 0 / 0.35)" }}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={s.imageUrl}
-                  alt={heading}
-                  className="aspect-4/3 w-full object-cover lg:aspect-4/5"
-                  loading="eager"
-                />
-              </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={img}
+                alt={heading}
+                className="aspect-4/3 w-full object-cover sm:aspect-16/9 lg:aspect-4/3 lg:min-h-[30rem]"
+                loading="eager"
+              />
             </div>
-          )}
+          </div>
         </div>
       </div>
     </section>
@@ -533,12 +567,18 @@ function Stats(s: StatsSection & { ui: Strings }) {
 
 /**
  * Kart şəbəkəsi yox — sətir siyahısı. Narahat adam başlıqları sürətlə göz
- * gəzdirir, yalnız lazım olanın izahını oxuyur.
+ * gəzdirir, yalnız lazım olanın izahını oxuyur. Bu quruluş qalır; dəyişən
+ * odur ki, şəkil olanda hər sətrin solunda real ölçüdə foto durur — siyahı
+ * ritmi pozulmadan bölmə vizual olur.
+ *
+ * `<dl>` semantikası saxlanılır: şəkil `<dt>`-nin daxilindədir (dl-in birbaşa
+ * övladı yalnız dt/dd ola bilər). Foto başlığın təkrarıdır, ona görə `alt=""`.
  */
 function Services(s: FeaturesSection & { ui: Strings; bookHref?: string }) {
   const items = (s.items ?? []).filter((it) => it?.title);
   if (items.length === 0) return null;
   const heading = s.heading?.trim();
+  const visual = items.some((it) => it.imageUrl?.trim());
 
   return (
     <Shell id="xidmetler" label={heading ? undefined : s.ui.services}>
@@ -550,31 +590,65 @@ function Services(s: FeaturesSection & { ui: Strings; bookHref?: string }) {
       )}
 
       <dl className="border-t" style={{ borderColor: HAIR }}>
-        {items.map((it, i) => (
-          <div
-            key={i}
-            className="grid grid-cols-1 gap-x-8 gap-y-2 border-b px-3 py-6 transition-colors duration-200 ease-out hover:bg-[var(--site-surface)] motion-reduce:transition-none sm:grid-cols-[minmax(0,11rem)_minmax(0,1fr)] sm:px-4 lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)]"
-            style={{ borderColor: HAIR }}
-          >
-            <dt className="flex min-w-0 items-start gap-3">
-              {it.icon && (
-                <span
-                  aria-hidden="true"
-                  className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md transition-colors duration-200 ease-out motion-reduce:transition-none"
-                  style={{ background: TINT, color: "var(--site-primary)" }}
-                >
-                  <span className="material-symbols-outlined text-[20px]">{it.icon}</span>
-                </span>
+        {items.map((it, i) => {
+          const img = it.imageUrl?.trim();
+          return (
+            <div
+              key={i}
+              className={
+                visual
+                  ? "grid grid-cols-1 gap-x-8 gap-y-4 border-b px-3 py-6 transition-colors duration-200 ease-out hover:bg-[var(--site-surface)] motion-reduce:transition-none sm:grid-cols-[minmax(0,14rem)_minmax(0,1fr)] sm:px-4 sm:py-7 lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] lg:gap-x-10"
+                  : "grid grid-cols-1 gap-x-8 gap-y-2 border-b px-3 py-6 transition-colors duration-200 ease-out hover:bg-[var(--site-surface)] motion-reduce:transition-none sm:grid-cols-[minmax(0,11rem)_minmax(0,1fr)] sm:px-4 lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)]"
+              }
+              style={{ borderColor: HAIR }}
+            >
+              <dt className="min-w-0">
+                {visual &&
+                  (img ? (
+                    <div className="mb-3.5 overflow-hidden rounded-lg" style={{ boxShadow: `inset 0 0 0 1px ${HAIR}` }}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={img} alt="" className="aspect-4/3 w-full object-cover" loading="lazy" />
+                    </div>
+                  ) : (
+                    // Bu xidmətin fotosu yoxdur: eyni ölçüdə sakit lövhə —
+                    // sətir hündürlükləri sıçramasın, sınıq şəkil görünməsin.
+                    <div
+                      aria-hidden="true"
+                      className="mb-3.5 flex aspect-4/3 w-full items-center justify-center rounded-lg"
+                      style={{ background: TINT, boxShadow: `inset 0 0 0 1px ${HAIR}` }}
+                    >
+                      {it.icon && (
+                        <span
+                          className="material-symbols-outlined text-[34px]"
+                          style={{ color: "var(--site-primary)" }}
+                        >
+                          {it.icon}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+
+                <div className="flex min-w-0 items-start gap-3">
+                  {it.icon && !visual && (
+                    <span
+                      aria-hidden="true"
+                      className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md"
+                      style={{ background: TINT, color: "var(--site-primary)" }}
+                    >
+                      <span className="material-symbols-outlined text-[20px]">{it.icon}</span>
+                    </span>
+                  )}
+                  <h3 style={display} className="min-w-0 text-xl leading-snug font-semibold tracking-tight break-words">
+                    {it.title}
+                  </h3>
+                </div>
+              </dt>
+              {it.text && (
+                <dd className="min-w-0 text-[1.0625rem] leading-relaxed break-words sm:pt-0.5">{it.text}</dd>
               )}
-              <h3 style={display} className="min-w-0 text-xl leading-snug font-semibold tracking-tight break-words">
-                {it.title}
-              </h3>
-            </dt>
-            {it.text && (
-              <dd className="min-w-0 text-[1.0625rem] leading-relaxed break-words sm:pt-0.5">{it.text}</dd>
-            )}
-          </div>
-        ))}
+            </div>
+          );
+        })}
       </dl>
     </Shell>
   );
@@ -589,11 +663,22 @@ function About(s: AboutSection & { ui: Strings }) {
 
   return (
     <Shell tone="surface" label={heading ? undefined : s.ui.about}>
-      <div className={s.imageUrl ? "grid items-center gap-10 lg:grid-cols-2 lg:gap-14" : "max-w-2xl"}>
+      <div
+        className={
+          s.imageUrl
+            ? "grid items-center gap-10 lg:grid-cols-[1.15fr_minmax(0,1fr)] lg:gap-14"
+            : "max-w-2xl"
+        }
+      >
         {s.imageUrl && (
-          <div className="overflow-hidden rounded-xl border" style={{ borderColor: HAIR }}>
+          <div className="overflow-hidden rounded-xl" style={{ boxShadow: `inset 0 0 0 1px ${HAIR}` }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={s.imageUrl} alt={heading ?? ""} className="aspect-4/3 w-full object-cover" loading="lazy" />
+            <img
+              src={s.imageUrl}
+              alt={heading ?? ""}
+              className="aspect-4/3 w-full object-cover sm:aspect-16/10 lg:aspect-5/4"
+              loading="lazy"
+            />
           </div>
         )}
         <div className="min-w-0">
@@ -611,10 +696,45 @@ function About(s: AboutSection & { ui: Strings }) {
 
 // ---------------------------------------------------------------- gallery
 
+/**
+ * Otaqlar və avadanlıq insanı sakitləşdirir — ona görə qalereya kiçik xanalar
+ * şəbəkəsi deyil: üç və daha çox şəkil olanda birincisi geniş zolaq kimi
+ * verilir, qalanları onun altında düzülür.
+ */
+function GalleryFigure({
+  imageUrl,
+  caption,
+  ratio,
+}: {
+  imageUrl: string;
+  caption?: string;
+  ratio: string;
+}) {
+  const text = caption?.trim();
+  return (
+    <figure className="min-w-0">
+      <div className="overflow-hidden rounded-xl" style={{ boxShadow: `inset 0 0 0 1px ${HAIR}` }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={imageUrl} alt={text ?? ""} className={`${ratio} w-full object-cover`} loading="lazy" />
+      </div>
+      {text && (
+        <figcaption className="mt-3 text-[0.95rem] leading-snug break-words" style={{ color: "var(--site-muted)" }}>
+          {text}
+        </figcaption>
+      )}
+    </figure>
+  );
+}
+
 function Gallery(s: GallerySection & { ui: Strings }) {
-  const items = (s.items ?? []).filter((it) => it?.imageUrl);
+  const items = (s.items ?? []).filter((it): it is { imageUrl: string; caption?: string } =>
+    Boolean(it?.imageUrl?.trim()),
+  );
   if (items.length === 0) return null;
   const heading = s.heading?.trim();
+
+  const lead = items.length >= 3 ? items[0] : undefined;
+  const rest = lead ? items.slice(1) : items;
 
   return (
     <Shell label={heading ? undefined : s.ui.gallery}>
@@ -623,27 +743,30 @@ function Gallery(s: GallerySection & { ui: Strings }) {
           <Heading>{heading}</Heading>
         </div>
       )}
-      <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {items.map((it, i) => (
-          <li key={i}>
-            <figure className="min-w-0">
-              <div className="overflow-hidden rounded-xl border" style={{ borderColor: HAIR }}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={it.imageUrl}
-                  alt={it.caption?.trim() ?? ""}
-                  className="aspect-4/3 w-full object-cover"
-                  loading="lazy"
-                />
-              </div>
-              {it.caption?.trim() && (
-                <figcaption className="mt-3 text-[0.95rem] leading-snug break-words" style={{ color: "var(--site-muted)" }}>
-                  {it.caption}
-                </figcaption>
-              )}
-            </figure>
+
+      <ul className="grid gap-5 sm:gap-6">
+        {lead && (
+          <li className="min-w-0">
+            <GalleryFigure
+              imageUrl={lead.imageUrl}
+              caption={lead.caption}
+              ratio="aspect-4/3 sm:aspect-16/9 lg:aspect-21/9"
+            />
           </li>
-        ))}
+        )}
+        <li className="min-w-0">
+          <ul
+            className={`grid gap-5 sm:gap-6 ${
+              rest.length === 1 ? "" : rest.length === 2 ? "grid-cols-2" : "grid-cols-2 lg:grid-cols-3"
+            }`}
+          >
+            {rest.map((it, i) => (
+              <li key={i} className="min-w-0">
+                <GalleryFigure imageUrl={it.imageUrl} caption={it.caption} ratio="aspect-4/3" />
+              </li>
+            ))}
+          </ul>
+        </li>
       </ul>
     </Shell>
   );
@@ -748,29 +871,47 @@ function Row({
 function Cta(s: CtaSection) {
   const heading = s.heading?.trim();
   if (!heading) return null;
+  const img = s.imageUrl?.trim();
 
   return (
     <section className="px-5 py-14 sm:px-8 md:py-20">
-      <div className="mx-auto max-w-6xl rounded-2xl px-6 py-14 sm:px-12 md:py-16" style={{ background: "var(--site-text)" }}>
-        <div className="max-w-2xl">
-          <span aria-hidden="true" className="block h-0.5 w-10" style={{ background: "var(--site-primary)" }} />
-          <h2
-            style={display}
-            className="mt-6 text-balance text-[2rem] leading-[1.15] font-semibold tracking-tight text-white sm:text-[2.6rem]"
-          >
-            {heading}
-          </h2>
-          {s.subheading && (
-            <p className="mt-4 max-w-[46ch] text-pretty text-lg leading-relaxed text-white/85">{s.subheading}</p>
-          )}
-          {s.ctaText && (
-            <a
-              href={s.ctaUrl ?? "#elaqe"}
-              className={`mt-8 inline-flex min-h-[3.25rem] items-center rounded-md bg-white px-7 text-base font-semibold transition-shadow duration-200 ease-out hover:shadow-[inset_0_0_0_999px_rgba(0,0,0,0.08)] motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white`}
-              style={{ color: "var(--site-text)" }}
-            >
-              {s.ctaText}
-            </a>
+      <div
+        className="mx-auto max-w-6xl overflow-hidden rounded-2xl"
+        style={{ background: "var(--site-text)" }}
+      >
+        <div className={img ? "grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]" : ""}>
+          <div className="px-6 py-14 sm:px-12 md:py-16">
+            <div className="max-w-2xl">
+              <span aria-hidden="true" className="block h-0.5 w-10" style={{ background: "var(--site-primary)" }} />
+              <h2
+                style={display}
+                className="mt-6 text-balance text-[2rem] leading-[1.15] font-semibold tracking-tight text-white sm:text-[2.6rem]"
+              >
+                {heading}
+              </h2>
+              {s.subheading && (
+                <p className="mt-4 max-w-[46ch] text-pretty text-lg leading-relaxed text-white/85">{s.subheading}</p>
+              )}
+              {s.ctaText && (
+                <a
+                  href={s.ctaUrl ?? "#elaqe"}
+                  className={`mt-8 inline-flex min-h-[3.25rem] items-center rounded-md bg-white px-7 text-base font-semibold transition-shadow duration-200 ease-out hover:shadow-[inset_0_0_0_999px_rgba(0,0,0,0.08)] motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white`}
+                  style={{ color: "var(--site-text)" }}
+                >
+                  {s.ctaText}
+                </a>
+              )}
+            </div>
+          </div>
+
+          {img && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={img}
+              alt=""
+              className="aspect-16/10 h-full w-full object-cover lg:aspect-auto lg:min-h-[24rem]"
+              loading="lazy"
+            />
           )}
         </div>
       </div>
@@ -796,37 +937,63 @@ function SectionHead({ heading, subheading }: { heading?: string; subheading?: s
 // ---------------------------------------------------------------- team
 
 /**
- * Ən dəyərli bölmə: pasiyent klinikanı həkimə görə seçir. Ona görə portretlər
- * kiçik avatar deyil, real ölçüdə verilir. Mobil ekranda sətir düzülüşü
- * (şəkil solda) — 4-5 həkimdə səhifə uzanıb yorucu olmasın.
+ * Ən dəyərli bölmə: pasiyent klinikanı həkimə görə seçir. Portret kiçik avatar
+ * deyil — hər kartın yuxarısında tam enli, portret nisbətli (4:5) şəkildir və
+ * mobil ekranda da belədir (iki sütun, yan-yana), yəni foto mətnin yanındakı
+ * kiçicik damğa deyil, bölmənin özəyidir.
+ *
+ * Portret yoxdursa: eyni ölçüdə, eyni nisbətdə monoqram lövhəsi. Yad adamın
+ * stok fotosunu adı çəkilən həkim kimi göstərmək saxtakarlıqdır — tibbi saytda
+ * bu qəti qadağandır. Boşluq bilərəkdən dizayn edilir; klinika öz fotolarını
+ * özü verir.
  */
+function initials(name: string): string {
+  const words = name.trim().split(/\s+/).filter(Boolean).slice(0, 2);
+  return words.map((w) => Array.from(w)[0] ?? "").join("").toUpperCase();
+}
+
 function Team(s: TeamSection & { ui: Strings }) {
   const items = (s.items ?? []).filter((it) => it?.name?.trim());
   if (items.length === 0) return null;
+  const cols = items.length === 1 ? "max-w-sm" : "sm:grid-cols-2 lg:grid-cols-3";
+  // Mobil: tam enli portret, amma 24rem-dən hündür deyil — beş həkimdə səhifə
+  // sonsuz uzanmasın. sm-dən yuxarı məhdudiyyət qalxır, nisbət 4:5 qalır.
+  const frame =
+    "aspect-4/5 max-h-96 w-full overflow-hidden rounded-xl sm:max-h-none";
 
   return (
     <Shell id="komanda" label={s.heading?.trim() ? undefined : s.ui.team}>
       <SectionHead heading={s.heading} subheading={s.subheading} />
-      <ul className="grid gap-8 sm:grid-cols-2 sm:gap-x-7 lg:grid-cols-3">
+      <ul className={`grid gap-x-6 gap-y-10 sm:gap-x-7 sm:gap-y-12 ${cols}`}>
         {items.map((it, i) => (
-          <li key={i} className="flex gap-4 sm:block">
-            {it.imageUrl ? (
-              <div
-                className="w-28 shrink-0 overflow-hidden rounded-xl border sm:w-full"
-                style={{ borderColor: HAIR }}
-              >
+          <li key={i} className="min-w-0">
+            {it.imageUrl?.trim() ? (
+              <div className={frame} style={{ boxShadow: `inset 0 0 0 1px ${HAIR}` }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={it.imageUrl}
                   alt={it.name}
-                  className="aspect-4/5 w-full object-cover"
+                  className="h-full w-full object-cover"
                   loading="lazy"
                 />
               </div>
             ) : (
-              <span aria-hidden="true" className="mt-1.5 h-14 w-0.5 shrink-0 sm:h-0.5 sm:w-10" style={{ background: "var(--site-primary)" }} />
+              <div
+                aria-hidden="true"
+                className={`${frame} flex flex-col items-center justify-center gap-4`}
+                style={{ background: TINT, boxShadow: `inset 0 0 0 1px ${HAIR}` }}
+              >
+                <span
+                  style={{ ...display, color: "var(--site-primary)" }}
+                  className="text-[2.5rem] leading-none font-semibold tracking-tight"
+                >
+                  {initials(it.name)}
+                </span>
+                <span className="h-0.5 w-8" style={{ background: "var(--site-primary)" }} />
+              </div>
             )}
-            <div className="min-w-0 sm:mt-4">
+
+            <div className="mt-4 min-w-0">
               <h3 style={display} className="text-xl leading-snug font-semibold tracking-tight break-words sm:text-[1.35rem]">
                 {it.name}
               </h3>

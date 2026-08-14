@@ -510,7 +510,16 @@ function Hero(s: HeroSection & { reserveHref: string }) {
   const cta = has(s.ctaText) ? s.ctaText : null;
 
   return (
-    <section className="relative isolate flex min-h-[32rem] items-end overflow-hidden sm:min-h-[38rem] lg:min-h-[86svh] lg:max-h-[58rem]">
+    // Foto varsa hero demək olar ki, bütün ekranı tutur — restoranda ilk an
+    // iştahdır, mətn deyil. Foto yoxdursa bölmə qəsdən alçalır: boş tünd
+    // sahəni uzatmaq mətn hissini gücləndirir.
+    <section
+      className={`relative isolate flex items-end overflow-hidden ${
+        has(s.imageUrl)
+          ? "min-h-[34rem] sm:min-h-[44rem] lg:min-h-[92svh] lg:max-h-[64rem]"
+          : "min-h-[28rem] sm:min-h-[34rem] lg:min-h-[68svh] lg:max-h-[50rem]"
+      }`}
+    >
       {has(s.imageUrl) ? (
         <>
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -566,11 +575,43 @@ function Menu(s: MenuSection) {
   const groups = (s.groups ?? []).filter((g) => g && (has(g.name) || (g.items ?? []).length > 0));
   if (groups.length === 0) return null;
   const single = groups.length === 1;
+  // Atmosfer fotosu varsa kart onun üstünə oturur: əvvəlcə zal görünür,
+  // sonra kağız. Şəkilsiz halda köhnə davranış — kart tünd fonda dayanır.
+  const band = has(s.imageUrl);
 
   return (
-    <section id="menyu" className="relative overflow-hidden py-16 sm:py-24 lg:py-32">
-      <EmberGlow />
-      <div className="relative mx-auto max-w-5xl px-4 sm:px-6">
+    <section
+      id="menyu"
+      className={`relative overflow-hidden ${band ? "pb-16 sm:pb-24 lg:pb-32" : "py-16 sm:py-24 lg:py-32"}`}
+    >
+      {band ? (
+        <div className="relative h-64 sm:h-80 lg:h-[26rem]">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={s.imageUrl}
+            alt=""
+            aria-hidden="true"
+            loading="lazy"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+          <span
+            aria-hidden="true"
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(180deg, var(--em-ink) 0%, color-mix(in srgb, var(--em-ink) 40%, transparent) 26%, color-mix(in srgb, var(--em-ink) 30%, transparent) 55%, color-mix(in srgb, var(--em-ink) 85%, transparent) 100%)",
+            }}
+          />
+        </div>
+      ) : (
+        <EmberGlow />
+      )}
+
+      <div
+        className={`relative mx-auto max-w-5xl px-4 sm:px-6 ${
+          band ? "-mt-24 sm:-mt-32 lg:-mt-44" : ""
+        }`}
+      >
         <article
           className="relative overflow-hidden rounded-xs px-5 py-12 sm:px-10 sm:py-16 lg:px-16 lg:py-20"
           style={paperSurface}
@@ -630,45 +671,74 @@ function MenuGroup({ name, items }: { name?: string; items: MenuSection["groups"
 
       {list.length > 0 && (
         <dl className="space-y-6">
-          {list.map((it, j) => (
-            <div key={j} className="break-inside-avoid">
-              <dt className="flex items-baseline gap-2 sm:gap-3">
-                <span className="min-w-0 text-[1.0625rem] leading-snug font-medium break-words">
-                  {it.name}
-                </span>
-                {has(it.price) && (
-                  <>
-                    {/* Nöqtəli leader — yalnız qiymət varsa mənalıdır. */}
-                    <span
-                      aria-hidden="true"
-                      className="hidden h-[0.6em] min-w-8 flex-1 sm:block"
-                      style={{
-                        backgroundImage:
-                          "radial-gradient(circle at 1.5px 100%, var(--em-paper-muted) 1.1px, transparent 1.6px)",
-                        backgroundSize: "7px 100%",
-                        backgroundRepeat: "repeat-x",
-                        opacity: 0.5,
-                      }}
+          {list.map((it, j) => {
+            const shot = has(it.imageUrl);
+            return (
+              <div key={j} className="break-inside-avoid">
+                {/* İmza yeməklərdə sətir foto ilə açılır. Foto `dt`-nin
+                    daxilindədir — beləliklə `dl` quruluşu pozulmur və ad,
+                    leader, qiymət eyni sətirdə qalır. */}
+                <dt className={shot ? "flex items-center gap-4 sm:gap-5" : "flex"}>
+                  {shot && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={it.imageUrl}
+                      // Yeməyin adı elə yanındadır — şəkil onu təkrarlamamalıdır.
+                      alt=""
+                      loading="lazy"
+                      className="h-24 w-24 shrink-0 rounded-xs object-cover sm:h-32 sm:w-32"
+                      style={{ boxShadow: "0 0 0 1px var(--em-paper-line)" }}
                     />
+                  )}
+
+                  <span className="flex min-w-0 flex-1 items-baseline gap-2 sm:gap-3">
                     <span
-                      style={display}
-                      className="ml-auto shrink-0 text-[1.0625rem] font-semibold tabular-nums sm:ml-0"
+                      className={`min-w-0 leading-snug font-medium break-words ${
+                        shot ? "text-[1.125rem] sm:text-xl" : "text-[1.0625rem]"
+                      }`}
                     >
-                      {it.price}
+                      {it.name}
                     </span>
-                  </>
+                    {has(it.price) && (
+                      <>
+                        {/* Nöqtəli leader — yalnız qiymət varsa mənalıdır. */}
+                        <span
+                          aria-hidden="true"
+                          className="hidden h-[0.6em] min-w-8 flex-1 sm:block"
+                          style={{
+                            backgroundImage:
+                              "radial-gradient(circle at 1.5px 100%, var(--em-paper-muted) 1.1px, transparent 1.6px)",
+                            backgroundSize: "7px 100%",
+                            backgroundRepeat: "repeat-x",
+                            opacity: 0.5,
+                          }}
+                        />
+                        <span
+                          style={display}
+                          className={`ml-auto shrink-0 font-semibold tabular-nums sm:ml-0 ${
+                            shot ? "text-[1.125rem] sm:text-xl" : "text-[1.0625rem]"
+                          }`}
+                        >
+                          {it.price}
+                        </span>
+                      </>
+                    )}
+                  </span>
+                </dt>
+
+                {has(it.desc) && (
+                  <dd
+                    className={`mt-1.5 max-w-[54ch] text-[0.9375rem] leading-relaxed ${
+                      shot ? "pl-28 sm:pl-[9.25rem]" : ""
+                    }`}
+                    style={{ color: "var(--em-paper-muted)" }}
+                  >
+                    {it.desc}
+                  </dd>
                 )}
-              </dt>
-              {has(it.desc) && (
-                <dd
-                  className="mt-1.5 max-w-[54ch] text-[0.9375rem] leading-relaxed"
-                  style={{ color: "var(--em-paper-muted)" }}
-                >
-                  {it.desc}
-                </dd>
-              )}
-            </div>
-          ))}
+              </div>
+            );
+          })}
         </dl>
       )}
     </section>
@@ -679,6 +749,9 @@ function MenuGroup({ name, items }: { name?: string; items: MenuSection["groups"
 function Features(s: FeaturesSection) {
   const items = (s.items ?? []).filter((it) => has(it?.title));
   if (items.length === 0) return null;
+  // Bir dənə də olsa foto varsa bölmə kadr şəbəkəsinə keçir; heç biri yoxdursa
+  // əvvəlki incə xətli mətn sütunları qalır (zərif geri çəkilmə).
+  const withShots = items.some((it) => has(it.imageUrl));
 
   return (
     <section className="py-16 sm:py-20 lg:py-24" style={{ background: "var(--em-ink-soft)" }}>
@@ -701,10 +774,45 @@ function Features(s: FeaturesSection) {
           </header>
         )}
 
-        <ul className="grid gap-x-12 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+        <ul
+          className={`grid gap-y-10 sm:grid-cols-2 lg:grid-cols-3 ${
+            withShots ? "gap-x-6" : "gap-x-12"
+          }`}
+        >
           {items.map((it, i) => (
-            <li key={i} className="pt-6" style={{ borderTop: "1px solid var(--em-line)" }}>
-              <h3 style={display} className="text-xl leading-snug font-semibold tracking-[-0.01em]">
+            <li
+              key={i}
+              className={withShots ? "" : "pt-6"}
+              style={withShots ? undefined : { borderTop: "1px solid var(--em-line)" }}
+            >
+              {withShots &&
+                (has(it.imageUrl) ? (
+                  <div className="overflow-hidden rounded-xs">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={it.imageUrl}
+                      // Başlıq dərhal altındadır — təkrar oxunmasın.
+                      alt=""
+                      loading="lazy"
+                      className="aspect-[4/3] w-full object-cover transition-transform duration-[250ms] ease-out will-change-transform hover:scale-[1.03] motion-reduce:transform-none motion-reduce:transition-none"
+                    />
+                  </div>
+                ) : (
+                  // Bir neçə elementin fotosu yoxdursa şəbəkə dağılmır:
+                  // eyni nisbətdə sakit lövhə yerini tutur.
+                  <div
+                    aria-hidden="true"
+                    className="aspect-[4/3] w-full rounded-xs"
+                    style={{ background: "var(--em-ink)", border: "1px solid var(--em-line)" }}
+                  />
+                ))}
+
+              <h3
+                style={display}
+                className={`text-xl leading-snug font-semibold tracking-[-0.01em] ${
+                  withShots ? "mt-5" : ""
+                }`}
+              >
                 {it.title}
               </h3>
               {has(it.text) && (
@@ -734,7 +842,9 @@ function About(s: AboutSection) {
         className={`mx-auto max-w-6xl px-5 sm:px-6 ${withImage ? "grid items-start gap-10 lg:grid-cols-12 lg:gap-16" : ""}`}
       >
         {withImage && (
-          <figure className="overflow-hidden rounded-xs lg:col-span-5 lg:mt-12">
+          // Şəkil mətnlə bərabər çəkidədir (6/6) — "yazının yanındakı kiçik
+          // kadr" yox, cüt. Kiçik yuxarı boşluq redaksiya ritmini saxlayır.
+          <figure className="overflow-hidden rounded-xs lg:col-span-6 lg:mt-10">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={s.imageUrl}
@@ -745,7 +855,7 @@ function About(s: AboutSection) {
           </figure>
         )}
 
-        <div className={withImage ? "lg:col-span-7" : "max-w-3xl"}>
+        <div className={withImage ? "lg:col-span-6" : "max-w-3xl"}>
           {has(s.heading) && (
             <h2
               style={display}
@@ -769,11 +879,14 @@ function About(s: AboutSection) {
 }
 
 // ── Qalereya — bərabər kvadratlar yox, redaksiya mozaikası ─────────────────
+// İlk kadr bölmənin "açılışıdır" — tam enli, geniş nisbətdə. Qalanları
+// redaksiya mozaikası kimi növbələşir. Beləliklə qalereya səhifənin ən böyük
+// bölmələrindən birinə çevrilir, kiçik kvadratlar sırasına yox.
 const GALLERY_PATTERN = [
-  { col: "lg:col-span-7", ratio: "aspect-[4/3]" },
-  { col: "lg:col-span-5", ratio: "aspect-[4/5]" },
   { col: "lg:col-span-5", ratio: "aspect-[4/5]" },
   { col: "lg:col-span-7", ratio: "aspect-[4/3]" },
+  { col: "lg:col-span-7", ratio: "aspect-[4/3]" },
+  { col: "lg:col-span-5", ratio: "aspect-[4/5]" },
 ];
 
 function Gallery(s: GallerySection) {
@@ -781,7 +894,7 @@ function Gallery(s: GallerySection) {
   if (items.length === 0) return null;
 
   return (
-    <section id="qalereya" className="py-16 sm:py-20 lg:py-28" style={{ background: "var(--em-ink-soft)" }}>
+    <section id="qalereya" className="py-16 sm:py-24 lg:py-32" style={{ background: "var(--em-ink-soft)" }}>
       <div className="mx-auto max-w-6xl px-5 sm:px-6">
         {has(s.heading) && (
           <h2
@@ -794,9 +907,15 @@ function Gallery(s: GallerySection) {
 
         <ul className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-12">
           {items.map((it, i) => {
-            const p = GALLERY_PATTERN[i % GALLERY_PATTERN.length];
+            const lead = i === 0;
+            const p = GALLERY_PATTERN[(i - 1) % GALLERY_PATTERN.length];
             return (
-              <li key={i} className={`self-start sm:col-span-1 ${p.col}`}>
+              <li
+                key={i}
+                className={`self-start ${
+                  lead ? "sm:col-span-2 lg:col-span-12" : `sm:col-span-1 ${p?.col ?? "lg:col-span-6"}`
+                }`}
+              >
                 <figure>
                   <div className="overflow-hidden rounded-xs">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -804,7 +923,9 @@ function Gallery(s: GallerySection) {
                       src={it.imageUrl}
                       alt={it.caption ?? ""}
                       loading="lazy"
-                      className={`w-full object-cover transition-transform duration-[250ms] ease-out will-change-transform hover:scale-[1.03] motion-reduce:transform-none motion-reduce:transition-none ${p.ratio}`}
+                      className={`w-full object-cover transition-transform duration-[250ms] ease-out will-change-transform hover:scale-[1.03] motion-reduce:transform-none motion-reduce:transition-none ${
+                        lead ? "aspect-[16/9] lg:aspect-[21/9]" : (p?.ratio ?? "aspect-[4/3]")
+                      }`}
                     />
                   </div>
                   {has(it.caption) && (
@@ -830,16 +951,44 @@ function Stats(s: StatsSection) {
   const items = (s.items ?? []).filter((it) => has(it?.value) || has(it?.label));
   if (items.length === 0) return null;
   const cols = items.length % 3 === 0 ? "md:grid-cols-3" : "md:grid-cols-4";
+  const shot = has(s.imageUrl);
 
   return (
-    <section className="px-5 py-12 sm:px-6 sm:py-16">
+    // Foto varsa rəqəmlər şüşə kimi onun üstündə dayanır: xanalar yarışəffaf
+    // tünddür, ona görə hansı foto qoyulsa da mətn AA-dan aşağı düşmür.
+    <section className={`relative isolate px-5 sm:px-6 ${shot ? "py-16 sm:py-20" : "py-12 sm:py-16"}`}>
+      {shot && (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={s.imageUrl}
+            alt=""
+            aria-hidden="true"
+            loading="lazy"
+            className="absolute inset-0 -z-10 h-full w-full object-cover"
+          />
+          <span
+            aria-hidden="true"
+            className="absolute inset-0 -z-10"
+            style={{ background: "color-mix(in srgb, var(--em-ink) 55%, transparent)" }}
+          />
+        </>
+      )}
       <div className="mx-auto max-w-6xl">
         <ul
           className={`grid grid-cols-2 gap-px ${cols}`}
           style={{ background: "var(--em-line)", border: "1px solid var(--em-line)" }}
         >
           {items.map((it, i) => (
-            <li key={i} className="px-5 py-8 text-center sm:px-6 sm:py-10" style={{ background: "var(--em-ink)" }}>
+            <li
+              key={i}
+              className="px-5 py-8 text-center sm:px-6 sm:py-10"
+              style={{
+                background: shot
+                  ? "color-mix(in srgb, var(--em-ink) 80%, transparent)"
+                  : "var(--em-ink)",
+              }}
+            >
               {has(it.value) && (
                 <p
                   style={display}
@@ -937,12 +1086,44 @@ function Contact(s: ContactSection & { ui: EmberUi }) {
 // ── CTA ────────────────────────────────────────────────────────────────────
 function Cta(s: CtaSection & { reserveHref: string }) {
   if (!has(s.heading) && !has(s.ctaText)) return null;
+  const shot = has(s.imageUrl);
 
   return (
-    <section className="relative overflow-hidden py-20 sm:py-24 lg:py-32">
-      <EmberGlow />
+    // Foto varsa CTA tam enli fotoşəritdir: rezervasiya qərarı iştahın
+    // üstündə verilir. Foto yoxdursa köhnə isti işıqlı lövhə qalır.
+    <section
+      className={`relative isolate flex items-center overflow-hidden ${
+        shot
+          ? "min-h-[26rem] py-24 sm:min-h-[32rem] sm:py-28 lg:min-h-[38rem] lg:py-36"
+          : "py-20 sm:py-24 lg:py-32"
+      }`}
+    >
+      {shot ? (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={s.imageUrl}
+            alt=""
+            aria-hidden="true"
+            loading="lazy"
+            className="absolute inset-0 -z-10 h-full w-full object-cover"
+          />
+          {/* Mətn fotonun üstündədir — ona görə örtük tünddür və zəmanətlidir:
+              ən açıq nöqtədə belə krem mətn AA-nı saxlayır. */}
+          <span
+            aria-hidden="true"
+            className="absolute inset-0 -z-10"
+            style={{
+              background:
+                "linear-gradient(180deg, var(--em-ink) 0%, color-mix(in srgb, var(--em-ink) 78%, transparent) 24%, color-mix(in srgb, var(--em-ink) 74%, transparent) 76%, var(--em-ink) 100%)",
+            }}
+          />
+        </>
+      ) : (
+        <EmberGlow />
+      )}
       <Grain opacity={0.05} />
-      <div className="relative mx-auto max-w-3xl px-5 text-center sm:px-6">
+      <div className="relative mx-auto w-full max-w-3xl px-5 text-center sm:px-6">
         {has(s.heading) && (
           <h2
             style={displayLarge}

@@ -144,19 +144,36 @@ export async function fetchCategoryImages(
   category: string,
   count: number,
 ): Promise<StockImage[]> {
-  const provider = activeProvider();
-  if (provider === "none") return [];
-
   const queries = CATEGORY_QUERIES[category as LeadCategory];
   if (!queries || queries.length === 0) return [];
 
-  const alt = CATEGORY_ALT[category as LeadCategory] ?? "Biznes şəkli";
+  return fetchImagesForQuery(
+    queries[0]!,
+    count,
+    CATEGORY_ALT[category as LeadCategory] ?? "Biznes şəkli",
+  );
+}
+
+/**
+ * Fetch by an explicit search term.
+ *
+ * Used by the template seeder, whose templates don't map onto the lead-category
+ * list — a corporate services template has no equivalent niche key, but it
+ * still needs office photography.
+ */
+export async function fetchImagesForQuery(
+  query: string,
+  count: number,
+  alt = "Biznes şəkli",
+): Promise<StockImage[]> {
+  const provider = activeProvider();
+  if (provider === "none") return [];
 
   try {
     const images =
       provider === "unsplash"
-        ? await fromUnsplash(queries[0]!, count)
-        : await fromPexels(queries[0]!, count);
+        ? await fromUnsplash(query, count)
+        : await fromPexels(query, count);
 
     return images.map((img, i) => ({
       ...img,

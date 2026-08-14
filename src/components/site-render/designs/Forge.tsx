@@ -1,7 +1,12 @@
 /**
  * "forge" dizaynı — idman klubu / fitness / döyüş idmanları.
  * Tünd, yüksək kontrastlı, sıxılmış ağır tipoqrafiya, diaqonal aksentlər,
- * nəhəng rəqəmlər. Premium idman geyimi brendi enerjisi — plakat deyil.
+ * nəhəng rəqəmlər. Premium idman geyimi brendi enerjisi.
+ *
+ * FOTO ƏSASLIDIR. Zal atmosferlə satılır: otaq, avadanlıq, məşq edən bədənlər,
+ * məşqçi. Ona görə dizayn şəkil VAR fərziyyəsi ilə qurulub — hər bölmə ya öz
+ * şəklini göstərir, ya da səhifədəki şəkil hovuzundan bir kadrı fon kimi
+ * götürür. Şəkil yoxdursa bölmə sadəcə daha sadə görünür, sınmır.
  *
  * Server komponentdir: "use client" YOXDUR, JS yoxdur, yalnız CSS.
  * Marka rəngi tema dəyişənindən gəlir (--site-primary); struktur rəngləri
@@ -88,11 +93,78 @@ const focusOnLight =
   "outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:ring-offset-white";
 const tr = "transition-all duration-200 ease-out motion-reduce:transition-none";
 
+/* ── Şəkil hovuzu ────────────────────────────────────────────────────────────
+ * Məzmun modelində `stats`, `cta`, `process`, `faq`, `hours`, `contact`
+ * bölmələrinin öz şəkil sahəsi yoxdur. Zal saytında bu bölmələrin hamısını
+ * mətn kimi buraxmaq səhifəni sənədə çevirir. Ona görə səhifədəki mövcud
+ * fotolar (haqqımızda, qalereya, məşqçilər, məşğələlər) bir hovuza yığılır və
+ * şəkilsiz bölmələrə fon kimi paylanır. Yeni sahə tələb etmir, tenantın öz
+ * fotolarından başqa heç nə göstərmir.
+ */
+function collectImages(sections: Section[]): { hero?: string; pool: string[] } {
+  let hero: string | undefined;
+  const pool: string[] = [];
+  const push = (u?: string) => {
+    if (u && !pool.includes(u)) pool.push(u);
+  };
+
+  for (const s of sections) {
+    switch (s.type) {
+      case "hero":
+        hero = hero ?? (s as HeroSection).imageUrl;
+        break;
+      case "about":
+        push((s as AboutSection).imageUrl);
+        break;
+      case "gallery":
+        for (const it of (s as GallerySection).items ?? []) push(it.imageUrl);
+        break;
+      case "team":
+        for (const m of (s as TeamSection).items ?? []) push(m.imageUrl);
+        break;
+      case "features":
+        for (const f of (s as FeaturesSection).items ?? []) push(f.imageUrl);
+        break;
+      default:
+        break;
+    }
+  }
+  // Yalnız hero varsa onu da işlət — bir şəkil heç şəkildən yaxşıdır.
+  if (pool.length === 0 && hero) pool.push(hero);
+  return { hero, pool };
+}
+
+/**
+ * Fotoqrafik zəmin: şəkil + üzərində qatı pərdə (scrim).
+ * Pərdə ≥0.78 saxlanılır ki, istənilən fotoda ağ mətn və DIM boz AA-nı keçsin —
+ * kontrast şəklin öz parlaqlığından asılı qalmasın.
+ */
+function PhotoGround({ src, scrim = 0.84 }: { src?: string; scrim?: number }) {
+  if (!src) return null;
+  return (
+    <>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt=""
+        aria-hidden
+        loading="lazy"
+        className="absolute inset-0 -z-20 h-full w-full object-cover object-center"
+      />
+      <div aria-hidden className="absolute inset-0 -z-10" style={{ background: `rgba(8,8,10,${scrim})` }} />
+    </>
+  );
+}
+
 export function ForgeDesign({
   content, page, theme, lang = "az",
 }: { content: SiteContent; page: Page; theme: SiteTheme; lang?: Locale }) {
   const ui = UI[lang];
   const name = content.siteName ?? "Forge";
+  const sections = page.sections ?? [];
+  const { pool } = collectImages(sections);
+  /** Şəkilsiz bölmələrə növbə ilə fon verir; hovuz boşdursa undefined. */
+  const groundFor = (i: number) => (pool.length > 0 ? pool[i % pool.length] : undefined);
   const links =
     content.nav ??
     (content.pages ?? []).map((p) => ({ label: p.title, href: p.slug === "" ? "/" : `/${p.slug}` }));
@@ -177,8 +249,8 @@ export function ForgeDesign({
       </header>
 
       <main id="main">
-        {(page.sections ?? []).map((s, i) => (
-          <SectionView key={i} section={s} ui={ui} index={i} />
+        {sections.map((s, i) => (
+          <SectionView key={i} section={s} ui={ui} index={i} ground={groundFor(i)} />
         ))}
       </main>
 
@@ -218,21 +290,23 @@ export function ForgeDesign({
 }
 
 /* ── Bölmə seçicisi ──────────────────────────────────────────────────────── */
-function SectionView({ section, ui, index }: { section: Section; ui: Ui; index: number }) {
+function SectionView({
+  section, ui, index, ground,
+}: { section: Section; ui: Ui; index: number; ground?: string }) {
   switch (section.type) {
     case "hero": return <Hero s={section as HeroSection} ui={ui} />;
-    case "stats": return <Stats s={section as StatsSection} />;
+    case "stats": return <Stats s={section as StatsSection} ground={ground} />;
     case "features": return <Classes s={section as FeaturesSection} ui={ui} />;
     case "about": return <About s={section as AboutSection} ui={ui} />;
     case "gallery": return <Gallery s={section as GallerySection} ui={ui} />;
-    case "contact": return <Contact s={section as ContactSection} ui={ui} />;
-    case "cta": return <Cta s={section as CtaSection} index={index} />;
-    case "testimonials": return <Testimonials s={section as TestimonialsSection} ui={ui} />;
-    case "faq": return <Faq s={section as FaqSection} ui={ui} />;
+    case "contact": return <Contact s={section as ContactSection} ui={ui} ground={ground} />;
+    case "cta": return <Cta s={section as CtaSection} index={index} ground={ground} />;
+    case "testimonials": return <Testimonials s={section as TestimonialsSection} ui={ui} ground={ground} />;
+    case "faq": return <Faq s={section as FaqSection} ui={ui} ground={ground} />;
     case "team": return <Team s={section as TeamSection} ui={ui} />;
     case "pricing": return <Pricing s={section as PricingSection} ui={ui} />;
-    case "process": return <Process s={section as ProcessSection} ui={ui} />;
-    case "hours": return <Hours s={section as HoursSection} ui={ui} />;
+    case "process": return <Process s={section as ProcessSection} ui={ui} ground={ground} />;
+    case "hours": return <Hours s={section as HoursSection} ui={ui} ground={ground} />;
     case "logos": return <Logos s={section as LogosSection} ui={ui} />;
     default: return null;
   }
@@ -267,7 +341,7 @@ function Head({
 function Hero({ s, ui }: { s: HeroSection; ui: Ui }) {
   if (!s.heading) return null;
   return (
-    <section className="relative isolate flex min-h-[78svh] items-end overflow-hidden md:min-h-[88svh]">
+    <section className="relative isolate flex min-h-[86svh] items-end overflow-hidden md:min-h-[94svh]">
       {s.imageUrl ? (
         <>
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -345,30 +419,50 @@ function Hero({ s, ui }: { s: HeroSection; ui: Ui }) {
   );
 }
 
-/* ── Statistika: ağ zolaq, nəhəng qara rəqəmlər ──────────────────────────── */
-function Stats({ s }: { s: StatsSection }) {
+/* ── Statistika ──────────────────────────────────────────────────────────────
+ * Foto varsa: zalın kadrı üzərində nəhəng ağ rəqəmlər — rəqəmlər məkanla
+ * bağlanır. Foto yoxdursa əvvəlki ağ zolaq qalır (ağ inversiya registri
+ * CTA və qiymətlərdə onsuz da davam edir).
+ */
+function Stats({ s, ground }: { s: StatsSection; ground?: string }) {
   const items = s.items ?? [];
   if (items.length === 0) return null;
+  // Bölmənin öz fotosu varsa o üstündür; yoxdursa səhifə hovuzundan gəlir.
+  const src = s.imageUrl ?? ground;
+  const photo = !!src;
+
   return (
-    <section className="relative overflow-hidden bg-white text-black">
+    <section
+      className={`relative isolate overflow-hidden ${photo ? "text-white" : "bg-white text-black"}`}
+    >
+      <PhotoGround src={src} scrim={0.8} />
       <div
         aria-hidden
         className="pointer-events-none absolute -left-20 -top-10 h-[160%] w-24 -skew-x-12"
         style={{ background: "color-mix(in srgb, var(--site-primary) 20%, transparent)" }}
       />
-      <div className="relative mx-auto max-w-7xl px-5 py-12 sm:px-8 md:py-16">
+      <div
+        className={`relative mx-auto max-w-7xl px-5 sm:px-8 ${
+          photo ? "py-20 md:py-28" : "py-12 md:py-16"
+        }`}
+      >
         <dl className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-4">
           {items.map((it, i) => (
             <div key={i} className="min-w-0">
               <dd
                 style={{ ...display, fontVariantNumeric: "tabular-nums" }}
-                className="break-words text-[clamp(2.5rem,7vw,4.5rem)] leading-[0.9] text-black"
+                className={`break-words text-[clamp(2.5rem,7vw,4.5rem)] leading-[0.9] ${
+                  photo ? "text-white" : "text-black"
+                }`}
               >
                 {it.value}
               </dd>
               <dt className="mt-3 flex items-start gap-2">
                 <span aria-hidden className="mt-1 h-2.5 w-2.5 shrink-0" style={{ background: "var(--site-primary)" }} />
-                <span style={label} className="text-[10px] text-black/70 sm:text-[11px]">
+                <span
+                  style={label}
+                  className={`text-[10px] sm:text-[11px] ${photo ? "text-white/85" : "text-black/70"}`}
+                >
                   {it.label}
                 </span>
               </dt>
@@ -380,10 +474,17 @@ function Stats({ s }: { s: StatsSection }) {
   );
 }
 
-/* ── Məşğələlər: cəsarətli şəbəkə, güclü hover inversiyası ───────────────── */
+/* ── Məşğələlər ──────────────────────────────────────────────────────────────
+ * Şəkil olan halda kart şəkil əsaslıdır: yuxarıda böyük foto, altında ad.
+ * Hover-də mətn sahəsi ağa çevrilir və foto boz-ağdan rəngə keçir — inversiya
+ * registri qorunur, amma bölmənin özü artıq mətn şəbəkəsi deyil.
+ * Heç bir elementdə foto yoxdursa köhnə nömrələnmiş mətn şəbəkəsi işə düşür.
+ */
 function Classes({ s, ui }: { s: FeaturesSection; ui: Ui }) {
   const items = s.items ?? [];
   if (items.length === 0) return null;
+  const withPhotos = items.some((it) => !!it.imageUrl);
+
   return (
     <section id="xidmetler" className="px-5 py-20 sm:px-8 md:py-28" style={{ background: INK }}>
       <div className="mx-auto max-w-7xl">
@@ -393,36 +494,80 @@ function Classes({ s, ui }: { s: FeaturesSection; ui: Ui }) {
           className="grid grid-cols-1 border-t border-l sm:grid-cols-2 lg:grid-cols-3"
           style={{ borderColor: LINE }}
         >
-          {items.map((it, i) => (
-            <li
-              key={i}
-              className={`group relative flex min-w-0 flex-col border-b border-r p-7 hover:bg-white sm:p-9 ${tr}`}
-              style={{ borderColor: LINE }}
-            >
-              <span
-                style={{ ...display, fontVariantNumeric: "tabular-nums" }}
-                className={`text-sm text-white/60 group-hover:text-black/60 ${tr}`}
+          {items.map((it, i) => {
+            const num = String(i + 1).padStart(2, "0");
+            return (
+              <li
+                key={i}
+                className={`group relative flex min-w-0 flex-col border-b border-r hover:bg-white ${tr}`}
+                style={{ borderColor: LINE }}
               >
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              <span
-                aria-hidden
-                className={`mt-4 block h-1 w-10 group-hover:w-full ${tr}`}
-                style={{ background: "var(--site-primary)" }}
-              />
-              <h3
-                style={display}
-                className={`mt-5 break-words text-2xl leading-[0.95] text-white group-hover:text-black sm:text-[1.75rem] ${tr}`}
-              >
-                {it.title}
-              </h3>
-              {it.text && (
-                <p className={`mt-3 text-sm leading-relaxed text-white/65 group-hover:text-black/70 ${tr}`}>
-                  {it.text}
-                </p>
-              )}
-            </li>
-          ))}
+                {withPhotos &&
+                  (it.imageUrl ? (
+                    <div className="relative overflow-hidden">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={it.imageUrl}
+                        alt=""
+                        aria-hidden
+                        loading="lazy"
+                        className={`aspect-4/3 w-full object-cover object-center grayscale group-hover:grayscale-0 ${tr}`}
+                      />
+                      {/* Rəqəm fotonun üstündədir — arxasında qatı zəmin var ki,
+                          açıq kadrda da oxunsun. */}
+                      <span
+                        aria-hidden
+                        style={{ ...display, fontVariantNumeric: "tabular-nums", background: INK }}
+                        className="absolute left-0 top-0 px-3 py-1.5 text-sm leading-none text-white"
+                      >
+                        {num}
+                      </span>
+                    </div>
+                  ) : (
+                    // Qarışıq məzmun: fotosu olmayan element şəbəkəni sındırmır.
+                    <div
+                      aria-hidden
+                      className="flex aspect-4/3 w-full items-center justify-center"
+                      style={{ background: INK_2 }}
+                    >
+                      <span
+                        style={{ ...display, fontVariantNumeric: "tabular-nums" }}
+                        className="text-5xl text-white/20"
+                      >
+                        {num}
+                      </span>
+                    </div>
+                  ))}
+
+                <div className="flex flex-1 flex-col p-7 sm:p-9">
+                  {!withPhotos && (
+                    <span
+                      style={{ ...display, fontVariantNumeric: "tabular-nums" }}
+                      className={`text-sm text-white/60 group-hover:text-black/60 ${tr}`}
+                    >
+                      {num}
+                    </span>
+                  )}
+                  <span
+                    aria-hidden
+                    className={`block h-1 w-10 group-hover:w-full ${withPhotos ? "" : "mt-4"} ${tr}`}
+                    style={{ background: "var(--site-primary)" }}
+                  />
+                  <h3
+                    style={display}
+                    className={`mt-5 break-words text-2xl leading-[0.95] text-white group-hover:text-black sm:text-[1.75rem] ${tr}`}
+                  >
+                    {it.title}
+                  </h3>
+                  {it.text && (
+                    <p className={`mt-3 text-sm leading-relaxed text-white/65 group-hover:text-black/70 ${tr}`}>
+                      {it.text}
+                    </p>
+                  )}
+                </div>
+              </li>
+            );
+          })}
         </ul>
       </div>
     </section>
@@ -436,7 +581,7 @@ function About({ s, ui }: { s: AboutSection; ui: Ui }) {
     <section className="px-5 py-20 sm:px-8 md:py-28" style={{ background: INK_2 }}>
       <div
         className={`mx-auto grid max-w-7xl items-center gap-10 md:gap-14 ${
-          s.imageUrl ? "lg:grid-cols-[1.1fr_1fr]" : ""
+          s.imageUrl ? "lg:grid-cols-[1.45fr_1fr]" : ""
         }`}
       >
         {s.imageUrl && (
@@ -446,7 +591,7 @@ function About({ s, ui }: { s: AboutSection; ui: Ui }) {
               src={s.imageUrl}
               alt={s.heading ?? ui.about}
               loading="lazy"
-              className="aspect-4/3 w-full object-cover lg:aspect-3/2"
+              className="aspect-4/3 w-full object-cover object-center lg:aspect-4/5"
             />
             <span
               aria-hidden
@@ -475,48 +620,51 @@ function About({ s, ui }: { s: AboutSection; ui: Ui }) {
   );
 }
 
-/* ── Qalereya: asimmetrik şəbəkə ─────────────────────────────────────────── */
+/* ── Qalereya ────────────────────────────────────────────────────────────────
+ * Zalın otağı burada satılır — ona görə bölmə səhifənin ən böyüklərindəndir:
+ * kənardan-kənara şəbəkə, ilk kadr 2×2, hündür hüceyrələr.
+ */
 function Gallery({ s, ui }: { s: GallerySection; ui: Ui }) {
   const items = (s.items ?? []).filter((it) => !!it.imageUrl);
   if (items.length === 0) return null;
   return (
-    <section className="px-5 py-20 sm:px-8 md:py-28" style={{ background: INK }}>
-      <div className="mx-auto max-w-7xl">
+    <section className="py-20 md:py-28" style={{ background: INK }}>
+      <div className="mx-auto max-w-7xl px-5 sm:px-8">
         <h2 style={display} className="mb-10 break-words text-[clamp(1.9rem,5vw,3.25rem)] leading-[0.94] md:mb-14">
           {s.heading ?? ui.gallery}
         </h2>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:[&>*:first-child]:col-span-2 lg:[&>*:first-child]:row-span-2">
-          {items.map((it, i) => (
-            <figure key={i} className="group relative min-w-0 overflow-hidden">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={it.imageUrl}
-                alt={it.caption ?? ""}
-                loading="lazy"
-                className={`h-full w-full object-cover grayscale group-hover:grayscale-0 ${
-                  i === 0 ? "aspect-4/3 lg:aspect-auto lg:min-h-full" : "aspect-4/3"
-                } ${tr}`}
-              />
-              {it.caption && (
-                <figcaption
-                  className="absolute inset-x-0 bottom-0 p-4"
-                  style={{ background: "linear-gradient(180deg, transparent, rgba(8,8,10,0.9))" }}
-                >
-                  <span style={label} className="text-[10px] text-white sm:text-[11px]">
-                    {it.caption}
-                  </span>
-                </figcaption>
-              )}
-            </figure>
-          ))}
-        </div>
+      </div>
+      <div className="grid grid-cols-1 gap-2 px-2 sm:grid-cols-2 lg:grid-cols-4 lg:[&>*:first-child]:col-span-2 lg:[&>*:first-child]:row-span-2">
+        {items.map((it, i) => (
+          <figure key={i} className="group relative min-w-0 overflow-hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={it.imageUrl}
+              alt={it.caption ?? ""}
+              loading="lazy"
+              className={`h-full w-full object-cover object-center grayscale group-hover:grayscale-0 ${
+                i === 0 ? "aspect-4/5 sm:aspect-4/3 lg:aspect-auto lg:min-h-full" : "aspect-4/5 lg:aspect-square"
+              } ${tr}`}
+            />
+            {it.caption && (
+              <figcaption
+                className="absolute inset-x-0 bottom-0 p-4"
+                style={{ background: "linear-gradient(180deg, transparent, rgba(8,8,10,0.92))" }}
+              >
+                <span style={label} className="text-[10px] text-white sm:text-[11px]">
+                  {it.caption}
+                </span>
+              </figcaption>
+            )}
+          </figure>
+        ))}
       </div>
     </section>
   );
 }
 
 /* ── Əlaqə: iri sətirlər ─────────────────────────────────────────────────── */
-function Contact({ s, ui }: { s: ContactSection; ui: Ui }) {
+function Contact({ s, ui, ground }: { s: ContactSection; ui: Ui; ground?: string }) {
   const rows: { label: string; value: string; href?: string }[] = [];
   if (s.phone) rows.push({ label: ui.phone, value: s.phone, href: `tel:${s.phone.replace(/\s+/g, "")}` });
   if (s.email) rows.push({ label: ui.email, value: s.email, href: `mailto:${s.email}` });
@@ -524,8 +672,14 @@ function Contact({ s, ui }: { s: ContactSection; ui: Ui }) {
   if (rows.length === 0 && !s.heading) return null;
 
   return (
-    <section id="elaqe" className="px-5 py-20 sm:px-8 md:py-28" style={{ background: INK_2 }}>
-      <div className="mx-auto max-w-7xl">
+    <section
+      id="elaqe"
+      className="relative isolate overflow-hidden px-5 py-20 sm:px-8 md:py-28"
+      style={{ background: INK_2 }}
+    >
+      {/* Əlaqə blokunun arxasında zalın kadrı — pərdə 0.86, mətn AA-nı keçir. */}
+      <PhotoGround src={ground} scrim={0.86} />
+      <div className="relative mx-auto max-w-7xl">
         <h2 style={display} className="break-words text-[clamp(2rem,6vw,4rem)] leading-[0.92]">
           {s.heading ?? ui.contact}
         </h2>
@@ -573,41 +727,78 @@ function Contact({ s, ui }: { s: ContactSection; ui: Ui }) {
   );
 }
 
-/* ── CTA: qaçılmaz ağ zolaq ──────────────────────────────────────────────── */
-function Cta({ s, index }: { s: CtaSection; index: number }) {
+/* ── CTA ─────────────────────────────────────────────────────────────────────
+ * Ağ zolaq qalır — inversiya registri bu dizaynın kimliyidir. Amma foto varsa
+ * zolağın yarısını kadr tutur: mətn ağ fonda, foto yanında. Beləliklə konversiya
+ * bloku da şəkil daşıyır, üstəlik mətn heç vaxt fotonun üzərinə düşmür.
+ */
+function Cta({ s, index, ground }: { s: CtaSection; index: number; ground?: string }) {
   if (!s.heading && !s.ctaText) return null;
+  // Bölmənin öz fotosu varsa o üstündür; yoxdursa səhifə hovuzundan gəlir.
+  const src = s.imageUrl ?? ground;
+
+  const body = (
+    <div className="min-w-0">
+      {s.heading && (
+        <h2 style={display} className="max-w-[14ch] break-words text-[clamp(2rem,6.5vw,4.5rem)] leading-[0.88]">
+          {s.heading}
+        </h2>
+      )}
+      {s.subheading && (
+        <p className="mt-5 max-w-xl text-base leading-relaxed text-black/70 sm:text-lg">{s.subheading}</p>
+      )}
+      {s.ctaText && src && (
+        <a
+          href={s.ctaUrl ?? "#elaqe"}
+          style={label}
+          className={`mt-8 inline-block bg-black px-9 py-5 text-xs text-white hover:bg-black/85 ${tr} ${focusOnLight}`}
+        >
+          {s.ctaText}
+        </a>
+      )}
+    </div>
+  );
+
   return (
     <section
       id={index === 0 ? undefined : "qosul"}
       className="relative overflow-hidden bg-white text-black"
     >
-      <div aria-hidden className="absolute inset-x-0 top-0 h-2.5" style={{ background: "var(--site-primary)" }} />
+      <div aria-hidden className="absolute inset-x-0 top-0 z-10 h-2.5" style={{ background: "var(--site-primary)" }} />
       <div
         aria-hidden
         className="pointer-events-none absolute -right-16 -top-10 hidden h-[160%] w-28 -skew-x-12 md:block"
         style={{ background: "color-mix(in srgb, var(--site-primary) 18%, transparent)" }}
       />
-      <div className="relative mx-auto flex max-w-7xl flex-col gap-8 px-5 py-16 sm:px-8 md:flex-row md:items-end md:justify-between md:py-24">
-        <div className="min-w-0">
-          {s.heading && (
-            <h2 style={display} className="max-w-[14ch] break-words text-[clamp(2rem,6.5vw,4.5rem)] leading-[0.88]">
-              {s.heading}
-            </h2>
-          )}
-          {s.subheading && (
-            <p className="mt-5 max-w-xl text-base leading-relaxed text-black/70 sm:text-lg">{s.subheading}</p>
+
+      {src ? (
+        <div className="relative grid lg:grid-cols-[1.05fr_1fr] lg:items-stretch">
+          <div className="flex items-center px-5 py-16 sm:px-8 md:py-24 lg:pl-[max(2rem,calc((100vw-80rem)/2+2rem))]">
+            {body}
+          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={src}
+            alt=""
+            aria-hidden
+            loading="lazy"
+            className="aspect-3/2 h-full w-full object-cover object-center lg:aspect-auto lg:min-h-[26rem]"
+          />
+        </div>
+      ) : (
+        <div className="relative mx-auto flex max-w-7xl flex-col gap-8 px-5 py-16 sm:px-8 md:flex-row md:items-end md:justify-between md:py-24">
+          {body}
+          {s.ctaText && (
+            <a
+              href={s.ctaUrl ?? "#elaqe"}
+              style={label}
+              className={`shrink-0 self-start bg-black px-9 py-5 text-xs text-white hover:bg-black/85 md:self-auto ${tr} ${focusOnLight}`}
+            >
+              {s.ctaText}
+            </a>
           )}
         </div>
-        {s.ctaText && (
-          <a
-            href={s.ctaUrl ?? "#elaqe"}
-            style={label}
-            className={`shrink-0 self-start bg-black px-9 py-5 text-xs text-white hover:bg-black/85 md:self-auto ${tr} ${focusOnLight}`}
-          >
-            {s.ctaText}
-          </a>
-        )}
-      </div>
+      )}
     </section>
   );
 }
@@ -736,7 +927,8 @@ function Team({ s, ui }: { s: TeamSection; ui: Ui }) {
     <section id="komanda" className="px-5 py-20 sm:px-8 md:py-28" style={{ background: INK_2 }}>
       <div className="mx-auto max-w-7xl">
         <Head eyebrow={ui.team} heading={s.heading} subheading={s.subheading} />
-        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {/* Portretlər zalın satış arqumentidir — daha az sütun, daha böyük kadr. */}
+        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((m, i) => {
             const initials = m.name.trim().split(/\s+/).slice(0, 2).map((w) => w.charAt(0)).join("");
             return (
@@ -749,7 +941,7 @@ function Team({ s, ui }: { s: TeamSection; ui: Ui }) {
                         src={m.imageUrl}
                         alt={m.name}
                         loading="lazy"
-                        className={`aspect-3/4 w-full object-cover object-center grayscale group-hover:grayscale-0 ${tr}`}
+                        className={`aspect-3/4 w-full object-cover object-top grayscale group-hover:grayscale-0 ${tr}`}
                       />
                       <span
                         aria-hidden
@@ -795,13 +987,27 @@ function Team({ s, ui }: { s: TeamSection; ui: Ui }) {
 }
 
 /* ── Proses: fasiləsiz marka xətti üzərində nömrələnmiş addımlar ─────────── */
-function Process({ s, ui }: { s: ProcessSection; ui: Ui }) {
+function Process({ s, ui, ground }: { s: ProcessSection; ui: Ui; ground?: string }) {
   const items = (s.items ?? []).filter((it) => it.title);
   if (items.length === 0) return null;
   return (
     <section className="px-5 py-20 sm:px-8 md:py-28" style={{ background: INK }}>
       <div className="mx-auto max-w-7xl">
         <Head eyebrow={ui.process} heading={s.heading} subheading={s.subheading} />
+        {/* Addımların üstündə geniş kadr — mətn sütunları fotonun üstündə deyil,
+            altındadır, ona görə davamlı marka xətti toxunulmaz qalır. */}
+        {ground && (
+          <div className="mb-12 overflow-hidden md:mb-16">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={ground}
+              alt=""
+              aria-hidden
+              loading="lazy"
+              className="aspect-16/9 w-full object-cover object-center md:aspect-[21/9]"
+            />
+          </div>
+        )}
         <ol className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           {items.map((it, i) => (
             <li key={i} className="min-w-0 pb-8 pr-0 sm:pr-8">
@@ -834,12 +1040,17 @@ function Process({ s, ui }: { s: ProcessSection; ui: Ui }) {
 }
 
 /* ── Rəylər ──────────────────────────────────────────────────────────────── */
-function Testimonials({ s, ui }: { s: TestimonialsSection; ui: Ui }) {
+function Testimonials({ s, ui, ground }: { s: TestimonialsSection; ui: Ui; ground?: string }) {
   const items = (s.items ?? []).filter((it) => it.quote && it.author);
   if (items.length === 0) return null;
   return (
-    <section className="px-5 py-20 sm:px-8 md:py-28" style={{ background: INK_2 }}>
-      <div className="mx-auto max-w-7xl">
+    <section
+      className="relative isolate overflow-hidden px-5 py-20 sm:px-8 md:py-28"
+      style={{ background: INK_2 }}
+    >
+      {/* Rəylər zalın kadrı üzərində — sitatlar məkanla bağlanır. */}
+      <PhotoGround src={ground} scrim={0.88} />
+      <div className="relative mx-auto max-w-7xl">
         <Head eyebrow={ui.reviews} heading={s.heading} subheading={s.subheading} />
         <ul className="grid grid-cols-1 border-t border-l border-white/15 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((it, i) => {
@@ -900,13 +1111,27 @@ function Testimonials({ s, ui }: { s: TestimonialsSection; ui: Ui }) {
 }
 
 /* ── FAQ: JS yoxdur, details/summary + CSS ilə açılıb-bağlanır ───────────── */
-function Faq({ s, ui }: { s: FaqSection; ui: Ui }) {
+function Faq({ s, ui, ground }: { s: FaqSection; ui: Ui; ground?: string }) {
   const items = (s.items ?? []).filter((it) => it.question && it.answer);
   if (items.length === 0) return null;
   return (
     <section id="faq" className="px-5 py-20 sm:px-8 md:py-28" style={{ background: INK }}>
       <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.85fr_1.6fr] lg:gap-14">
-        <Head eyebrow={ui.faq} heading={s.heading} subheading={s.subheading} className="mb-0" />
+        <div className="min-w-0">
+          <Head eyebrow={ui.faq} heading={s.heading} subheading={s.subheading} className="mb-0" />
+          {ground && (
+            <>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={ground}
+                alt=""
+                aria-hidden
+                loading="lazy"
+                className="mt-8 hidden aspect-4/5 w-full object-cover object-center lg:block"
+              />
+            </>
+          )}
+        </div>
         <div className="min-w-0 border-t border-white/15">
           {items.map((it, i) => (
             <details key={i} className="group border-b border-white/15">
@@ -945,13 +1170,27 @@ function Faq({ s, ui }: { s: FaqSection; ui: Ui }) {
 }
 
 /* ── İş saatları: sürətli oxunan cədvəl ──────────────────────────────────── */
-function Hours({ s, ui }: { s: HoursSection; ui: Ui }) {
+function Hours({ s, ui, ground }: { s: HoursSection; ui: Ui; ground?: string }) {
   const items = (s.items ?? []).filter((r) => r.days && r.hours);
   if (items.length === 0) return null;
   return (
     <section className="px-5 py-20 sm:px-8 md:py-28" style={{ background: INK_2 }}>
       <div className="mx-auto grid max-w-7xl items-start gap-8 lg:grid-cols-[1fr_1.15fr] lg:gap-14">
-        <Head eyebrow={ui.hours} heading={s.heading} className="mb-0" />
+        <div className="min-w-0">
+          <Head eyebrow={ui.hours} heading={s.heading} className="mb-0" />
+          {ground && (
+            <>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={ground}
+                alt=""
+                aria-hidden
+                loading="lazy"
+                className="mt-8 aspect-3/2 w-full object-cover object-center"
+              />
+            </>
+          )}
+        </div>
         <div className="min-w-0">
           <span aria-hidden className="block h-1.5 w-full" style={{ background: "var(--site-primary)" }} />
           <dl className="divide-y divide-white/15" style={{ background: INK }}>
