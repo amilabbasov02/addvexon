@@ -11,12 +11,19 @@
  */
 
 export type DesignKey =
+  // İlk nəsil dizaynlar
   | "care"
   | "bistro"
   | "corporate"
   | "retail"
   | "bloom"
-  | "studio";
+  | "studio"
+  // İkinci nəsil — premium, sahə üzrə ixtisaslaşmış
+  | "lumen" // gözəllik salonu / spa / bərbər — editorial
+  | "ember" // restoran / kafe / bar — tünd, isti
+  | "meridian" // klinika / diş / səhiyyə — sakit, dəqiq
+  | "forge" // fitnes / idman klubu — yüksək kontrast
+  | "atlas"; // korporativ / xidmət / B2B — struktur
 
 export type SectionType =
   | "hero"
@@ -27,7 +34,15 @@ export type SectionType =
   | "cta"
   | "menu"
   | "stats"
-  | "products";
+  | "products"
+  // İkinci nəsil bölmələr — landing-i doldurmaq və etibar qurmaq üçün
+  | "testimonials"
+  | "faq"
+  | "team"
+  | "pricing"
+  | "process"
+  | "hours"
+  | "logos";
 
 export interface HeroSection {
   type: "hero";
@@ -58,7 +73,14 @@ export interface AboutSection {
 }
 
 export interface GalleryItem {
-  imageUrl: string;
+  /**
+   * Opsionaldır: məzmun yazılanda şəkillər hələ olmaya bilər (onlar ayrıca
+   * addımda doldurulur). Məcburi olanda müəlliflər `""` yazmağa məcbur qalırdı
+   * və nəticədə səhifə `<img src="">` render edirdi — dizaynların "şəkilsiz də
+   * düzgün görünsün" qaydasının pozulduğu yeganə yer. Render edən komponentlər
+   * şəkli olmayan elementləri süzməlidir.
+   */
+  imageUrl?: string;
   caption?: string;
 }
 export interface GallerySection {
@@ -120,6 +142,113 @@ export interface ProductsSection {
   items: ProductItem[];
 }
 
+// ============================================================
+//  İkinci nəsil bölmələr
+//
+//  Səbəb: bir landing yalnız hero + xidmətlər + əlaqədən ibarət olanda qısa və
+//  yarımçıq görünür. Aşağıdakı bölmələr həm səhifəni doldurur, həm də satışa
+//  birbaşa işləyir — rəy etibar qurur, FAQ etiraza cavab verir, qiymət cədvəli
+//  sualı qabaqlayır, iş saatları lokal biznes üçün ən çox axtarılan məlumatdır.
+// ============================================================
+
+export interface TestimonialItem {
+  quote: string;
+  author: string;
+  /** "Müştəri", "Nəsimi filialı" — kim olduğu barədə qısa qeyd. */
+  role?: string;
+  /** 1–5. Yoxdursa ulduz göstərilmir. */
+  rating?: number;
+  avatarUrl?: string;
+}
+export interface TestimonialsSection {
+  type: "testimonials";
+  heading?: string;
+  subheading?: string;
+  items: TestimonialItem[];
+}
+
+export interface FaqItem {
+  question: string;
+  answer: string;
+}
+export interface FaqSection {
+  type: "faq";
+  heading?: string;
+  subheading?: string;
+  items: FaqItem[];
+}
+
+export interface TeamMember {
+  name: string;
+  /** "Həkim-stomatoloq", "Baş bərbər" */
+  role?: string;
+  bio?: string;
+  imageUrl?: string;
+}
+export interface TeamSection {
+  type: "team";
+  heading?: string;
+  subheading?: string;
+  items: TeamMember[];
+}
+
+export interface PricingItem {
+  name: string;
+  price: string;
+  /** "seansdan", "aylıq" kimi qiymət vahidi. */
+  unit?: string;
+  desc?: string;
+  /** Sadalanan üstünlüklər. */
+  features?: string[];
+  /** Bir paket vurğulana bilər — dizayn onu fərqli göstərir. */
+  featured?: boolean;
+}
+export interface PricingSection {
+  type: "pricing";
+  heading?: string;
+  subheading?: string;
+  items: PricingItem[];
+  /** "Qiymətlər ilkin məlumat üçündür" kimi qeyd. */
+  note?: string;
+}
+
+export interface ProcessStep {
+  title: string;
+  text?: string;
+  /** Nömrələnmə dizayn tərəfindən avtomatik verilir; bu sahə lazım deyil. */
+  icon?: string;
+}
+export interface ProcessSection {
+  type: "process";
+  heading?: string;
+  subheading?: string;
+  items: ProcessStep[];
+}
+
+export interface HoursRow {
+  /** "Bazar ertəsi – Cümə" və ya tək gün. */
+  days: string;
+  /** "09:00 – 19:00" və ya "Bağlıdır". */
+  hours: string;
+}
+export interface HoursSection {
+  type: "hours";
+  heading?: string;
+  items: HoursRow[];
+  note?: string;
+}
+
+export interface LogoItem {
+  /** Partnyor/brend adı — şəkil yüklənməsə mətn kimi göstərilir. */
+  name: string;
+  imageUrl?: string;
+}
+export interface LogosSection {
+  type: "logos";
+  heading?: string;
+  items: LogoItem[];
+}
+
 export type Section =
   | HeroSection
   | FeaturesSection
@@ -129,7 +258,14 @@ export type Section =
   | CtaSection
   | MenuSection
   | StatsSection
-  | ProductsSection;
+  | ProductsSection
+  | TestimonialsSection
+  | FaqSection
+  | TeamSection
+  | PricingSection
+  | ProcessSection
+  | HoursSection
+  | LogosSection;
 
 /** Bir səhifə — multipage saytlarda bir neçə olur. */
 export interface Page {
@@ -235,8 +371,18 @@ export function pickLocaleContent(
 /** Tema rənglərini CSS dəyişənlərinə çevirir. */
 export function themeToCssVars(theme: SiteTheme | null | undefined): Record<string, string> {
   const c = { ...DEFAULT_THEME.colors, ...(theme?.colors ?? {}) };
+  const primary = c.primary!;
   return {
-    "--site-primary": c.primary!,
+    "--site-primary": primary,
+    /**
+     * Brend rəngi üzərində oxunan mətn rəngi.
+     *
+     * Dizaynların hamısı `--site-primary` fonunda ağ mətn işlədirdi. Tenant
+     * açıq rəng (sarı, açıq yaşıl, çəhrayı) seçəndə bu, WCAG AA-dan aşağı
+     * düşürdü — hər dizaynda ayrı-ayrı düzəltmək əvəzinə burada bir dəfə
+     * hesablanır və bütün dizaynlar `var(--site-on-primary)` işlədir.
+     */
+    "--site-on-primary": readableTextOn(primary),
     "--site-bg": c.bg!,
     "--site-surface": c.surface!,
     "--site-text": c.text!,
@@ -244,4 +390,60 @@ export function themeToCssVars(theme: SiteTheme | null | undefined): Record<stri
     "--site-font-heading": theme?.fonts?.heading ?? DEFAULT_THEME.fonts!.heading!,
     "--site-font-body": theme?.fonts?.body ?? DEFAULT_THEME.fonts!.body!,
   };
+}
+
+/**
+ * Verilmiş fon rənginin üzərində ağ, yoxsa tünd mətn oxunaqlıdır?
+ *
+ * WCAG-ın nisbi parlaqlıq (relative luminance) düsturu ilə hesablanır. 0.45
+ * həddi ağ və tünd variantların hər ikisinin AA-nı keçdiyi nöqtəyə yaxındır.
+ * Rəng oxunmasa (məs. `oklch()` və ya CSS dəyişəni), ağ qaytarılır — bu, indiyə
+ * qədərki davranışdır, yəni heç nə pisləşmir.
+ */
+export function readableTextOn(background: string): string {
+  const rgb = parseColor(background);
+  if (!rgb) return "#ffffff";
+
+  const toLinear = (channel: number): number => {
+    const s = channel / 255;
+    return s <= 0.04045 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+  };
+
+  const luminance =
+    0.2126 * toLinear(rgb.r) + 0.7152 * toLinear(rgb.g) + 0.0722 * toLinear(rgb.b);
+
+  return luminance > 0.45 ? "#111111" : "#ffffff";
+}
+
+/** `#rgb`, `#rrggbb` və `rgb()` formalarını oxuyur. Başqa formatda null. */
+function parseColor(input: string): { r: number; g: number; b: number } | null {
+  const value = input.trim().toLowerCase();
+
+  const hex = value.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/);
+  if (hex?.[1]) {
+    const h = hex[1];
+    if (h.length === 3) {
+      return {
+        r: parseInt(h[0]! + h[0]!, 16),
+        g: parseInt(h[1]! + h[1]!, 16),
+        b: parseInt(h[2]! + h[2]!, 16),
+      };
+    }
+    return {
+      r: parseInt(h.slice(0, 2), 16),
+      g: parseInt(h.slice(2, 4), 16),
+      b: parseInt(h.slice(4, 6), 16),
+    };
+  }
+
+  const rgbMatch = value.match(/^rgba?\(\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)/);
+  if (rgbMatch) {
+    return {
+      r: Number(rgbMatch[1]),
+      g: Number(rgbMatch[2]),
+      b: Number(rgbMatch[3]),
+    };
+  }
+
+  return null;
 }

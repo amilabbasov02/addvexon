@@ -27,6 +27,11 @@ import {
   type Section,
   type SiteContent,
 } from "@/lib/site-content";
+import {
+  fetchCategoryImages,
+  imageProviderConfigured,
+  type StockImage,
+} from "./image-provider";
 import { findTemplateForCategory } from "./template-match";
 import type { Lead } from "@/db/schema";
 
@@ -90,7 +95,8 @@ export async function generateDemoForLead(
     );
   }
 
-  const content = personalise(baseContent.content, lead);
+  const personalised = personalise(baseContent.content, lead);
+  const content = await addImagery(personalised, lead.category ?? "");
   const subdomain = await uniqueSubdomain(lead.name);
   const tenantId = uid("tnt");
 
@@ -186,6 +192,74 @@ function personalise(
   }
 
   return personaliseContent(clone as SiteContent, lead);
+}
+
+/**
+ * Fill the empty photo slots with category-appropriate licensed stock.
+ *
+ * A demo with no photographs looks unfinished, and an unfinished demo does not
+ * sell — but we have no photographs of this actual business, so the honest
+ * option is generic imagery of the right kind of place. It is obviously stock;
+ * it is not pretending to be their premises.
+ *
+ * Silently does nothing when no image provider is configured, which is why
+ * every design is required to look correct with no images at all.
+ */
+async function addImagery(
+  source: SiteContent | LocalizedBundle,
+  category: string,
+): Promise<SiteContent | LocalizedBundle> {
+  if (!imageProviderConfigured() || !category) return source;
+
+  // One fetch for the whole demo — every locale shows the same premises.
+  const images = await fetchCategoryImages(category, 10);
+  if (images.length === 0) return source;
+
+  if (isLocalizedBundle(source)) {
+    for (const locale of Object.keys(source.locales) as (keyof typeof source.locales)[]) {
+      const localeContent = source.locales[locale];
+      if (localeContent) applyImages(localeContent, images);
+    }
+    return source;
+  }
+
+  applyImages(source as SiteContent, images);
+  return source;
+}
+
+function applyImages(content: SiteContent, images: StockImage[]): void {
+  let next = 0;
+  const take = (): StockImage | undefined => images[next++ % images.length];
+
+  for (const page of content.pages ?? []) {
+    for (const section of page.sections ?? []) {
+      switch (section.type) {
+        case "hero":
+        case "about": {
+          // The hero gets the strongest image, so always start from the top.
+          const img = images[0];
+          if (img && !section.imageUrl) section.imageUrl = img.url;
+          break;
+        }
+        case "gallery": {
+          // Content authors leave gallery slots with captions but no URL; the
+          // design filters those out, so filling them is what makes the
+          // section appear at all.
+          for (const item of section.items ?? []) {
+            if (item.imageUrl) continue;
+            const img = take();
+            if (img) item.imageUrl = img.url;
+          }
+          break;
+        }
+        // Team portraits are deliberately left empty: a stock photo of a
+        // stranger presented as a named employee is a fabrication, and every
+        // design already degrades team members to a clean text block.
+        default:
+          break;
+      }
+    }
+  }
 }
 
 function personaliseContent(content: SiteContent, lead: Lead): SiteContent {

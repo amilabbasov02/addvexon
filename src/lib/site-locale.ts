@@ -25,8 +25,22 @@ const COUNTRY_LOCALE: Record<string, Locale> = {
   MD: "ru",
 };
 
-export function localeFromCountry(country?: string | null): Locale {
-  if (!country) return "en";
+/**
+ * Ölkə kodundan dil.
+ *
+ * "Məlumat yoxdur" ilə "ölkə məlumdur, amma siyahıda deyil" fərqlidir və bu
+ * fərq vacibdir:
+ *
+ *   - Geo başlığı ümumiyyətlə yoxdursa (lokal iş, Vercel-dən kənar hostinq,
+ *     başlığı ötürməyən proxy) `null` qaytarılır ki, seçim tenant-ın
+ *     `defaultLocale`-inə düşsün. Əvvəl burada `"en"` qaytarılırdı və nəticədə
+ *     tenant-ın seçdiyi dil heç vaxt nəzərə alınmırdı — Bakıdakı salona
+ *     göndərilən demo linki ingiliscə açılırdı.
+ *   - Ölkə məlumdur, amma siyahıda yoxdursa (Almaniya, ABŞ, Türkiyə) `"en"`
+ *     qaytarılır — xarici ziyarətçi üçün ingiliscə ən faydalı seçimdir.
+ */
+export function localeFromCountry(country?: string | null): Locale | null {
+  if (!country) return null;
   return COUNTRY_LOCALE[country.toUpperCase()] ?? "en";
 }
 

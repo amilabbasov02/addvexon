@@ -13,7 +13,8 @@
     "db:studio": "drizzle-kit studio",
     "db:ping": "tsx scripts/db-ping.ts",
     "leads:probe": "tsx scripts/lead-finder-probe.ts",
-    "leads:work": "tsx scripts/leads-worker.ts"
+    "leads:work": "tsx scripts/leads-worker.ts",
+    "seed:templates": "tsx scripts/seed-lumen-templates.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.98.0",
